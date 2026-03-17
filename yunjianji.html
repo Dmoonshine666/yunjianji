@@ -1206,7 +1206,7 @@ async function login(email, password) {
 }
 
         // 注册功能
-        sync function register(username, password, email) {
+        async function register(username, password, email) {
   try {
     // Supabase用邮箱作为登录账号，用户名可存在user_metadata中
     const { data, error } = await supabase.auth.signUp({
