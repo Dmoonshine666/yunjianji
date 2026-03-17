@@ -1079,19 +1079,25 @@
 
     <script>
         // 初始化Supabase客户端
-const supabaseUrl = 'https://zeiwdwplhgcpedhoxxqd.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA';
-if (typeof supabase === 'undefined') {
-  // 确保只初始化一次
-  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-}
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.supabase) {
+    window.supabase = window.supabase.createClient(
+      'https://zeiwdwplhgcpedhoxxqd.supabase.co', // 你的 URL
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA'      // 你的 anon key
+    );
+  }
+});
 
 // 全局变量：当前登录用户
 let currentUser = null;
 
 // 页面加载时检查登录状态
 async function checkUserStatus() {
-  const { data: { session }, error } = await supabase.auth.getSession();
+  if (!window.supabase || !window.supabase.auth) {
+    console.error("Supabase 未初始化");
+    return;
+  }
+  const { data: { session }, error } = await window.supabase.auth.getSession();
   if (session) {
     currentUser = session.user;
     // 更新UI：显示登录后的状态（如用户名、隐藏登录按钮）
