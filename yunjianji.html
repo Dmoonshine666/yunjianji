@@ -1080,11 +1080,16 @@
     <script>
         // 初始化Supabase客户端
 document.addEventListener('DOMContentLoaded', function() {
-  if (window.supabase) {
-    window.supabase = window.supabase.createClient(
-      'https://zeiwdwplhgcpedhoxxqd.supabase.co', // 你的 URL
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA'      // 你的 anon key
+  // 确保 SDK 已经加载（supabase 是全局变量）
+  if (typeof supabase !== 'undefined') {
+    window.supabase = supabase.createClient(
+      'https://zeiwdwplhgcpedhoxxqd.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA' // 你的完整 anon key
     );
+    // 初始化完成后再检查登录状态
+    checkUserStatus();
+  } else {
+    console.error("Supabase SDK 未加载成功");
   }
 });
 
@@ -1093,20 +1098,15 @@ let currentUser = null;
 
 // 页面加载时检查登录状态
 async function checkUserStatus() {
-  if (!window.supabase || !window.supabase.auth) {
+  if (!window.supabase) {
     console.error("Supabase 未初始化");
     return;
   }
   const { data: { session }, error } = await window.supabase.auth.getSession();
   if (session) {
     currentUser = session.user;
-    // 更新UI：显示登录后的状态（如用户名、隐藏登录按钮）
     updateUserState();
-    // 加载用户的笔记集和笔记
-    await loadNotebooks();
-  } else {
-    // 未登录，跳转到登录页（或显示登录弹窗）
-    showLoginModal();
+    loadNotebooks();
   }
 }
 
@@ -1676,10 +1676,14 @@ async function createNoteEditor(notebookId, noteId = null) {
             const imageUpload = document.getElementById('imageUpload');
             const noteContent = document.getElementById('noteContent');
             
-            imgUploadBtn1.addEventListener('click', () => {
-                noteContent.focus(); // 先聚焦文本框
-                imageUpload.click();
-            });
+            if (imgUploadBtn1) {
+  imgUploadBtn1.addEventListener('click', () => {
+    // 先判断 noteContent 是否存在
+    if (noteContent) noteContent.focus();
+    // 再判断 imageUpload 是否存在
+    if (imageUpload) imageUpload.click();
+  });
+}
             
             // 图片上传逻辑：插入到光标位置
             imageUpload.addEventListener('change', (e) => {
