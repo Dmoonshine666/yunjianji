@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>云笺记 - 古风云端笔记</title>
-    <!-- 引入Supabase SDK -->
+    <!-- 确保这里只引入一次 Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* [样式部分保持与你原代码一致，此处省略以节省篇幅，实际使用时请保留原所有CSS] */
+        /* [样式部分保持不变，省略以节省篇幅] */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: "Microsoft YaHei", "SimSun", sans-serif; background-color: #f5f0e6; color: #333; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,100 M100,0 L0,100" stroke="#e6d8c7" stroke-width="0.5" fill="none"/></svg>'); background-size: 100px; }
         .container { max-width: 1280px; margin: 0 auto; padding: 20px; transition: all 0.3s ease; }
@@ -138,7 +138,7 @@
     
     <div class="toast" id="toast"></div>
 
-    <!-- 登录弹窗：改为用户名输入 -->
+    <!-- 登录弹窗 -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal">
             <button class="modal-close" id="closeLoginModal">×</button>
@@ -161,7 +161,7 @@
         </div>
     </div>
 
-    <!-- 注册弹窗：用户名 + 密码 -->
+    <!-- 注册弹窗 -->
     <div class="modal-overlay" id="registerModal">
         <div class="modal">
             <button class="modal-close" id="closeRegisterModal">×</button>
@@ -189,22 +189,25 @@
     </div>
 
     <script>
-        // 全局变量
-        let supabase;
-        let currentUser = null;
+        // === 关键修复：全局只声明一次 supabase 变量 ===
+        let supabase = null; // 初始化为 null，避免重复声明
+        const VIRTUAL_EMAIL_DOMAIN = '@yunjianji.local';
         const LOGIN_TIMEOUT = 7 * 24 * 60 * 60 * 1000;
         const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
+        const AUTO_SAVE_DELAY = 3 * 60 * 1000;
+
+        let currentUser = null;
         let timeoutCheckTimer = null;
         let autoSaveTimer = null;
-        const AUTO_SAVE_DELAY = 3 * 60 * 1000;
         let lastActiveTime = JSON.parse(localStorage.getItem('yunjianji_lastActiveTime')) || null;
-        
-        // 虚拟邮箱后缀 (用于内部转换)
-        const VIRTUAL_EMAIL_DOMAIN = '@yunjianji.local';
 
-        // 初始化 Supabase
+        // 初始化 Supabase（带防重复保护）
         function initSupabase() {
-            // 请替换为你自己的 Supabase URL 和 Anon Key
+            if (supabase !== null) {
+                console.log("Supabase 已初始化，跳过");
+                return;
+            }
+
             const SUPABASE_URL = 'https://zeiwdwplhgcpedhoxxqd.supabase.co';
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA';
             
@@ -218,7 +221,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async function() {
-            initSupabase();
+            initSupabase(); // 只调用一次
             await checkUserStatus();
             
             // DOM 元素获取
@@ -227,11 +230,9 @@
             const newNotebookInput = document.getElementById('newNotebookName');
             const createNotebookBtn = document.getElementById('createNotebookBtn');
 
-            // 绑定用户活动监听
             bindUserActivityListeners();
             initUserState();
 
-            // 创建笔记集逻辑
             if (createNotebookBtn && newNotebookInput) {
                 createNotebookBtn.addEventListener('click', async () => {
                     const name = newNotebookInput.value.trim();
@@ -255,7 +256,7 @@
                 });
             }
             
-            // === 登录逻辑 (用户名转邮箱) ===
+            // === 登录逻辑 ===
             const closeLoginModal = document.getElementById('closeLoginModal');
             const cancelLoginBtn = document.getElementById('cancelLoginBtn');
             const doLoginBtn = document.getElementById('doLoginBtn');
@@ -273,7 +274,6 @@
                     
                     if (!username || !password) return showToast('用户名和密码不能为空', 'error');
                     
-                    // 核心：将用户名转换为虚拟邮箱
                     const virtualEmail = username + VIRTUAL_EMAIL_DOMAIN;
                     login(virtualEmail, password);
                 });
@@ -284,7 +284,7 @@
                 showModal('register');
             });
             
-            // === 注册逻辑 (用户名转邮箱 + 保存元数据) ===
+            // === 注册逻辑 ===
             const closeRegisterModal = document.getElementById('closeRegisterModal');
             const cancelRegisterBtn = document.getElementById('cancelRegisterBtn');
             const doRegisterBtn = document.getElementById('doRegisterBtn');
@@ -306,12 +306,9 @@
                     if (password !== confirmPassword) return showToast('两次输入的密码不一致', 'error');
                     if (password.length < 6) return showToast('密码长度至少6位', 'error');
                     if (username.length < 3 || username.length > 16) return showToast('用户名长度需在3-16位之间', 'error');
-                    // 简单校验用户名格式 (仅允许字母数字下划线)
                     if (!/^[a-zA-Z0-9_\u4e00-\u9fa5]+$/.test(username)) return showToast('用户名只能包含字母、数字、下划线或中文', 'error');
 
-                    // 核心：构造虚拟邮箱，并将真实用户名放入 options.data
                     const virtualEmail = username + VIRTUAL_EMAIL_DOMAIN;
-                    
                     register(virtualEmail, username, password);
                 });
             }
@@ -369,7 +366,6 @@
             if (currentUser) {
                 if (checkLoginTimeout()) return;
                 
-                // 优先显示用户名，如果没有则显示邮箱前缀
                 const displayName = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
                 
                 userActions.innerHTML = `
@@ -390,13 +386,11 @@
                 if (newNotebookInput) newNotebookInput.disabled = true;
                 if (createNotebookBtn) createNotebookBtn.disabled = true;
                 
-                // 重新绑定事件（因为innerHTML被重置了）
                 document.getElementById('loginBtn').addEventListener('click', () => showModal('login'));
                 document.getElementById('registerBtn').addEventListener('click', () => showModal('register'));
             }
         }
 
-        // 登录函数
         async function login(email, password) {
             if (!supabase) return;
             try {
@@ -412,7 +406,6 @@
                 await loadNotebooks();
                 hideModal('login');
             } catch (err) {
-                // 友好提示
                 let msg = err.message;
                 if (msg.includes('Invalid login credentials')) {
                     msg = '用户名或密码错误';
@@ -421,7 +414,6 @@
             }
         }
 
-        // 注册函数
         async function register(email, username, password) {
             if (!supabase) return;
             try {
@@ -430,14 +422,13 @@
                     password: password,
                     options: {
                         data: {
-                            username: username // 将用户名存入元数据
+                            username: username
                         }
                     }
                 });
 
                 if (error) throw error;
                 
-                // 如果不需要邮件验证，直接登录
                 if (data.user) {
                     showToast('注册成功！');
                     currentUser = data.user;
@@ -500,7 +491,6 @@
             if (contentArea) contentArea.innerHTML = `<div class="empty-state"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕"><h3>选择一个笔记集开始创作</h3><p>点击左侧笔记集，或创建新的笔记集</p></div>`;
         }
 
-        // --- 以下为笔记业务逻辑 (保持不变) ---
         async function loadNotebooks() {
             const notebookList = document.getElementById('notebookList');
             if (!notebookList || !currentUser) return;
@@ -522,7 +512,6 @@
                         </li>
                     `).join('');
                     
-                    // 绑定事件
                     document.querySelectorAll('.notebook-item').forEach(item => {
                         item.addEventListener('click', (e) => {
                             if (e.target.closest('.notebook-actions')) return;
@@ -625,12 +614,10 @@
 
             const editor = document.getElementById('noteContent');
             
-            // 工具栏功能简化版
             document.getElementById('boldBtn').onclick = () => { document.execCommand('bold'); editor.focus(); };
             document.getElementById('italicBtn').onclick = () => { document.execCommand('italic'); editor.focus(); };
             document.getElementById('underlineBtn').onclick = () => { document.execCommand('underline'); editor.focus(); };
             
-            // 图片
             document.getElementById('imgBtn').onclick = () => document.getElementById('imageUpload').click();
             document.getElementById('imageUpload').onchange = (e) => {
                 const file = e.target.files[0];
@@ -646,17 +633,14 @@
                 }
             };
 
-            // 代码
             document.getElementById('codeBtn').onclick = () => {
                 const pre = document.createElement('pre');
                 pre.innerHTML = '<code>// 输入代码</code>';
                 editor.appendChild(pre);
             };
 
-            // 取消
             document.getElementById('cancelNoteBtn').onclick = () => loadNotes(notebookId);
 
-            // 保存
             document.getElementById('saveNoteBtn').onclick = async () => {
                 const title = document.getElementById('noteTitle').value.trim() || '无标题';
                 const content = editor.innerHTML;
