@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>云笺记 - 古风云端笔记</title>
     <!-- 引入Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         /* 全局样式（完全保留第二张图的样式） */
         * {
@@ -1511,6 +1512,595 @@
                                         .eq('id', notebookId)
                                         .eq('user_id', currentUser.id);
 
-                                    if (error)
+                                                                        if (error) throw error;
+                                    
+                                    await loadNotebooks();
+                                    document.getElementById('contentArea').innerHTML = `
+                                        <div class="empty-state">
+                                            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
+                                            <h3>选择一个笔记集开始创作</h3>
+                                            <p>点击左侧笔记集，或创建新的笔记集</p>
+                                        </div>
+                                    `;
+                                    showToast('✅ 笔记集已删除');
+                                } catch (err) {
+                                    showToast('❌ 删除失败：' + err.message, 'error');
+                                }
+                            }
+                        });
+                    });
+                }
+            } catch (err) {
+                notebookList.innerHTML = `
+                    <li class="empty-state" style="padding:20px; color: #ff4444;">
+                        <p>加载失败：${err.message}</p>
+                    </li>
+                `;
+            }
+        }
+
+        // 加载笔记集下的笔记
+        async function loadNotes(notebookId) {
+            const contentArea = document.getElementById('contentArea');
+            
+            if (!currentUser || !notebookId) {
+                contentArea.innerHTML = `
+                    <div class="empty-state">
+                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
+                        <h3>选择一个笔记集开始创作</h3>
+                        <p>点击左侧笔记集，或创建新的笔记集</p>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                // 获取笔记集名称
+                const { data: notebook, error: notebookError } = await supabase
+                    .from('notebooks')
+                    .select('name')
+                    .eq('id', notebookId)
+                    .eq('user_id', currentUser.id)
+                    .single();
+
+                if (notebookError) throw notebookError;
+
+                // 获取笔记列表
+                const { data: notes, error } = await supabase
+                    .from('notes')
+                    .select('*')
+                    .eq('notebook_id', notebookId)
+                    .eq('user_id', currentUser.id)
+                    .order('update_time', { ascending: false });
+
+                if (error) throw error;
+
+                contentArea.innerHTML = `
+                    <div class="note-header">
+                        <h3>${notebook.name}</h3>
+                        <button class="btn btn-primary" id="createNoteBtn">+ 新建笔记</button>
+                    </div>
+                    <div class="note-list" id="noteList">
+                        ${notes.length === 0 ? `
+                            <div class="empty-state" style="grid-column: 1/-1; padding:40px;">
+                                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
+                                <h3>暂无笔记</h3>
+                                <p>点击新建笔记按钮开始创作</p>
+                            </div>
+                        ` : notes.map(note => `
+                            <div class="note-card" data-id="${note.id}">
+                                <h4>${note.title || '无标题笔记'}</h4>
+                                <p>${note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) : '无内容'}</p>
+                                <div class="note-time">${new Date(note.update_time).toLocaleString()}</div>
+                                <div class="note-actions">
+                                    <button class="toolbar-btn edit-note" title="编辑笔记">✏️</button>
+                                    <button class="toolbar-btn delete-note" title="删除笔记">🗑️</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                // 绑定新建笔记按钮事件
+                document.getElementById('createNoteBtn').addEventListener('click', () => {
+                    createNoteEditor(notebookId);
+                });
+
+                // 绑定编辑笔记事件
+                document.querySelectorAll('.edit-note').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const card = btn.closest('.note-card');
+                        const noteId = card.dataset.id;
+                        createNoteEditor(notebookId, noteId);
+                    });
+                });
+
+                // 绑定删除笔记事件
+                document.querySelectorAll('.delete-note').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const card = btn.closest('.note-card');
+                        const noteId = card.dataset.id;
+                        
+                        if (confirm('确定要删除这条笔记吗？')) {
+                            try {
+                                const { error } = await supabase
+                                    .from('notes')
+                                    .delete()
+                                    .eq('id', noteId)
+                                    .eq('user_id', currentUser.id);
+
+                                if (error) throw error;
+                                
+                                loadNotes(notebookId);
+                                showToast('✅ 笔记已删除');
+                            } catch (err) {
+                                showToast('❌ 删除失败：' + err.message, 'error');
+                            }
+                        }
+                    });
+                });
+            } catch (err) {
+                contentArea.innerHTML = `
+                    <div class="empty-state" style="color: #ff4444;">
+                        <p>加载笔记失败：${err.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 创建笔记编辑器
+        async function createNoteEditor(notebookId, noteId = null) {
+            const contentArea = document.getElementById('contentArea');
+            let note = {
+                title: '',
+                content: '',
+                time: new Date().toISOString()
+            };
+
+            // 如果是编辑现有笔记，加载笔记内容
+            if (noteId && currentUser) {
+                try {
+                    const { data: noteData, error } = await supabase
+                        .from('notes')
+                        .select('title, content, update_time')
+                        .eq('id', noteId)
+                        .eq('user_id', currentUser.id)
+                        .single();
+                    
+                    if (!error && noteData) {
+                        note = {
+                            title: noteData.title || '',
+                            content: noteData.content || '',
+                            time: noteData.update_time || new Date().toISOString()
+                        };
+                    }
+                } catch (err) {
+                    showToast('❌ 加载笔记内容失败：' + err.message, 'error');
+                }
+            }
+
+            // 构建编辑器
+            contentArea.innerHTML = `
+                <div class="editor-container">
+                    <input type="text" class="editor-title" id="noteTitle" placeholder="输入笔记标题" value="${note.title || ''}">
+                    <!-- 完整工具栏 -->
+                    <div class="editor-toolbar">
+                        <div class="toolbar-group">
+                            <span class="toolbar-label">字体</span>
+                            <select class="toolbar-select" id="fontFamily">
+                                <option value="微软雅黑">微软雅黑</option>
+                                <option value="宋体">宋体</option>
+                                <option value="黑体">黑体</option>
+                                <option value="楷体">楷体</option>
+                                <option value="仿宋">仿宋</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-group">
+                            <span class="toolbar-label">字号</span>
+                            <select class="toolbar-select" id="fontSize">
+                                <option value="12px">12px</option>
+                                <option value="14px" selected>14px</option>
+                                <option value="16px">16px</option>
+                                <option value="18px">18px</option>
+                                <option value="20px">20px</option>
+                                <option value="24px">24px</option>
+                                <option value="28px">28px</option>
+                                <option value="32px">32px</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" id="boldBtn" title="加粗 (Ctrl+B)"><b>B</b></button>
+                            <button class="toolbar-btn" id="italicBtn" title="斜体 (Ctrl+I)"><i>I</i></button>
+                            <button class="toolbar-btn" id="underlineBtn" title="下划线 (Ctrl+U)"><u>U</u></button>
+                        </div>
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" id="alignLeftBtn" title="左对齐">
+                                <span class="align-icon align-icon-left"></span>
+                            </button>
+                            <button class="toolbar-btn" id="alignCenterBtn" title="居中对齐">
+                                <span class="align-icon align-icon-center"></span>
+                            </button>
+                            <button class="toolbar-btn" id="alignRightBtn" title="右对齐">
+                                <span class="align-icon align-icon-right"></span>
+                            </button>
+                            <button class="toolbar-btn" id="alignJustifyBtn" title="两端对齐">
+                                <span class="align-icon align-icon-justify"></span>
+                            </button>
+                        </div>
+                        <div class="toolbar-group">
+                            <label for="textColor" title="文字颜色">
+                                <input type="color" id="textColor" class="toolbar-color" value="#8B4513">
+                            </label>
+                            <button class="img-btn" id="insertImageBtn" title="插入图片">🖼️</button>
+                            <button class="code-btn" id="insertCodeBtn" title="插入代码块">💻</button>
+                        </div>
+                        <div class="editor-actions">
+                            <button class="save-btn" id="saveNoteBtn">保存笔记</button>
+                            <button class="cancel-btn" id="cancelEditBtn">取消编辑</button>
+                        </div>
+                    </div>
+                    <!-- 编辑器内容区 -->
+                    <div class="editor-content" id="noteContent" contenteditable="true">${note.content || ''}</div>
+                    <!-- 隐藏的图片上传输入框 -->
+                    <input type="file" id="imageUpload" accept="image/*">
+                </div>
+            `;
+
+            // 绑定编辑器工具栏事件
+            bindEditorEvents(notebookId, noteId);
+            
+            // 启动自动保存定时器
+            startAutoSave(notebookId, noteId);
+        }
+
+        // 绑定编辑器工具栏事件
+        function bindEditorEvents(notebookId, noteId) {
+            const content = document.getElementById('noteContent');
+            const titleInput = document.getElementById('noteTitle');
+            
+            // 字体设置
+            document.getElementById('fontFamily').addEventListener('change', function() {
+                document.execCommand('fontName', false, this.value);
+                content.focus();
+            });
+
+            // 字号设置
+            document.getElementById('fontSize').addEventListener('change', function() {
+                document.execCommand('fontSize', false, this.value);
+                content.focus();
+            });
+
+            // 文本样式按钮
+            document.getElementById('boldBtn').addEventListener('click', () => {
+                document.execCommand('bold', false, null);
+                content.focus();
+            });
+            
+            document.getElementById('italicBtn').addEventListener('click', () => {
+                document.execCommand('italic', false, null);
+                content.focus();
+            });
+            
+            document.getElementById('underlineBtn').addEventListener('click', () => {
+                document.execCommand('underline', false, null);
+                content.focus();
+            });
+
+            // 对齐方式
+            document.getElementById('alignLeftBtn').addEventListener('click', () => {
+                document.execCommand('justifyLeft', false, null);
+                content.focus();
+            });
+            
+            document.getElementById('alignCenterBtn').addEventListener('click', () => {
+                document.execCommand('justifyCenter', false, null);
+                content.focus();
+            });
+            
+            document.getElementById('alignRightBtn').addEventListener('click', () => {
+                document.execCommand('justifyRight', false, null);
+                content.focus();
+            });
+            
+            document.getElementById('alignJustifyBtn').addEventListener('click', () => {
+                document.execCommand('justifyFull', false, null);
+                content.focus();
+            });
+
+            // 文字颜色
+            document.getElementById('textColor').addEventListener('change', function() {
+                document.execCommand('foreColor', false, this.value);
+                content.focus();
+            });
+
+            // 插入图片
+            document.getElementById('insertImageBtn').addEventListener('click', () => {
+                document.getElementById('imageUpload').click();
+            });
+
+            // 处理图片上传
+            document.getElementById('imageUpload').addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                try {
+                    // 读取图片文件
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        // 在编辑器中插入图片
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        img.contentEditable = false;
+                        
+                        // 插入图片到光标位置
+                        const selection = window.getSelection();
+                        if (selection.getRangeAt && selection.rangeCount) {
+                            const range = selection.getRangeAt(0);
+                            range.deleteContents();
+                            range.insertNode(img);
+                        } else {
+                            content.appendChild(img);
+                        }
+                        
+                        content.focus();
+                        showToast('✅ 图片插入成功');
+                    };
+                    reader.readAsDataURL(file);
+                } catch (err) {
+                    showToast('❌ 图片插入失败：' + err.message, 'error');
+                }
+            });
+
+            // 插入代码块
+            document.getElementById('insertCodeBtn').addEventListener('click', () => {
+                const selection = window.getSelection();
+                const selectedText = selection.toString() || '// 请输入代码';
+                
+                // 创建代码块元素
+                const pre = document.createElement('pre');
+                const code = document.createElement('code');
+                const deleteBtn = document.createElement('button');
+                
+                deleteBtn.className = 'code-delete-btn';
+                deleteBtn.innerHTML = '×';
+                deleteBtn.addEventListener('click', function() {
+                    pre.remove();
+                });
+                
+                code.textContent = selectedText;
+                pre.appendChild(code);
+                pre.appendChild(deleteBtn);
+                
+                // 插入代码块到光标位置
+                if (selection.getRangeAt && selection.rangeCount) {
+                    const range = selection.getRangeAt(0);
+                    range.deleteContents();
+                    range.insertNode(pre);
+                } else {
+                    content.appendChild(pre);
+                }
+                
+                content.focus();
+                showToast('✅ 代码块插入成功');
+            });
+
+            // 保存笔记
+            document.getElementById('saveNoteBtn').addEventListener('click', async () => {
+                await saveNote(notebookId, noteId);
+            });
+
+            // 取消编辑
+            document.getElementById('cancelEditBtn').addEventListener('click', () => {
+                if (confirm('确定要取消编辑吗？未保存的内容将会丢失')) {
+                    clearAutoSaveTimer();
+                    loadNotes(notebookId);
+                }
+            });
+
+            // 快捷键支持
+            content.addEventListener('keydown', function(e) {
+                // Ctrl+B 加粗
+                if (e.ctrlKey && e.key === 'b') {
+                    e.preventDefault();
+                    document.execCommand('bold', false, null);
+                }
+                // Ctrl+I 斜体
+                else if (e.ctrlKey && e.key === 'i') {
+                    e.preventDefault();
+                    document.execCommand('italic', false, null);
+                }
+                // Ctrl+U 下划线
+                else if (e.ctrlKey && e.key === 'u') {
+                    e.preventDefault();
+                    document.execCommand('underline', false, null);
+                }
+                // Ctrl+S 保存
+                else if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    saveNote(notebookId, noteId);
+                }
+            });
+
+            // 图片右键菜单（阻止默认行为）
+            content.addEventListener('contextmenu', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                }
+            });
+
+            // 图片点击显示编辑工具栏
+            content.addEventListener('click', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    showImageEditToolbar(e.target);
+                } else {
+                    hideAllImageEditToolbars();
+                }
+            });
+        }
+
+        // 显示图片编辑工具栏
+        function showImageEditToolbar(img) {
+            // 先隐藏所有已存在的工具栏
+            hideAllImageEditToolbars();
+            
+            // 创建图片编辑工具栏
+            const toolbar = document.createElement('div');
+            toolbar.className = 'image-edit-toolbar';
+            toolbar.style.top = (img.offsetTop - 30) + 'px';
+            toolbar.style.left = (img.offsetLeft) + 'px';
+            
+            // 删除按钮
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'image-edit-btn delete';
+            deleteBtn.innerHTML = '🗑️';
+            deleteBtn.title = '删除图片';
+            deleteBtn.addEventListener('click', function() {
+                img.remove();
+                toolbar.remove();
+            });
+            
+            // 调整大小按钮（仅作为示意，实际可结合拖拽实现）
+            const resizeBtn = document.createElement('button');
+            resizeBtn.className = 'image-edit-btn resize';
+            resizeBtn.innerHTML = '📏';
+            resizeBtn.title = '调整大小';
+            resizeBtn.addEventListener('click', function() {
+                const newWidth = prompt('请输入图片宽度（像素）', img.width);
+                if (newWidth && !isNaN(newWidth)) {
+                    img.style.width = newWidth + 'px';
+                    img.style.height = 'auto';
+                }
+            });
+            
+            toolbar.appendChild(deleteBtn);
+            toolbar.appendChild(resizeBtn);
+            img.parentNode.insertBefore(toolbar, img);
+        }
+
+        // 隐藏所有图片编辑工具栏
+        function hideAllImageEditToolbars() {
+            const toolbars = document.querySelectorAll('.image-edit-toolbar');
+            toolbars.forEach(toolbar => toolbar.remove());
+        }
+
+        // 启动自动保存定时器
+        function startAutoSave(notebookId, noteId) {
+            // 清除已有定时器
+            clearAutoSaveTimer();
+            
+            // 设置新的自动保存定时器
+            autoSaveTimer = setInterval(async () => {
+                await saveNote(notebookId, noteId, true);
+            }, AUTO_SAVE_DELAY);
+        }
+
+        // 清除自动保存定时器
+        function clearAutoSaveTimer() {
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = null;
+            }
+        }
+
+        // 保存笔记
+        async function saveNote(notebookId, noteId, isAutoSave = false) {
+            const title = document.getElementById('noteTitle').value.trim() || '无标题笔记';
+            const content = document.getElementById('noteContent').innerHTML;
+            
+            if (!currentUser || !notebookId) {
+                showToast('❌ 保存失败：请先登录', 'error');
+                return;
+            }
+
+            try {
+                if (noteId) {
+                    // 更新现有笔记
+                    const { error } = await supabase
+                        .from('notes')
+                        .update({
+                            title: title,
+                            content: content,
+                            update_time: new Date()
+                        })
+                        .eq('id', noteId)
+                        .eq('user_id', currentUser.id);
+
+                    if (error) throw error;
+                    
+                    if (!isAutoSave) {
+                        showToast('✅ 笔记更新成功');
+                        clearAutoSaveTimer();
+                        loadNotes(notebookId);
+                    } else {
+                        console.log('🔄 自动保存笔记成功');
+                    }
+                } else {
+                    // 创建新笔记
+                    const { error } = await supabase
+                        .from('notes')
+                        .insert([{
+                            title: title,
+                            content: content,
+                            notebook_id: notebookId,
+                            user_id: currentUser.id,
+                            create_time: new Date(),
+                            update_time: new Date()
+                        }]);
+
+                    if (error) throw error;
+                    
+                    showToast('✅ 笔记创建成功');
+                    clearAutoSaveTimer();
+                    loadNotes(notebookId);
+                }
+            } catch (err) {
+                showToast(`❌ 保存失败：${err.message}`, 'error');
+            }
+        }
+
+        // 显示提示框
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            
+            // 根据类型设置不同背景色
+            switch(type) {
+                case 'error':
+                    toast.style.backgroundColor = 'rgba(220, 53, 69, 0.9)';
+                    break;
+                case 'success':
+                    toast.style.backgroundColor = 'rgba(25, 135, 84, 0.9)';
+                    break;
+                case 'warning':
+                    toast.style.backgroundColor = 'rgba(255, 193, 7, 0.9)';
+                    break;
+                default:
+                    toast.style.backgroundColor = 'rgba(51, 51, 51, 0.9)';
+            }
+            
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+
+        // 显示弹窗
+        function showModal(type) {
+            const modal = document.getElementById(`${type}Modal`);
+            modal.classList.add('show');
+            // 禁止背景滚动
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 隐藏弹窗
+        function hideModal(type) {
+            const modal = document.getElementById(`${type}Modal`);
+            modal.classList.remove('show');
+            // 恢复背景滚动
+            document.body.style.overflow = '';
+        }
+    </script>
 </body>
 </html>
