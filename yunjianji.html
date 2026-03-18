@@ -56,49 +56,562 @@
         .btn-danger { background: linear-gradient(135deg, #cd3b3b 0%, #c22e2e 100%); color: #fff; border: 1px solid #ec4848; }
         .btn-edit { background: linear-gradient(135deg, #d6b257 0%, #e2b951 100%); color: #fff; border: 1px solid #f7cd64; }
         .btn:not(.btn-primary):not(.btn-danger):not(.btn-edit) { background: linear-gradient(135deg, #f5f0e6 0%, #e6d8c7 100%); color: #8B4513; border: 1px solid #d2b48c; }
-        .editor-toolbar { display: flex; align-items: center; gap: 6px; padding: 9px 10px; background-color: #f9f3e6; border: 1px solid #d2b48c; border-radius: 8px; margin-bottom: 10px; flex-wrap: nowrap; overflow-x: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.05); min-width: 100%; }
-        .toolbar-group { display: flex; align-items: center; gap: 4px; padding-right: 8px; border-right: 1px solid #e6d8c7; flex-wrap: nowrap; white-space: nowrap; }
-        .toolbar-group:last-child { border-right: none; }
-        .toolbar-label { font-size: 0.90rem; color: #8B4513; margin-right: 4px; font-weight: 500; white-space: nowrap; }
-        .toolbar-select { padding: 5px 8px; border: 1px solid #d2b48c; border-radius: 6px; background-color: #fff; font-size: 15px; min-width: 70px; width: auto; font-family: "STKaiti", "KaiTi", serif; }
-        .toolbar-btn { width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid #d2b48c; background: linear-gradient(135deg, #fff 0%, #f9f3e6 100%); cursor: pointer; font-size: 14px; transition: all 0.2s ease; }
-        .toolbar-btn:hover { background: linear-gradient(135deg, #f5e8d5 0%, #f9f3e6 100%); border-color: #c85a5a; transform: translateY(-1px); }
-        .toolbar-btn.active { background: linear-gradient(135deg, #e6d8c7 0%, #f5e8d5 100%); border-color: #8B4513; font-weight: bold; }
-        .toolbar-color { width: 20px; height: 20px; border: none; padding: 0; cursor: pointer; }
-        .img-btn, .code-btn { width: 30px; height: 30px; border-radius: 6px; border: 1px solid #d2b48c; background: linear-gradient(135deg, #fff 0%, #f9f3e6 100%); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #8B4513; margin: 0 2px; }
-        .editor-actions { margin-left: auto; display: flex; gap: 4px; border-right: none; white-space: nowrap; flex-shrink: 0; }
-        .save-btn { height: 30px; padding: 0 12px; border: none; border-radius: 6px; background: linear-gradient(135deg, #c85a5a 0%, #a04040 100%); color: #fff; font-size: 15px; cursor: pointer; margin: 0 4px; font-family: "STKaiti", "KaiTi", serif; }
-        .cancel-btn { height: 30px; padding: 0 12px; border: 1px solid #d2b48c; border-radius: 6px; background: linear-gradient(135deg, #fff 0%, #f9f2e5 100%); color: #8B4513; font-size: 15px; cursor: pointer; margin: 0 2px; font-family: "STKaiti", "KaiTi", serif; }
-        #imageUpload { display: none; }
-        .content { flex: 1; min-width: 720px; background-color: #fff8e8; border: 2px solid #d2b48c; border-radius: 10px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: all 0.3s ease; }
-        .note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #d2b48c; }
-        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; }
-        .note-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .note-card { background-color: #fff; border: 1px solid #e6d8c7; border-radius: 8px; padding: 15px; box-shadow: 0 2px 3px rgba(0,0,0,0.05); transition: all 0.2s ease; }
-        .note-card:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-color: #d2b48c; transform: translateY(-2px); }
-        .note-card h4 { font-family: "STKaiti", "KaiTi", serif; color: #333; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .note-card p { font-size: 0.9rem; color: #666; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 10px; }
-        .note-time { font-size: 0.8rem; color: #999; margin-bottom: 10px; }
-        .note-actions { display: flex; gap: 5px; }
-        .editor-container { margin-top: 20px; width: 100%; transition: all 0.3s ease; }
-        pre { background-color: #f8f8f8; border: 1px solid #e6d8c7; border-radius: 6px; padding: 12px 15px; margin: 10px 0; overflow-x: auto; font-family: "Consolas", "Monaco", monospace; font-size: 14px; position: relative; }
-        pre:hover .code-delete-btn { display: block; }
-        .code-delete-btn { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; border: none; background: #b22222; color: #fff; border-radius: 50%; font-size: 12px; cursor: pointer; display: none; align-items: center; justify-content: center; }
-        .editor-content img { max-width: 100%; height: auto; margin: 10px 0; border: 1px solid #e6d8c7; border-radius: 6px; resize: both; overflow: auto; min-width: 100px; min-height: 50px; }
-        .editor-title { width: 100%; padding: 10px 15px; border: 1px solid #d2b48c; border-radius: 8px; margin-bottom: 10px; font-size: 1.3rem; font-family: "STKaiti", "KaiTi", serif; }
-        .editor-content { width: 100%; min-height: 300px; padding: 15px; border: 1px solid #d2b48c; border-radius: 8px; background-color: #fff; font-size: 1rem; line-height: 1.8; resize: vertical; font-family: "Microsoft YaHei", sans-serif; white-space: pre-wrap; word-wrap: break-word; position: relative; }
-        .empty-state { text-align: center; padding: 60px 20px; color: #999; font-family: "STKaiti", "KaiTi", serif; }
-        .empty-state img { width: 80px; margin-bottom: 15px; opacity: 0.5; }
-        .align-icon { display: inline-block; width: 18px; height: 14px; position: relative; }
-        .align-icon::before { content: ""; position: absolute; left: 0; right: 0; height: 2px; background-color: #333; }
-        .align-icon-left::before { top: 0; }
-        .align-icon-left::after { content: ""; position: absolute; left: 0; top: 4px; right: 4px; height: 2px; background-color: #333; }
-        .align-icon-center::before { top: 0; left: 2px; right: 2px; }
-        .align-icon-center::after { content: ""; position: absolute; left: 4px; top: 4px; right: 4px; height: 2px; background-color: #333; }
-        .align-icon-right::before { top: 0; left: 4px; right: 0; }
-        .align-icon-justify::before { top: 0; }
-        .align-icon-justify::after { content: ""; position: absolute; left: 0; top: 4px; right: 0; height: 2px; background-color: #333; }
-        @media (max-width: 1200px) { .container { max-width: 100%; padding: 15px; } .sidebar { width: 260px; } .content { min-width: 580px; } .notebook-name { max-width: 150px; } }
+        .editor-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 10px;
+            background-color: #f9f3e6;
+            border: 1px solid #d2b48c;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            min-width: 100%;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .editor-toolbar::-webkit-scrollbar {
+            display: none;
+        }
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding-right: 8px;
+            border-right: 1px solid #e6d8c7;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+        }
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+        /* 工具栏标签（字体/大小） */
+        .toolbar-label {
+            font-size: 0.90rem;
+            color: #8B4513;
+            margin-right: 4px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        /* 字体/大小下拉框 */
+        .toolbar-select {
+            padding: 5px 8px;
+            border: 1px solid #d2b48c;
+            border-radius: 6px;
+            background-color: #fff;
+            font-size: 15px;
+            transition: border-color 0.2s ease;
+            min-width: 70px;
+            width: auto;
+            font-family: "STKaiti", "KaiTi", serif;
+        }
+        .toolbar-select:focus {
+            outline: none;
+            border-color: #c85a5a;
+            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.1);
+        }
+        /* 工具栏功能按钮（B/I/U/对齐/颜色/图片） */
+        .toolbar-btn {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: 1px solid #d2b48c;
+            background: linear-gradient(135deg, #fff 0%, #f9f3e6 100%);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .toolbar-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(200,90,90,0.05) 0%, rgba(200,90,90,0.15) 50%, rgba(200,90,90,0.05) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+        }
+        .toolbar-btn:hover::before {
+            transform: translateX(100%);
+        }
+        .toolbar-btn:hover {
+            background: linear-gradient(135deg, #f5e8d5 0%, #f9f3e6 100%);
+            border-color: #c85a5a;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.05);
+        }
+        .toolbar-btn.active {
+            background: linear-gradient(135deg, #e6d8c7 0%, #f5e8d5 100%);
+            border-color: #8B4513;
+            font-weight: bold;
+        }
+        /* 颜色选择器样式（新样式） */
+        .toolbar-color {
+            width: 20px;
+            height: 20px;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+        /* 图片/代码按钮（统一样式） */
+        .img-btn, .code-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: 1px solid #d2b48c;
+            background: linear-gradient(135deg, #fff 0%, #f9f3e6 100%);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #8B4513;
+            margin: 0 2px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .img-btn::before, .code-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(200,90,90,0.05) 0%, rgba(200,90,90,0.15) 50%, rgba(200,90,90,0.05) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+        }
+        .img-btn:hover::before, .code-btn:hover::before {
+            transform: translateX(100%);
+        }
+        .img-btn:hover, .code-btn:hover {
+            background: linear-gradient(135deg, #f5e8d5 0%, #f9f3e6 100%);
+            border-color: #c85a5a;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.05);
+        }
+        /* 保存/取消按钮 */
+        .editor-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 4px;
+            border-right: none;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .save-btn {
+            height: 30px;
+            padding: 0 12px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #c85a5a 0%, #a04040 100%);
+            color: #fff;
+            font-size: 15px;
+            cursor: pointer;
+            margin: 0 4px;
+            font-family: "STKaiti", "KaiTi", serif;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .save-btn:hover {
+            background: linear-gradient(135deg, #d86a6a 0%, #b05050 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .cancel-btn {
+            height: 30px;
+            padding: 0 12px;
+            border: 1px solid #d2b48c;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #fff 0%, #f9f2e5 100%);
+            color: #8B4513;
+            font-size: 15px;
+            cursor: pointer;
+            margin: 0 2px;
+            font-family: "STKaiti", "KaiTi", serif;
+            transition: all 0.2s ease;
+        }
+        .cancel-btn:hover {
+            background: linear-gradient(135deg, #f5e8d5 0%, #e6d8c7 100%);
+            border-color: #c85a5a;
+            transform: translateY(-1px);
+        }
+        /* ========== 原有样式保留 ========== */
+        /* 隐藏的文件输入框 */
+        #imageUpload {
+            display: none;
+        }
+        /* 图片编辑按钮样式优化 */
+        .image-edit-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #fff8e8 0%, #f5e8d5 100%);
+            border: 1px solid #d2b48c;
+            transition: all 0.2s ease;
+        }
+        .image-edit-btn:hover {
+            background: linear-gradient(135deg, #f5e8d5 0%, #e6d8c7 100%);
+            border-color: #c85a5a;
+            transform: translateY(-1px);
+        }
+        .image-edit-btn.delete {
+            color: #b22222;
+        }
+        .image-edit-btn.resize {
+            color: #8B4513;
+        }
+        /* 内容区 */
+        .content {
+            flex: 1;
+            min-width: 720px;
+            background-color: #fff8e8;
+            border: 2px solid #d2b48c;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #d2b48c;
+        }
+        .note-header h3 {
+            font-family: "STKaiti", "KaiTi", serif;
+            color: #8B4513;
+        }
+        .note-header .btn-primary {
+            padding: 8px 16px;
+            font-size: 1rem;
+        }
+        .note-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .note-card {
+            background-color: #fff;
+            border: 1px solid #e6d8c7;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+        .note-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #d2b48c;
+            transform: translateY(-2px);
+        }
+        .note-card h4 {
+            font-family: "STKaiti", "KaiTi", serif;
+            color: #333;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .note-card p {
+            font-size: 0.9rem;
+            color: #666;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .note-time {
+            font-size: 0.8rem;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        .note-actions {
+            display: flex;
+            gap: 5px;
+        }
+        /* 编辑器样式 */
+        .editor-container {
+            margin-top: 20px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        /* 代码块样式（优化删除体验） */
+        pre {
+            background-color: #f8f8f8;
+            border: 1px solid #e6d8c7;
+            border-radius: 6px;
+            padding: 12px 15px;
+            margin: 10px 0;
+            overflow-x: auto;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 14px;
+            position: relative;
+        }
+        pre:hover .code-delete-btn {
+            display: block;
+        }
+        .code-delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border: none;
+            background: #b22222;
+            color: #fff;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        code {
+            font-family: "Consolas", "Monaco", monospace;
+            color: #8B4513;
+        }
+        /* 图片编辑样式 */
+        .editor-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+            border: 1px solid #e6d8c7;
+            border-radius: 6px;
+            resize: both;
+            overflow: auto;
+            min-width: 100px;
+            min-height: 50px;
+        }
+        .image-edit-toolbar {
+            position: absolute;
+            background-color: #fff8e8;
+            border: 1px solid #d2b48c;
+            border-radius: 6px;
+            padding: 6px;
+            display: flex;
+            gap: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        /* 编辑器原有样式 */
+        .editor-title {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #d2b48c;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+            font-family: "STKaiti", "KaiTi", serif;
+            transition: all 0.2s ease;
+        }
+        .editor-title:focus {
+            outline: none;
+            border-color: #c85a5a;
+            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.2);
+        }
+        .editor-content {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 1px solid #d2b48c;
+            border-radius: 8px;
+            background-color: #fff;
+            font-size: 1rem;
+            line-height: 1.8;
+            transition: all 0.2s ease;
+            resize: vertical;
+            font-family: "Microsoft YaHei", sans-serif;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            position: relative;
+        }
+        .editor-content:focus {
+            outline: none;
+            border-color: #c85a5a;
+            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.15);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-family: "STKaiti", "KaiTi", serif;
+            transition: all 0.2s ease;
+        }
+        .empty-state img {
+            width: 80px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+            transition: all 0.2s ease;
+        }
+        .empty-state:hover img {
+            opacity: 0.7;
+            transform: scale(1.05);
+        }
+        /* 列表下拉菜单样式 */
+        .list-dropdown-container {
+            position: relative;
+        }
+        .list-dropdown-menu.show {
+            display: block;
+        }
+        .list-dropdown-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .list-dropdown-item:hover {
+            background-color: #f5e8d5;
+            color: #8B4513;
+        }
+        .list-dropdown-item .icon {
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+        }
+        /* 对齐方式图标样式 */
+        .align-icon {
+            display: inline-block;
+            width: 18px;
+            height: 14px;
+            position: relative;
+        }
+        .align-icon::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #333;
+        }
+        .align-icon-left::before {
+            top: 0;
+        }
+        .align-icon-left::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 4px;
+            right: 4px;
+            height: 2px;
+            background-color: #333;
+        }
+        .align-icon-left::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            right: 8px;
+            height: 2px;
+            background-color: #333;
+        }
+        .align-icon-center::before {
+            top: 0;
+            left: 2px;
+            right: 2px;
+        }
+        .align-icon-center::after {
+            content: "";
+            position: absolute;
+            left: 4px;
+            top: 4px;
+            right: 4px;
+            height: 2px;
+            background-color: #333;
+        }
+        .align-icon-center::after {
+            content: "";
+            position: absolute;
+            left: 2px;
+            top: 8px;
+            right: 2px;
+            height: 2px;
+            background-color: #333;
+        }
+        .align-icon-right::before {
+            top: 0;
+            left: 4px;
+            right: 0;
+        }
+        .align-icon-right::after {
+            content: "";
+            position: absolute;
+            left: 4px;
+            top: 4px;
+            right: 0;
+            height: 2px;
+            background-color: #333;
+        }
+        .align-icon-right::after {
+            content: "";
+            position: absolute;
+            left: 8px;
+            top: 8px;
+            right: 0;
+            height: 2px;
+            background-color: #333;
+        }
+        .align-icon-justify::before {
+            top: 0;
+        }
+        .align-icon-justify::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 4px;
+            right: 0;
+            height: 2px;
+            background-color: #333;
+        }
+        .align-icon-justify::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            right: 0;
+            height: 2px;
+            background-color: #333;
+        }
+        /* 响应式适配 */
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 100%;
+                padding: 15px;
+            }
+            .sidebar {
+                width: 260px;
+            }
+            .content {
+                min-width: 580px;
+            }
+            /* 响应式调整笔记集名称宽度 */
+            .notebook-name {
+                max-width: 150px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -632,7 +1145,54 @@
                 <div class="editor-container">
                     <input type="text" class="editor-title" id="noteTitle" value="${note.title}" placeholder="标题">
                     <div class="editor-toolbar">
+                        <div class="toolbar-group">
+                        <span class="toolbar-label">字体</span>
+                        <select class="toolbar-select" id="fontFamily">
+                            <option value="微软雅黑">微软雅黑</option>
+                            <option value="宋体">宋体</option>
+                            <option value="黑体">黑体</option>
+                            <option value="楷体">楷体</option>
+                            <option value="仿宋">仿宋</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-group">
+                        <select class="toolbar-select" id="fontSize">
+                            <option value="1">八号</option>
+                            <option value="2">九号</option>
+                            <option value="3">小四号</option>
+                            <option value="4" selected>四号</option>
+                            <option value="5">小三号</option>
+                            <option value="6">三号</option>
+                            <option value="7">二号</option>
+                        </select>
+                    </div>
                         <div class="toolbar-group"><button class="toolbar-btn" id="boldBtn"><b>B</b></button><button class="toolbar-btn" id="italicBtn"><i>I</i></button><button class="toolbar-btn" id="underlineBtn"><u>U</u></button></div>
+                        <div class="toolbar-group">
+                        <button id="alignLeftBtn" class="toolbar-btn align-btn" title="左对齐">
+                            <span class="align-icon align-icon-left"></span>
+                        </button>
+                        <button id="alignCenterBtn" class="toolbar-btn align-btn" title="居中对齐">
+                            <span class="align-icon align-icon-center"></span>
+                        </button>
+                        <button id="alignRightBtn" class="toolbar-btn align-btn" title="右对齐">
+                            <span class="align-icon align-icon-right"></span>
+                        </button>
+                        <button id="alignJustifyBtn" class="toolbar-btn align-btn" title="两端对齐">
+                            <span class="align-icon align-icon-justify"></span>
+                        </button>
+                    </div>
+                    <div class="toolbar-group">
+                        <!-- 新的字体颜色选择器 -->
+                        <button class="toolbar-btn" title="文本颜色">
+                            <input type="color" id="fontColor" class="toolbar-color" value="#000000">
+                        </button>
+                        <!-- 新的背景颜色选择器 -->
+                        <button class="toolbar-btn" title="背景颜色">
+                            <input type="color" id="bgColor" class="toolbar-color" value="#ffffff">
+                        </button>
+                    </div>
                         <div class="toolbar-group"><button class="img-btn" id="imgBtn">🖼️</button><button class="code-btn" id="codeBtn">&lt;&gt;</button><input type="file" id="imageUpload" accept="image/*" style="display:none"></div>
                         <div class="toolbar-group editor-actions"><button class="save-btn" id="saveNoteBtn">保存</button><button class="cancel-btn" id="cancelNoteBtn">取消</button></div>
                     </div>
