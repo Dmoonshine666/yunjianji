@@ -1202,10 +1202,59 @@
 
             const editor = document.getElementById('noteContent');
             
+            document.getElementById('fontFamily').onclick = ('change', (e) => {
+            noteContent.focus();
+            document.execCommand('fontName', false, e.target.value);
+        });
+        // 2. 字号选择
+        document.getElementById('fontSize').onclick('change', (e) => {
+            noteContent.focus();
+            document.execCommand('fontSize', false, e.target.value);
+        });
             document.getElementById('boldBtn').onclick = () => { document.execCommand('bold'); editor.focus(); };
             document.getElementById('italicBtn').onclick = () => { document.execCommand('italic'); editor.focus(); };
             document.getElementById('underlineBtn').onclick = () => { document.execCommand('underline'); editor.focus(); };
             
+            function resetAlignButtons() {
+            document.querySelectorAll('.align-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+        document.getElementById('alignLeftBtn').onclick('click', function() {
+            noteContent.focus();
+            document.execCommand('justifyLeft', false, null);
+            resetAlignButtons();
+            this.classList.add('active');
+        });
+        document.getElementById('alignCenterBtn').onclick('click', function() {
+            noteContent.focus();
+            document.execCommand('justifyCenter', false, null);
+            resetAlignButtons();
+            this.classList.add('active');
+        });
+        document.getElementById('alignRightBtn').onclick('click', function() {
+            noteContent.focus();
+            document.execCommand('justifyRight', false, null);
+            resetAlignButtons();
+            this.classList.add('active');
+        });
+        document.getElementById('alignJustifyBtn').onclick('click', function() {
+            noteContent.focus();
+            document.execCommand('justifyFull', false, null);
+            resetAlignButtons();
+            this.classList.add('active');
+        });
+
+        // 5. 字体颜色/背景色（新逻辑：使用color input）
+        document.getElementById('fontColor').onclick('change', function() {
+            noteContent.focus();
+            document.execCommand('foreColor', false, this.value);
+        });
+        document.getElementById('bgColor').onclick('change', function() {
+            noteContent.focus();
+            document.execCommand('backColor', false, this.value);
+        });
+
             document.getElementById('imgBtn').onclick = () => document.getElementById('imageUpload').click();
             document.getElementById('imageUpload').onchange = (e) => {
                 const file = e.target.files[0];
