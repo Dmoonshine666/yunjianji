@@ -190,7 +190,7 @@
 
     <script>
         // === 关键修复：不再声明 let supabase，而是用 dbClient 存储实例 ===
-        let dbClient = null; // 改名避免与 window.supabase 冲突
+        let dbClient = null;
         const VIRTUAL_EMAIL_DOMAIN = '@yunjianji.local';
         const LOGIN_TIMEOUT = 7 * 24 * 60 * 60 * 1000;
         const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
@@ -212,10 +212,14 @@
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA';
             
             if (typeof window.supabase !== 'undefined') {
-                // 使用 const 创建临时变量，避免污染全局
                 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                dbClient = client; // 赋值给我们自己的变量
+                dbClient = client;
                 console.log("Supabase 初始化成功");
+                
+                // 添加错误监听器
+                dbClient.auth.onAuthStateChange((event, session) => {
+                    console.log('Auth state changed:', event, session);
+                });
             } else {
                 console.error("Supabase SDK 未加载成功");
                 showToast('Supabase 加载失败，请刷新页面', 'error');
@@ -223,10 +227,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', async function() {
-            initSupabase(); // 只调用一次
+            initSupabase();
             await checkUserStatus();
             
-            // DOM 元素获取
             const loginBtn = document.getElementById('loginBtn');
             const registerBtn = document.getElementById('registerBtn');
             const newNotebookInput = document.getElementById('newNotebookName');
@@ -253,6 +256,7 @@
                         loadNotebooks();
                         showToast('笔记集创建成功');
                     } catch (err) {
+                        console.error('创建笔记集失败:', err);
                         showToast(`创建失败：${err.message}`, 'error');
                     }
                 });
@@ -277,6 +281,7 @@
                     if (!username || !password) return showToast('用户名和密码不能为空', 'error');
                     
                     const virtualEmail = username + VIRTUAL_EMAIL_DOMAIN;
+                    console.log('尝试登录:', virtualEmail);
                     login(virtualEmail, password);
                 });
             }
@@ -311,6 +316,7 @@
                     if (!/^[a-zA-Z0-9_\u4e00-\u9fa5]+$/.test(username)) return showToast('用户名只能包含字母、数字、下划线或中文', 'error');
 
                     const virtualEmail = username + VIRTUAL_EMAIL_DOMAIN;
+                    console.log('尝试注册:', virtualEmail);
                     register(virtualEmail, username, password);
                 });
             }
@@ -396,21 +402,30 @@
         async function login(email, password) {
             if (!dbClient) return;
             try {
+                console.log('开始登录...', email);
                 const { data, error } = await dbClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
-                if (error) throw error;
                 
+                if (error) {
+                    console.error('登录错误:', error);
+                    throw error;
+                }
+                
+                console.log('登录成功:', data);
                 currentUser = data.user;
                 showToast('登录成功！');
                 updateUserState();
                 await loadNotebooks();
                 hideModal('login');
             } catch (err) {
+                console.error('登录失败:', err);
                 let msg = err.message;
                 if (msg.includes('Invalid login credentials')) {
                     msg = '用户名或密码错误';
+                } else if (msg.includes('Email not confirmed')) {
+                    msg = '邮箱未验证，请联系管理员';
                 }
                 showToast('登录失败：' + msg, 'error');
             }
@@ -419,6 +434,7 @@
         async function register(email, username, password) {
             if (!dbClient) return;
             try {
+                console.log('开始注册...', email, username);
                 const { data, error } = await dbClient.auth.signUp({
                     email: email,
                     password: password,
@@ -429,7 +445,12 @@
                     }
                 });
 
-                if (error) throw error;
+                if (error) {
+                    console.error('注册错误:', error);
+                    throw error;
+                }
+                
+                console.log('注册响应:', data);
                 
                 if (data.user) {
                     showToast('注册成功！');
@@ -441,9 +462,12 @@
                     showToast('注册成功，请检查邮箱验证（若已开启）');
                 }
             } catch (err) {
+                console.error('注册失败:', err);
                 let msg = err.message;
                 if (msg.includes('User already registered')) {
                     msg = '该用户名已被注册';
+                } else if (msg.includes('Invalid email')) {
+                    msg = '邮箱格式无效，请检查 Supabase 配置';
                 }
                 showToast('注册失败：' + msg, 'error');
             }
@@ -549,6 +573,7 @@
                     });
                 }
             } catch (err) {
+                console.error('加载笔记集失败:', err);
                 showToast('加载失败：' + err.message, 'error');
             }
         }
@@ -589,6 +614,7 @@
                     }
                 });
             } catch (err) {
+                console.error('加载笔记失败:', err);
                 contentArea.innerHTML = `<div class="empty-state" style="color:red">加载失败：${err.message}</div>`;
             }
         }
@@ -657,6 +683,7 @@
                     showToast('保存成功');
                     loadNotes(notebookId);
                 } catch(err) {
+                    console.error('保存笔记失败:', err);
                     showToast('保存失败：' + err.message, 'error');
                 }
             };
