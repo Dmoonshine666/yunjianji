@@ -189,8 +189,8 @@
     </div>
 
     <script>
-        // === 关键修复：全局只声明一次 supabase 变量 ===
-        let supabase = null; // 初始化为 null，避免重复声明
+        // === 关键修复：不再声明 let supabase，而是用 dbClient 存储实例 ===
+        let dbClient = null; // 改名避免与 window.supabase 冲突
         const VIRTUAL_EMAIL_DOMAIN = '@yunjianji.local';
         const LOGIN_TIMEOUT = 7 * 24 * 60 * 60 * 1000;
         const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
@@ -203,8 +203,8 @@
 
         // 初始化 Supabase（带防重复保护）
         function initSupabase() {
-            if (supabase !== null) {
-                console.log("Supabase 已初始化，跳过");
+            if (dbClient !== null) {
+                console.log("Supabase 客户端已初始化，跳过");
                 return;
             }
 
@@ -212,7 +212,9 @@
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA';
             
             if (typeof window.supabase !== 'undefined') {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                // 使用 const 创建临时变量，避免污染全局
+                const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                dbClient = client; // 赋值给我们自己的变量
                 console.log("Supabase 初始化成功");
             } else {
                 console.error("Supabase SDK 未加载成功");
@@ -240,7 +242,7 @@
                     if (!currentUser) return showToast('请先登录后创建', 'error');
 
                     try {
-                        const { error } = await supabase.from('notebooks').insert([{
+                        const { error } = await dbClient.from('notebooks').insert([{
                             name: name,
                             user_id: currentUser.id,
                             create_time: new Date(),
@@ -321,9 +323,9 @@
 
         // 检查登录状态
         async function checkUserStatus() {
-            if (!supabase) return;
+            if (!dbClient) return;
             try {
-                const { data: { session }, error } = await supabase.auth.getSession();
+                const { data: { session }, error } = await dbClient.auth.getSession();
                 if (error) throw error;
                 if (session) {
                     currentUser = session.user;
@@ -392,9 +394,9 @@
         }
 
         async function login(email, password) {
-            if (!supabase) return;
+            if (!dbClient) return;
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const { data, error } = await dbClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
@@ -415,9 +417,9 @@
         }
 
         async function register(email, username, password) {
-            if (!supabase) return;
+            if (!dbClient) return;
             try {
-                const { data, error } = await supabase.auth.signUp({
+                const { data, error } = await dbClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
@@ -448,8 +450,8 @@
         }
 
         async function logout() {
-            if (!supabase) return;
-            await supabase.auth.signOut();
+            if (!dbClient) return;
+            await dbClient.auth.signOut();
             currentUser = null;
             showToast('已退出登录');
             updateUserState();
@@ -496,7 +498,7 @@
             if (!notebookList || !currentUser) return;
 
             try {
-                const { data, error } = await supabase.from('notebooks').select('*').eq('user_id', currentUser.id).order('create_time', { ascending: false });
+                const { data, error } = await dbClient.from('notebooks').select('*').eq('user_id', currentUser.id).order('create_time', { ascending: false });
                 if (error) throw error;
 
                 if (data.length === 0) {
@@ -527,7 +529,7 @@
                             const item = btn.closest('.notebook-item');
                             const newName = prompt('新名称:', item.querySelector('.notebook-name').textContent);
                             if (newName && newName.trim()) {
-                                await supabase.from('notebooks').update({ name: newName.trim(), update_time: new Date() }).eq('id', item.dataset.id).eq('user_id', currentUser.id);
+                                await dbClient.from('notebooks').update({ name: newName.trim(), update_time: new Date() }).eq('id', item.dataset.id).eq('user_id', currentUser.id);
                                 loadNotebooks();
                             }
                         });
@@ -538,8 +540,8 @@
                             e.stopPropagation();
                             if(confirm('确定删除？')) {
                                 const id = btn.closest('.notebook-item').dataset.id;
-                                await supabase.from('notes').delete().eq('notebook_id', id).eq('user_id', currentUser.id);
-                                await supabase.from('notebooks').delete().eq('id', id).eq('user_id', currentUser.id);
+                                await dbClient.from('notes').delete().eq('notebook_id', id).eq('user_id', currentUser.id);
+                                await dbClient.from('notebooks').delete().eq('id', id).eq('user_id', currentUser.id);
                                 loadNotebooks();
                                 document.getElementById('contentArea').innerHTML = `<div class="empty-state"><h3>已删除</h3></div>`;
                             }
@@ -556,8 +558,8 @@
             if (!contentArea || !currentUser) return;
 
             try {
-                const { data: nb } = await supabase.from('notebooks').select('name').eq('id', notebookId).single();
-                const { data: notes, error } = await supabase.from('notes').select('*').eq('notebook_id', notebookId).eq('user_id', currentUser.id).order('update_time', { ascending: false });
+                const { data: nb } = await dbClient.from('notebooks').select('name').eq('id', notebookId).single();
+                const { data: notes, error } = await dbClient.from('notes').select('*').eq('notebook_id', notebookId).eq('user_id', currentUser.id).order('update_time', { ascending: false });
                 if (error) throw error;
 
                 contentArea.innerHTML = `
@@ -582,7 +584,7 @@
                 document.querySelectorAll('.edit-note').forEach(b => b.onclick = () => createNoteEditor(notebookId, b.closest('.note-card').dataset.id));
                 document.querySelectorAll('.delete-note').forEach(b => b.onclick = async () => {
                     if(confirm('删除此笔记？')) {
-                        await supabase.from('notes').delete().eq('id', b.closest('.note-card').dataset.id).eq('user_id', currentUser.id);
+                        await dbClient.from('notes').delete().eq('id', b.closest('.note-card').dataset.id).eq('user_id', currentUser.id);
                         loadNotes(notebookId);
                     }
                 });
@@ -596,7 +598,7 @@
             let note = { title: '', content: '' };
             
             if (noteId) {
-                const { data } = await supabase.from('notes').select('title, content').eq('id', noteId).single();
+                const { data } = await dbClient.from('notes').select('title, content').eq('id', noteId).single();
                 if (data) note = data;
             }
 
@@ -648,9 +650,9 @@
 
                 try {
                     if(noteId) {
-                        await supabase.from('notes').update({ title, content, update_time: new Date() }).eq('id', noteId).eq('user_id', currentUser.id);
+                        await dbClient.from('notes').update({ title, content, update_time: new Date() }).eq('id', noteId).eq('user_id', currentUser.id);
                     } else {
-                        await supabase.from('notes').insert({ title, content, notebook_id: notebookId, user_id: currentUser.id, create_time: new Date(), update_time: new Date() });
+                        await dbClient.from('notes').insert({ title, content, notebook_id: notebookId, user_id: currentUser.id, create_time: new Date(), update_time: new Date() });
                     }
                     showToast('保存成功');
                     loadNotes(notebookId);
