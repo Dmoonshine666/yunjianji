@@ -1078,18 +1078,19 @@
 
         <script>
         // 全局变量（只声明一次）
-        let supabase = null; // 提前声明，避免重复
         let currentUser = null;
-        const LOGIN_TIMEOUT = 7 * 24 * 60 * 60 * 1000;
-        const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
-        let timeoutCheckTimer = null;
-        let autoSaveTimer = null;
-        const AUTO_SAVE_DELAY = 3 * 60 * 1000;
-        let lastActiveTime = JSON.parse(localStorage.getItem('yunjianji_lastActiveTime')) || null;
+const LOGIN_TIMEOUT = 7 * 24 * 60 * 60 * 1000;
+const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
+let timeoutCheckTimer = null;
+let autoSaveTimer = null;
+const AUTO_SAVE_DELAY = 3 * 60 * 1000;
+let users = JSON.parse(localStorage.getItem('yunjianji_users')) || [];
+let lastActiveTime = JSON.parse(localStorage.getItem('yunjianji_lastActiveTime')) || null;
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', async function() {
             // 初始化Supabase（修复：只初始化一次）
+            let supabase;
             try {
                 supabase = window.supabase.createClient(
                     'https://zeiwdwplhgcpedhoxxqd.supabase.co',
