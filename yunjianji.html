@@ -6,10 +6,8 @@
     <title>云笺记 - 古风云端笔记</title>
     <!-- 引入Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- 引入axios（可选，简化请求） -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        /* 全局样式 */
+        /* 全局样式（完全保留第二张图的样式） */
         * {
             margin: 0;
             padding: 0;
@@ -1078,1046 +1076,1011 @@
     </div>
 
     <script>
-// 全局变量定义（放在最外层，确保所有函数可访问）
-let currentUser = null;
-const LOGIN_TIMEOUT = 7 * 24 * 60 * 60 * 1000;
-const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
-let timeoutCheckTimer = null;
-let autoSaveTimer = null;
-const AUTO_SAVE_DELAY = 3 * 60 * 1000;
-let users = JSON.parse(localStorage.getItem('yunjianji_users')) || [];
-let lastActiveTime = JSON.parse(localStorage.getItem('yunjianji_lastActiveTime')) || null;
+        // 全局变量
+        let supabase;
+        let currentUser = null;
+        const LOGIN_TIMEOUT = 7 * 24 * 60 * 60 * 1000;
+        const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
+        let timeoutCheckTimer = null;
+        let autoSaveTimer = null;
+        const AUTO_SAVE_DELAY = 3 * 60 * 1000;
+        let lastActiveTime = JSON.parse(localStorage.getItem('yunjianji_lastActiveTime')) || null;
 
-// 页面加载完成后执行所有逻辑（核心：解决DOM未加载就操作的问题）
-document.addEventListener('DOMContentLoaded', async function() {
-    // ========== 1. 初始化Supabase客户端（仅初始化一次） ==========
-    let supabase;
-    if (typeof window.supabase !== 'undefined') {
-        supabase = window.supabase.createClient(
-            'https://zeiwdwplhgcpedhoxxqd.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA'
-        );
-        window.supabase = supabase; // 挂载到window，方便全局访问
-        console.log("Supabase 初始化成功");
-    } else {
-        console.error("Supabase SDK 未加载成功");
-        showToast('Supabase加载失败，请刷新页面', 'error');
-        return;
-    }
-})
-
-    // ========== 2. 检查登录状态（初始化后立即执行） ==========
-    document.addEventListener('DOMContentLoaded', async function() {
-  // ...
-  await checkUserStatus();
-  // ...
-});
-    // ========== 3. 绑定所有DOM元素（确保元素存在） ==========
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const userActions = document.getElementById('userActions');
-    const loginModal = document.getElementById('loginModal');
-    const registerModal = document.getElementById('registerModal');
-    const newNotebookInput = document.getElementById('newNotebookName');
-    const createNotebookBtn = document.getElementById('createNotebookBtn');
-    const toast = document.getElementById('toast');
-
-    // ========== 4. 核心函数定义（全部放在DOMContentLoaded内，确保作用域统一） ==========
-    
-    // 检查登录状态
-    async function checkUserStatus() {
-        if (!supabase) {
-            console.error("Supabase 未初始化");
-            return;
-        }
-        try {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (error) throw error;
-            if (session) {
-                currentUser = session.user;
-                updateUserState();
-                await loadNotebooks();
-            } else {
-                // 未登录时初始化用户状态
-                initUserState();
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 初始化Supabase
+            try {
+                supabase = window.supabase.createClient(
+                    'https://zeiwdwplhgcpedhoxxqd.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA'
+                );
+                console.log("Supabase 初始化成功");
+            } catch (err) {
+                console.error("Supabase 初始化失败：", err);
+                showToast('Supabase加载失败，请刷新页面', 'error');
+                return;
             }
-        } catch (err) {
-            console.error("检查登录状态失败：", err.message);
-            showToast('检查登录状态失败：' + err.message, 'error');
-        }
-    }
 
-    // 更新最后活跃时间
-    function updateLastActiveTime() {
-        lastActiveTime = Date.now();
-        localStorage.setItem('yunjianji_lastActiveTime', JSON.stringify(lastActiveTime));
-    }
-
-    // 检查登录超时
-    function checkLoginTimeout() {
-        if (!currentUser || !lastActiveTime) return;
-        
-        const now = Date.now();
-        if (now - lastActiveTime > LOGIN_TIMEOUT) {
-            showToast('登录已超时，请重新登录', 'info');
-            logout(true);
-            return true;
-        }
-        return false;
-    }
-
-    // 绑定用户活动监听
-    function bindUserActivityListeners() {
-        const events = ['click', 'mousemove', 'keypress', 'scroll', 'touchstart', 'input'];
-        events.forEach(event => {
-            document.addEventListener(event, updateLastActiveTime);
+            // 检查登录状态
+            await checkUserStatus();
+            
+            // 绑定DOM事件
+            bindEvents();
+            
+            // 初始化用户状态
+            initUserState();
         });
-    }
 
-    // 初始化用户状态
-    function initUserState() {
-        if (currentUser) {
-            if (checkLoginTimeout()) return;
-            
-            userActions.innerHTML = `
-                <span style="color:#8B4513;font-family:'STKaiti','KaiTi',serif;margin-right:10px;">欢迎，${currentUser.user_metadata?.username || currentUser.email}📜</span>
-                <button class="btn btn-danger" id="logoutBtn">退出</button>
-            `;
-            newNotebookInput.disabled = false;
-            createNotebookBtn.disabled = false;
-            
-            // 安全绑定退出按钮
-            const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', () => logout());
-            }
-            
-            loadNotebooks();
-            timeoutCheckTimer = setInterval(checkLoginTimeout, CHECK_INTERVAL);
-        } else {
-            userActions.innerHTML = `
-                <button class="btn btn-primary" id="loginBtn_${Date.now()}">登录</button>
-                <button class="btn" id="registerBtn_${Date.now()}">注册</button>
-            `;
-            newNotebookInput.disabled = true;
-            createNotebookBtn.disabled = true;
-            
-            // 安全绑定登录/注册按钮
-            const dynamicLoginBtn = document.querySelector('[id^="loginBtn_"]');
-            const dynamicRegisterBtn = document.querySelector('[id^="registerBtn_"]');
-            
-            if (dynamicLoginBtn) {
-                dynamicLoginBtn.addEventListener('click', () => showModal('login'));
-            }
-            if (dynamicRegisterBtn) {
-                dynamicRegisterBtn.addEventListener('click', () => showModal('register'));
-            }
-        }
-    }
+        // 绑定所有事件
+        function bindEvents() {
+            // 用户活动监听
+            bindUserActivityListeners();
 
-    // 登录功能
-    async function login(email, password) {
-        if (!supabase) return;
-        try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password
+            // 登录/注册弹窗事件
+            document.getElementById('closeLoginModal').addEventListener('click', () => hideModal('login'));
+            document.getElementById('cancelLoginBtn').addEventListener('click', () => hideModal('login'));
+            document.getElementById('doLoginBtn').addEventListener('click', doLogin);
+            document.getElementById('toRegisterLink').addEventListener('click', () => {
+                hideModal('login');
+                showModal('register');
             });
 
-            if (error) throw error;
-            currentUser = data.user;
-            showToast('登录成功！');
-            updateUserState();
-            await loadNotebooks();
-            hideModal('login'); // 替换closeLoginModal为统一的hideModal
-        } catch (err) {
-            showToast('登录失败：' + err.message, 'error');
-        }
-    }
+            document.getElementById('closeRegisterModal').addEventListener('click', () => hideModal('register'));
+            document.getElementById('cancelRegisterBtn').addEventListener('click', () => hideModal('register'));
+            document.getElementById('doRegisterBtn').addEventListener('click', doRegister);
+            document.getElementById('toLoginLink').addEventListener('click', () => {
+                hideModal('register');
+                showModal('login');
+            });
 
-    // 注册功能
-    async function register(username, password, email) {
-        if (!supabase) return;
-        try {
-            const { data, error } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: {
-                    data: {
-                        username: username
-                    }
+            // 创建笔记集按钮事件
+            document.getElementById('createNotebookBtn').addEventListener('click', createNotebook);
+
+            // 初始登录/注册按钮事件
+            document.getElementById('loginBtn').addEventListener('click', () => showModal('login'));
+            document.getElementById('registerBtn').addEventListener('click', () => showModal('register'));
+        }
+
+        // 绑定用户活动监听
+        function bindUserActivityListeners() {
+            // 监听用户操作，更新最后活动时间
+            const events = ['click', 'keypress', 'scroll', 'mousemove'];
+            events.forEach(event => {
+                document.addEventListener(event, () => {
+                    lastActiveTime = Date.now();
+                    localStorage.setItem('yunjianji_lastActiveTime', JSON.stringify(lastActiveTime));
+                });
+            });
+        }
+
+        // 检查用户登录状态
+        async function checkUserStatus() {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) throw error;
+                
+                if (session) {
+                    currentUser = session.user;
+                    lastActiveTime = Date.now();
+                    localStorage.setItem('yunjianji_lastActiveTime', JSON.stringify(lastActiveTime));
+                    timeoutCheckTimer = setInterval(checkLoginTimeout, CHECK_INTERVAL);
+                    await loadNotebooks(); // 登录状态下加载笔记集
+                } else {
+                    currentUser = null;
                 }
-            });
-
-            if (error) throw error;
-            if (data.user) {
-                showToast('注册成功！请查收验证邮件（若开启）');
-                currentUser = data.user;
-                updateUserState();
-                await loadNotebooks();
-                hideModal('register'); // 替换closeRegisterModal为统一的hideModal
+            } catch (err) {
+                console.error("检查登录状态失败：", err);
+                showToast('检查登录状态失败：' + err.message, 'error');
             }
-        } catch (err) {
-            showToast('注册失败：' + err.message, 'error');
-        }
-    }
-
-    // 登出功能
-    async function logout() {
-        if (!supabase) return;
-        const { error } = await supabase.auth.signOut();
-        if (!error) {
-            currentUser = null;
-            showToast('已退出登录');
-            updateUserState();
-            clearNotebooks();
-            if (timeoutCheckTimer) clearInterval(timeoutCheckTimer);
-        } else {
-            showToast('退出失败：' + error.message, 'error');
-        }
-    }
-
-    // 显示弹窗
-    function showModal(type) {
-        if (type === 'login' && loginModal) {
-            loginModal.classList.add('show');
-        } else if (type === 'register' && registerModal) {
-            registerModal.classList.add('show');
-        }
-        document.body.style.overflow = 'hidden';
-    }
-
-    // 隐藏弹窗（替换原closeLoginModal/closeRegisterModal）
-    function hideModal(type) {
-        if (type === 'login' && loginModal) {
-            loginModal.classList.remove('show');
-        } else if (type === 'register' && registerModal) {
-            registerModal.classList.remove('show');
-        }
-        document.body.style.overflow = '';
-    }
-
-    // 显示提示框
-    function showToast(message, type = 'success') {
-        if (!toast) return;
-        toast.textContent = message;
-        toast.classList.add('show');
-        
-        if (type === 'error') {
-            toast.style.backgroundColor = 'rgba(178, 34, 34, 0.9)';
-        } else if (type === 'info') {
-            toast.style.backgroundColor = 'rgba(51, 102, 153, 0.9)';
-        } else {
-            toast.style.backgroundColor = 'rgba(51, 51, 51, 0.9)';
-        }
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
-    }
-
-    // 更新用户状态UI
-    function updateUserState() {
-        initUserState(); // 复用初始化逻辑
-    }
-
-    // 清空笔记集显示
-    function clearNotebooks() {
-        const notebookList = document.getElementById('notebookList');
-        if (notebookList) {
-            notebookList.innerHTML = `
-                <li class="empty-state" style="padding:20px;">
-                    <p>请先登录后使用</p>
-                </li>
-            `;
-        }
-        const contentArea = document.getElementById('contentArea');
-        if (contentArea) {
-            contentArea.innerHTML = `
-                <div class="empty-state">
-                    <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
-                    <h3>选择一个笔记集开始创作</h3>
-                    <p>点击左侧笔记集，或创建新的笔记集</p>
-                </div>
-            `;
-        }
-    }
-
-    // 加载用户笔记集
-    async function loadNotebooks() {
-        const notebookList = document.getElementById('notebookList');
-        if (!notebookList) return;
-        
-        if (!currentUser) {
-            notebookList.innerHTML = `
-                <li class="empty-state" style="padding:20px;">
-                    <p>请先登录后使用</p>
-                </li>
-            `;
-            return;
         }
 
-        try {
-            const { data: userNotebooks, error } = await supabase
-                .from('notebooks')
-                .select('*')
-                .eq('user_id', currentUser.id) // 只查当前用户的笔记集
-                .order('create_time', { ascending: false });
+        // 检查登录超时
+        function checkLoginTimeout() {
+            if (!lastActiveTime) return;
+            
+            const now = Date.now();
+            if (now - lastActiveTime > LOGIN_TIMEOUT) {
+                logout();
+                showToast('登录已超时，请重新登录', 'warning');
+            }
+        }
 
-            if (error) throw error;
+        // 登录操作
+        async function doLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            
+            if (!username || !password) {
+                showToast('用户名和密码不能为空', 'error');
+                return;
+            }
 
-            if (userNotebooks.length === 0) {
+            try {
+                // Supabase登录（使用用户名作为邮箱）
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: username,
+                    password: password
+                });
+
+                if (error) throw error;
+                
+                currentUser = data.user;
+                lastActiveTime = Date.now();
+                localStorage.setItem('yunjianji_lastActiveTime', JSON.stringify(lastActiveTime));
+                
+                showToast('登录成功！');
+                hideModal('login');
+                initUserState();
+                await loadNotebooks();
+                
+                // 启动超时检查
+                timeoutCheckTimer = setInterval(checkLoginTimeout, CHECK_INTERVAL);
+            } catch (err) {
+                showToast('登录失败：' + err.message, 'error');
+            }
+        }
+
+        // 注册操作
+        async function doRegister() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value.trim();
+            const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
+            
+            if (!username || !password || !confirmPassword) {
+                showToast('请填写完整信息', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('两次输入的密码不一致', 'error');
+                return;
+            }
+            
+            if (username.length < 3 || username.length > 16) {
+                showToast('用户名长度需在3-16位之间', 'error');
+                return;
+            }
+            
+            if (password.length < 6 || password.length > 16) {
+                showToast('密码长度需在6-16位之间', 'error');
+                return;
+            }
+
+            try {
+                // Supabase注册（使用用户名作为邮箱）
+                const { data, error } = await supabase.auth.signUp({
+                    email: username,
+                    password: password,
+                    options: {
+                        data: {
+                            username: username
+                        }
+                    }
+                });
+
+                if (error) throw error;
+                
+                showToast('注册成功！请登录', 'success');
+                hideModal('register');
+                showModal('login');
+                
+                // 清空注册表单
+                document.getElementById('registerUsername').value = '';
+                document.getElementById('registerPassword').value = '';
+                document.getElementById('registerConfirmPassword').value = '';
+            } catch (err) {
+                showToast('注册失败：' + err.message, 'error');
+            }
+        }
+
+        // 退出登录
+        async function logout() {
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) throw error;
+                
+                currentUser = null;
+                lastActiveTime = null;
+                localStorage.removeItem('yunjianji_lastActiveTime');
+                
+                // 清除定时器
+                if (timeoutCheckTimer) {
+                    clearInterval(timeoutCheckTimer);
+                    timeoutCheckTimer = null;
+                }
+                
+                if (autoSaveTimer) {
+                    clearTimeout(autoSaveTimer);
+                    autoSaveTimer = null;
+                }
+                
+                initUserState();
+                document.getElementById('notebookList').innerHTML = '';
+                document.getElementById('contentArea').innerHTML = `
+                    <div class="empty-state">
+                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
+                        <h3>点击笔记集</h3>
+                        <p>即可创建和管理您的笔记</p>
+                    </div>
+                `;
+                showToast('已退出登录');
+            } catch (err) {
+                showToast('退出失败：' + err.message, 'error');
+            }
+        }
+
+        // 初始化用户状态UI
+        function initUserState() {
+            const userActions = document.getElementById('userActions');
+            const newNotebookInput = document.getElementById('newNotebookName');
+            const createNotebookBtn = document.getElementById('createNotebookBtn');
+
+            if (currentUser) {
+                // 已登录状态
+                userActions.innerHTML = `
+                    <span style="color:#8B4513;font-family:'STKaiti','KaiTi',serif;margin-right:10px;">欢迎，${currentUser.user_metadata?.username || currentUser.email}📜</span>
+                    <button class="btn btn-danger" id="logoutBtn">退出</button>
+                `;
+                newNotebookInput.disabled = false;
+                createNotebookBtn.disabled = false;
+
+                // 绑定退出按钮事件
+                document.getElementById('logoutBtn').addEventListener('click', logout);
+            } else {
+                // 未登录状态
+                userActions.innerHTML = `
+                    <button class="btn btn-primary" id="loginBtn">登录</button>
+                    <button class="btn" id="registerBtn">注册</button>
+                `;
+                newNotebookInput.disabled = true;
+                createNotebookBtn.disabled = true;
+
+                // 重新绑定登录/注册按钮事件
+                document.getElementById('loginBtn').addEventListener('click', () => showModal('login'));
+                document.getElementById('registerBtn').addEventListener('click', () => showModal('register'));
+            }
+        }
+
+        // 创建笔记集
+        async function createNotebook() {
+            const name = document.getElementById('newNotebookName').value.trim();
+            if (!name) {
+                showToast('笔记集名称不能为空', 'error');
+                return;
+            }
+
+            if (!currentUser) {
+                showToast('请先登录后创建笔记集', 'error');
+                return;
+            }
+
+            try {
+                // 检查笔记集名称是否已存在
+                const { data: existing, error: queryError } = await supabase
+                    .from('notebooks')
+                    .select('id')
+                    .eq('user_id', currentUser.id)
+                    .eq('name', name);
+
+                if (queryError) throw queryError;
+
+                if (existing.length > 0) {
+                    showToast('该笔记集名称已存在', 'error');
+                    return;
+                }
+
+                // 创建新笔记集
+                const { error: insertError } = await supabase
+                    .from('notebooks')
+                    .insert([{
+                        name: name,
+                        user_id: currentUser.id,
+                        create_time: new Date(),
+                        update_time: new Date()
+                    }]);
+
+                if (insertError) throw insertError;
+
+                document.getElementById('newNotebookName').value = '';
+                await loadNotebooks();
+                showToast('笔记集创建成功');
+            } catch (err) {
+                showToast(`创建失败：${err.message}`, 'error');
+            }
+        }
+
+        // 加载用户笔记集
+        async function loadNotebooks() {
+            const notebookList = document.getElementById('notebookList');
+            
+            if (!currentUser) {
                 notebookList.innerHTML = `
                     <li class="empty-state" style="padding:20px;">
-                        <p>暂无笔记集，点击创建按钮添加</p>
+                        <p>请先登录后使用</p>
                     </li>
                 `;
-            } else {
-                notebookList.innerHTML = userNotebooks.map((notebook) => `
-                    <li class="notebook-item" data-id="${notebook.id}">
-                        <span class="notebook-name">${notebook.name}</span>
-                        <div class="notebook-actions">
-                            <button class="btn btn-edit edit-notebook" title="编辑笔记集名称">改</button>
-                            <button class="btn btn-danger delete-notebook" title="删除笔记集">删</button>
-                        </div>
-                    </li>
-                `).join('');
-                
-                // 绑定笔记集点击事件
-                document.querySelectorAll('.notebook-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        if (e.target.closest('.notebook-actions')) return;
-                        document.querySelectorAll('.notebook-item').forEach(i => i.classList.remove('active'));
-                        item.classList.add('active');
-                        loadNotes(item.dataset.id);
-                    });
-                });
-                
-                // 绑定编辑笔记集事件
-                document.querySelectorAll('.edit-notebook').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        e.stopPropagation();
-                        const item = btn.closest('.notebook-item');
-                        const notebookId = item.dataset.id;
-                        const oldName = item.querySelector('.notebook-name').textContent;
-                        const newName = prompt('请输入新的笔记集名称', oldName);
-                        
-                        if (newName && newName.trim() && newName !== oldName) {
-                            try {
-                                const { error } = await supabase
-                                    .from('notebooks')
-                                    .update({ 
-                                        name: newName.trim(),
-                                        update_time: new Date() 
-                                    })
-                                    .eq('id', notebookId)
-                                    .eq('user_id', currentUser.id);
+                return;
+            }
 
-                                if (error) throw error;
-                                
-                                loadNotebooks();
-                                showToast('笔记集名称已更新');
-                            } catch (err) {
-                                showToast('更新失败：' + err.message, 'error');
+            try {
+                const { data: notebooks, error } = await supabase
+                    .from('notebooks')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('create_time', { ascending: false });
+
+                if (error) throw error;
+
+                if (notebooks.length === 0) {
+                    notebookList.innerHTML = `
+                        <li class="empty-state" style="padding:20px;">
+                            <p>暂无笔记集，点击创建按钮添加</p>
+                        </li>
+                    `;
+                } else {
+                    notebookList.innerHTML = notebooks.map(notebook => `
+                        <li class="notebook-item" data-id="${notebook.id}">
+                            <span class="notebook-name">${notebook.name}</span>
+                            <div class="notebook-actions">
+                                <button class="btn btn-edit edit-notebook" title="编辑笔记集名称">改</button>
+                                <button class="btn btn-danger delete-notebook" title="删除笔记集">删</button>
+                            </div>
+                        </li>
+                    `).join('');
+
+                    // 绑定笔记集点击事件
+                    document.querySelectorAll('.notebook-item').forEach(item => {
+                        item.addEventListener('click', (e) => {
+                            if (e.target.closest('.notebook-actions')) return;
+                            document.querySelectorAll('.notebook-item').forEach(i => i.classList.remove('active'));
+                            item.classList.add('active');
+                            loadNotes(item.dataset.id);
+                        });
+                    });
+
+                    // 绑定编辑笔记集事件
+                    document.querySelectorAll('.edit-notebook').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            const item = btn.closest('.notebook-item');
+                            const notebookId = item.dataset.id;
+                            const oldName = item.querySelector('.notebook-name').textContent;
+                            const newName = prompt('请输入新的笔记集名称', oldName);
+                            
+                            if (newName && newName.trim() && newName !== oldName) {
+                                try {
+                                    const { error } = await supabase
+                                        .from('notebooks')
+                                        .update({ 
+                                            name: newName.trim(),
+                                            update_time: new Date() 
+                                        })
+                                        .eq('id', notebookId)
+                                        .eq('user_id', currentUser.id);
+
+                                    if (error) throw error;
+                                    
+                                    await loadNotebooks();
+                                    showToast('笔记集名称已更新');
+                                } catch (err) {
+                                    showToast('更新失败：' + err.message, 'error');
+                                }
                             }
-                        }
+                        });
                     });
-                });
-                
-                // 绑定删除笔记集事件
-                document.querySelectorAll('.delete-notebook').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        e.stopPropagation();
-                        const item = btn.closest('.notebook-item');
-                        const notebookId = item.dataset.id;
-                        
-                        if (confirm('确定要删除这个笔记集吗？删除后该笔记集下的所有笔记也会被删除！')) {
-                            try {
-                                // 先删除笔记集中的笔记
-                                await supabase
-                                    .from('notes')
-                                    .delete()
-                                    .eq('notebook_id', notebookId)
-                                    .eq('user_id', currentUser.id);
-                                
-                                // 再删除笔记集
-                                const { error } = await supabase
-                                    .from('notebooks')
-                                    .delete()
-                                    .eq('id', notebookId)
-                                    .eq('user_id', currentUser.id);
 
-                                if (error) throw error;
-                                
-                                loadNotebooks();
-                                const contentArea = document.getElementById('contentArea');
-                                if (contentArea) {
-                                    contentArea.innerHTML = `
+                    // 绑定删除笔记集事件
+                    document.querySelectorAll('.delete-notebook').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            const item = btn.closest('.notebook-item');
+                            const notebookId = item.dataset.id;
+                            
+                            if (confirm('确定要删除这个笔记集吗？删除后该笔记集下的所有笔记也会被删除！')) {
+                                try {
+                                    // 先删除笔记集中的笔记
+                                    await supabase
+                                        .from('notes')
+                                        .delete()
+                                        .eq('notebook_id', notebookId)
+                                        .eq('user_id', currentUser.id);
+                                    
+                                    // 再删除笔记集
+                                    const { error } = await supabase
+                                        .from('notebooks')
+                                        .delete()
+                                        .eq('id', notebookId)
+                                        .eq('user_id', currentUser.id);
+
+                                    if (error) throw error;
+                                    
+                                    await loadNotebooks();
+                                    document.getElementById('contentArea').innerHTML = `
                                         <div class="empty-state">
                                             <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
                                             <h3>选择一个笔记集开始创作</h3>
                                             <p>点击左侧笔记集，或创建新的笔记集</p>
                                         </div>
                                     `;
+                                    showToast('笔记集已删除');
+                                } catch (err) {
+                                    showToast('删除失败：' + err.message, 'error');
                                 }
-                                showToast('笔记集已删除');
+                            }
+                        });
+                    });
+                }
+            } catch (err) {
+                notebookList.innerHTML = `
+                    <li class="empty-state" style="padding:20px; color: #ff4444;">
+                        <p>加载失败：${err.message}</p>
+                    </li>
+                `;
+            }
+        }
+
+        // 加载笔记集下的笔记
+        async function loadNotes(notebookId) {
+            const contentArea = document.getElementById('contentArea');
+            
+            if (!currentUser || !notebookId) {
+                contentArea.innerHTML = `
+                    <div class="empty-state">
+                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
+                        <h3>选择一个笔记集开始创作</h3>
+                        <p>点击左侧笔记集，或创建新的笔记集</p>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                // 获取笔记集名称
+                const { data: notebook, error: notebookError } = await supabase
+                    .from('notebooks')
+                    .select('name')
+                    .eq('id', notebookId)
+                    .eq('user_id', currentUser.id)
+                    .single();
+
+                if (notebookError) throw notebookError;
+
+                // 获取笔记列表
+                const { data: notes, error } = await supabase
+                    .from('notes')
+                    .select('*')
+                    .eq('notebook_id', notebookId)
+                    .eq('user_id', currentUser.id)
+                    .order('update_time', { ascending: false });
+
+                if (error) throw error;
+
+                contentArea.innerHTML = `
+                    <div class="note-header">
+                        <h3>${notebook.name}</h3>
+                        <button class="btn btn-primary" id="createNoteBtn">+ 新建笔记</button>
+                    </div>
+                    <div class="note-list" id="noteList">
+                        ${notes.length === 0 ? `
+                            <div class="empty-state" style="grid-column: 1/-1; padding:40px;">
+                                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
+                                <h3>暂无笔记</h3>
+                                <p>点击新建笔记按钮开始创作</p>
+                            </div>
+                        ` : notes.map(note => `
+                            <div class="note-card" data-id="${note.id}">
+                                <h4>${note.title || '无标题笔记'}</h4>
+                                <p>${note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) : '无内容'}</p>
+                                <div class="note-time">${new Date(note.update_time).toLocaleString()}</div>
+                                <div class="note-actions">
+                                    <button class="toolbar-btn edit-note" title="编辑笔记">✏️</button>
+                                    <button class="toolbar-btn delete-note" title="删除笔记">🗑️</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                // 绑定新建笔记按钮事件
+                document.getElementById('createNoteBtn').addEventListener('click', () => {
+                    createNoteEditor(notebookId);
+                });
+
+                // 绑定编辑笔记事件
+                document.querySelectorAll('.edit-note').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const card = btn.closest('.note-card');
+                        const noteId = card.dataset.id;
+                        createNoteEditor(notebookId, noteId);
+                    });
+                });
+
+                // 绑定删除笔记事件
+                document.querySelectorAll('.delete-note').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const card = btn.closest('.note-card');
+                        const noteId = card.dataset.id;
+                        
+                        if (confirm('确定要删除这条笔记吗？')) {
+                            try {
+                                const { error } = await supabase
+                                    .from('notes')
+                                    .delete()
+                                    .eq('id', noteId)
+                                    .eq('user_id', currentUser.id);
+
+                                if (error) throw error;
+                                
+                                loadNotes(notebookId);
+                                showToast('笔记已删除');
                             } catch (err) {
                                 showToast('删除失败：' + err.message, 'error');
                             }
                         }
                     });
                 });
-            }
-        } catch (err) {
-            notebookList.innerHTML = `
-                <li class="empty-state" style="padding:20px; color: #ff4444;">
-                    <p>加载失败：${err.message}</p>
-                </li>
-            `;
-        }
-    }
-
-    // 加载笔记集下的笔记
-    async function loadNotes(notebookId) {
-        const contentArea = document.getElementById('contentArea');
-        if (!contentArea) return;
-        
-        if (!currentUser || !notebookId) {
-            contentArea.innerHTML = `
-                <div class="empty-state">
-                    <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
-                    <h3>选择一个笔记集开始创作</h3>
-                    <p>点击左侧笔记集，或创建新的笔记集</p>
-                </div>
-            `;
-            return;
-        }
-
-        try {
-            const { data: notebook, error: notebookError } = await supabase
-                .from('notebooks')
-                .select('name')
-                .eq('id', notebookId)
-                .eq('user_id', currentUser.id)
-                .single();
-
-            if (notebookError) throw notebookError;
-
-            const { data: notes, error } = await supabase
-                .from('notes')
-                .select('*')
-                .eq('notebook_id', notebookId)
-                .eq('user_id', currentUser.id)
-                .order('update_time', { ascending: false });
-
-            if (error) throw error;
-
-            contentArea.innerHTML = `
-                <div class="note-header">
-                    <h3>${notebook.name}</h3>
-                    <button class="btn btn-primary" id="createNoteBtn_${Date.now()}">+ 新建笔记</button>
-                </div>
-                <div class="note-list" id="noteList">
-                    ${notes.length === 0 ? `
-                        <div class="empty-state" style="grid-column: 1/-1; padding:40px;">
-                            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
-                            <h3>暂无笔记</h3>
-                            <p>点击新建笔记按钮开始创作</p>
-                        </div>
-                    ` : notes.map((note) => `
-                        <div class="note-card" data-id="${note.id}">
-                            <h4>${note.title || '无标题笔记'}</h4>
-                            <p>${note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) : '无内容'}</p>
-                            <div class="note-time">${new Date(note.update_time).toLocaleString()}</div>
-                            <div class="note-actions">
-                                <button class="toolbar-btn edit-note" title="编辑笔记">✏️</button>
-                                <button class="toolbar-btn delete-note" title="删除笔记">🗑️</button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            
-            // 绑定新建笔记按钮事件
-            const createNoteBtn = document.querySelector('[id^="createNoteBtn_"]');
-            if (createNoteBtn) {
-                createNoteBtn.addEventListener('click', () => {
-                    createNoteEditor(notebookId);
-                });
-            }
-            
-            // 绑定编辑笔记事件
-            document.querySelectorAll('.edit-note').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const card = btn.closest('.note-card');
-                    const noteId = card.dataset.id;
-                    createNoteEditor(notebookId, noteId);
-                });
-            });
-            
-            // 绑定删除笔记事件
-            document.querySelectorAll('.delete-note').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const card = btn.closest('.note-card');
-                    const noteId = card.dataset.id;
-                    
-                    if (confirm('确定要删除这条笔记吗？')) {
-                        try {
-                            const { error } = await supabase
-                                .from('notes')
-                                .delete()
-                                .eq('id', noteId)
-                                .eq('user_id', currentUser.id);
-
-                            if (error) throw error;
-                            
-                            loadNotes(notebookId);
-                            showToast('笔记已删除');
-                        } catch (err) {
-                            showToast('删除失败：' + err.message, 'error');
-                        }
-                    }
-                });
-            });
-        } catch (err) {
-            contentArea.innerHTML = `
-                <div class="empty-state" style="color: #ff4444;">
-                    <p>加载笔记失败：${err.message}</p>
-                </div>
-            `;
-        }
-    }
-
-    // 创建笔记编辑器
-    async function createNoteEditor(notebookId, noteId = null) {
-        const contentArea = document.getElementById('contentArea');
-        if (!contentArea) return;
-        
-        let note = {
-            title: '',
-            content: '',
-            time: new Date().toISOString()
-        };
-
-        if (noteId !== null && currentUser) {
-            try {
-                const { data: noteData, error } = await supabase
-                    .from('notes')
-                    .select('title, content, update_time')
-                    .eq('id', noteId)
-                    .eq('user_id', currentUser.id)
-                    .single();
-                
-                if (!error && noteData) {
-                    note = {
-                        title: noteData.title || '',
-                        content: noteData.content || '',
-                        time: noteData.update_time || new Date().toISOString()
-                    };
-                }
             } catch (err) {
-                showToast('加载笔记内容失败：' + err.message, 'error');
+                contentArea.innerHTML = `
+                    <div class="empty-state" style="color: #ff4444;">
+                        <p>加载笔记失败：${err.message}</p>
+                    </div>
+                `;
             }
         }
 
-        contentArea.innerHTML = `
-            <div class="note-editor">
-                <input type="text" id="noteTitleInput_${Date.now()}" value="${note.title}" placeholder="请输入笔记标题" class="note-title-input">
-                <div class="editor-toolbar">
-                    <button class="toolbar-btn" data-command="bold" title="粗体">B</button>
-                    <button class="toolbar-btn" data-command="italic" title="斜体">I</button>
-                    <button class="toolbar-btn" data-command="underline" title="下划线">U</button>
-                    <button class="toolbar-btn" data-command="strikeThrough" title="删除线">S</button>
-                    <span class="toolbar-separator"></span>
-                    <button class="toolbar-btn" data-command="justifyLeft" title="左对齐">←</button>
-                    <button class="toolbar-btn" data-command="justifyCenter" title="居中对齐">居中</button>
-                    <button class="toolbar-btn" data-command="justifyRight" title="右对齐">→</button>
-                </div>
-                <textarea id="noteContentEditor_${Date.now()}" class="note-content-editor" placeholder="请输入笔记内容...">${note.content}</textarea>
-                <div class="editor-actions">
-                    <button class="btn btn-primary" id="saveNoteBtn_${Date.now()}">保存笔记</button>
-                    <button class="btn btn-default" id="cancelNoteBtn_${Date.now()}">取消</button>
-                </div>
-            </div>
-        `;
+        // 创建笔记编辑器
+        async function createNoteEditor(notebookId, noteId = null) {
+            const contentArea = document.getElementById('contentArea');
+            let note = {
+                title: '',
+                content: '',
+                time: new Date().toISOString()
+            };
 
-        // 获取动态生成的元素
-        const noteTitleInput = document.querySelector('[id^="noteTitleInput_"]');
-        const noteContentEditor = document.querySelector('[id^="noteContentEditor_"]');
-        const saveNoteBtn = document.querySelector('[id^="saveNoteBtn_"]');
-        const cancelNoteBtn = document.querySelector('[id^="cancelNoteBtn_"]');
-
-        // 绑定保存笔记事件
-        if (saveNoteBtn) {
-            saveNoteBtn.addEventListener('click', async () => {
-                if (!noteTitleInput || !noteContentEditor) return;
-                
-                const title = noteTitleInput.value.trim();
-                const content = noteContentEditor.value;
-                
-                if (!title) {
-                    showToast('笔记标题不能为空', 'error');
-                    return;
-                }
-
-                if (!currentUser) {
-                    showToast('请先登录后保存笔记', 'error');
-                    return;
-                }
-
+            // 如果是编辑现有笔记，加载笔记内容
+            if (noteId && currentUser) {
                 try {
-                    if (noteId !== null) {
-                        const { error } = await supabase
-                            .from('notes')
-                            .update({
-                                title: title,
-                                content: content,
-                                update_time: new Date()
-                            })
-                            .eq('id', noteId)
-                            .eq('user_id', currentUser.id);
-
-                        if (error) throw error;
-                        showToast('笔记更新成功');
-                    } else {
-                        const { error } = await supabase
-                            .from('notes')
-                            .insert([
-                                {
-                                    title: title,
-                                    content: content,
-                                    notebook_id: notebookId,
-                                    user_id: currentUser.id,
-                                    create_time: new Date(),
-                                    update_time: new Date()
-                                }
-                            ]);
-
-                        if (error) throw error;
-                        showToast('笔记创建成功');
+                    const { data: noteData, error } = await supabase
+                        .from('notes')
+                        .select('title, content, update_time')
+                        .eq('id', noteId)
+                        .eq('user_id', currentUser.id)
+                        .single();
+                    
+                    if (!error && noteData) {
+                        note = {
+                            title: noteData.title || '',
+                            content: noteData.content || '',
+                            time: noteData.update_time || new Date().toISOString()
+                        };
                     }
-
-                    loadNotes(notebookId);
                 } catch (err) {
-                    showToast(`保存失败：${err.message}`, 'error');
+                    showToast('加载笔记内容失败：' + err.message, 'error');
                 }
-            });
-        }
+            }
 
-        // 绑定取消按钮事件
-        if (cancelNoteBtn) {
-            cancelNoteBtn.addEventListener('click', () => {
-                loadNotes(notebookId);
-            });
+            // 构建编辑器
+            contentArea.innerHTML = `
+                <div class="editor-container">
+                    <input type="text" class="editor-title" id="noteTitle" placeholder="输入笔记标题" value="${note.title || ''}">
+                    <!-- 完整工具栏 -->
+                    <div class="editor-toolbar">
+                        <div class="toolbar-group">
+                            <span class="toolbar-label">字体</span>
+                            <select class="toolbar-select" id="fontFamily">
+                                <option value="微软雅黑">微软雅黑</option>
+                                <option value="宋体">宋体</option>
+                                <option value="黑体">黑体</option>
+                                <option value="楷体">楷体</option>
+                                <option value="仿宋">仿宋</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-group">
+                                                        <span class="toolbar-label">字号</span>
+                            <select class="toolbar-select" id="fontSize">
+                                <option value="12px">12px</option>
+                                <option value="14px" selected>14px</option>
+                                <option value="16px">16px</option>
+                                <option value="18px">18px</option>
+                                <option value="20px">20px</option>
+                                <option value="24px">24px</option>
+                                <option value="28px">28px</option>
+                                <option value="32px">32px</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" id="boldBtn" title="加粗 (Ctrl+B)"><b>B</b></button>
+                            <button class="toolbar-btn" id="italicBtn" title="斜体 (Ctrl+I)"><i>I</i></button>
+                            <button class="toolbar-btn" id="underlineBtn" title="下划线 (Ctrl+U)"><u>U</u></button>
+                        </div>
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" id="alignLeftBtn" title="左对齐">
+                                <span class="align-icon align-icon-left"></span>
+                            </button>
+                            <button class="toolbar-btn" id="alignCenterBtn" title="居中对齐">
+                                <span class="align-icon align-icon-center"></span>
+                            </button>
+                            <button class="toolbar-btn" id="alignRightBtn" title="右对齐">
+                                <span class="align-icon align-icon-right"></span>
+                            </button>
+                            <button class="toolbar-btn" id="alignJustifyBtn" title="两端对齐">
+                                <span class="align-icon align-icon-justify"></span>
+                            </button>
+                        </div>
+                        <div class="toolbar-group">
+                            <label for="textColor" title="文字颜色">
+                                <input type="color" id="textColor" class="toolbar-color" value="#8B4513">
+                            </label>
+                            <button class="img-btn" id="insertImageBtn" title="插入图片">🖼️</button>
+                            <button class="code-btn" id="insertCodeBtn" title="插入代码块">💻</button>
+                        </div>
+                        <div class="editor-actions">
+                            <button class="save-btn" id="saveNoteBtn">保存笔记</button>
+                            <button class="cancel-btn" id="cancelEditBtn">取消编辑</button>
+                        </div>
+                    </div>
+                    <!-- 编辑器内容区 -->
+                    <div class="editor-content" id="noteContent" contenteditable="true">${note.content || ''}</div>
+                    <!-- 隐藏的图片上传输入框 -->
+                    <input type="file" id="imageUpload" accept="image/*">
+                </div>
+            `;
+
+            // 绑定编辑器工具栏事件
+            bindEditorEvents(notebookId, noteId);
+            
+            // 启动自动保存定时器
+            startAutoSave(notebookId, noteId);
         }
 
         // 绑定编辑器工具栏事件
-        document.querySelectorAll('.toolbar-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (!noteContentEditor) return;
-                
-                const command = btn.dataset.command;
-                noteContentEditor.focus();
-                document.execCommand(command, false, null);
-                noteContentEditor.focus();
+        function bindEditorEvents(notebookId, noteId) {
+            const content = document.getElementById('noteContent');
+            const titleInput = document.getElementById('noteTitle');
+            
+            // 字体设置
+            document.getElementById('fontFamily').addEventListener('change', function() {
+                document.execCommand('fontName', false, this.value);
+                content.focus();
             });
-        });
 
-        // ========== 图片插入功能（安全写法） ==========
-        const imgUploadBtn1 = document.getElementById('imgUploadBtn1');
-        const imageUpload = document.getElementById('imageUpload');
-        
-        if (imgUploadBtn1 && imageUpload) {
-            imgUploadBtn1.addEventListener('click', () => {
-                if (noteContentEditor) noteContentEditor.focus();
-                imageUpload.click();
+            // 字号设置
+            document.getElementById('fontSize').addEventListener('change', function() {
+                document.execCommand('fontSize', false, this.value);
+                content.focus();
+            });
+
+            // 文本样式按钮
+            document.getElementById('boldBtn').addEventListener('click', () => {
+                document.execCommand('bold', false, null);
+                content.focus();
             });
             
-            // 图片上传逻辑
-            imageUpload.addEventListener('change', (e) => {
+            document.getElementById('italicBtn').addEventListener('click', () => {
+                document.execCommand('italic', false, null);
+                content.focus();
+            });
+            
+            document.getElementById('underlineBtn').addEventListener('click', () => {
+                document.execCommand('underline', false, null);
+                content.focus();
+            });
+
+            // 对齐方式
+            document.getElementById('alignLeftBtn').addEventListener('click', () => {
+                document.execCommand('justifyLeft', false, null);
+                content.focus();
+            });
+            
+            document.getElementById('alignCenterBtn').addEventListener('click', () => {
+                document.execCommand('justifyCenter', false, null);
+                content.focus();
+            });
+            
+            document.getElementById('alignRightBtn').addEventListener('click', () => {
+                document.execCommand('justifyRight', false, null);
+                content.focus();
+            });
+            
+            document.getElementById('alignJustifyBtn').addEventListener('click', () => {
+                document.execCommand('justifyFull', false, null);
+                content.focus();
+            });
+
+            // 文字颜色
+            document.getElementById('textColor').addEventListener('change', function() {
+                document.execCommand('foreColor', false, this.value);
+                content.focus();
+            });
+
+            // 插入图片
+            document.getElementById('insertImageBtn').addEventListener('click', () => {
+                document.getElementById('imageUpload').click();
+            });
+
+            // 处理图片上传
+            document.getElementById('imageUpload').addEventListener('change', async function(e) {
                 const file = e.target.files[0];
-                if (file && noteContentEditor) {
+                if (!file) return;
+                
+                try {
+                    // 读取图片文件
                     const reader = new FileReader();
-                    reader.onload = (event) => {
-                        noteContentEditor.focus();
+                    reader.onload = function(event) {
+                        // 在编辑器中插入图片
                         const img = document.createElement('img');
                         img.src = event.target.result;
-                        img.alt = '上传的图片';
-                        img.style.maxWidth = '100%';
+                        img.contentEditable = false;
                         
+                        // 插入图片到光标位置
                         const selection = window.getSelection();
-                        if (selection.rangeCount > 0) {
+                        if (selection.getRangeAt && selection.rangeCount) {
                             const range = selection.getRangeAt(0);
                             range.deleteContents();
                             range.insertNode(img);
-                            range.setStartAfter(img);
-                            range.setEndAfter(img);
-                            selection.removeAllRanges();
-                            selection.addRange(range);
                         } else {
-                            noteContentEditor.appendChild(img);
+                            content.appendChild(img);
                         }
-                        imageUpload.value = '';
-                        showToast('图片已插入');
+                        
+                        content.focus();
+                        showToast('图片插入成功');
                     };
                     reader.readAsDataURL(file);
+                } catch (err) {
+                    showToast('图片插入失败：' + err.message, 'error');
                 }
             });
-        }
 
-        // ========== 插入代码功能（安全写法） ==========
-        const codeInsertBtn = document.getElementById('codeInsertBtn');
-        if (codeInsertBtn && noteContentEditor) {
-            codeInsertBtn.addEventListener('click', () => {
-                noteContentEditor.focus();
+            // 插入代码块
+            document.getElementById('insertCodeBtn').addEventListener('click', () => {
                 const selection = window.getSelection();
+                const selectedText = selection.toString() || '// 请输入代码';
                 
+                // 创建代码块元素
                 const pre = document.createElement('pre');
                 const code = document.createElement('code');
-                code.textContent = '// 请输入代码';
-                pre.appendChild(code);
-                pre.style.padding = '10px';
-                pre.style.backgroundColor = '#f5f5f5';
-                pre.style.borderRadius = '4px';
+                const deleteBtn = document.createElement('button');
                 
-                if (selection.rangeCount > 0) {
+                deleteBtn.className = 'code-delete-btn';
+                deleteBtn.innerHTML = '×';
+                deleteBtn.addEventListener('click', function() {
+                    pre.remove();
+                });
+                
+                code.textContent = selectedText;
+                pre.appendChild(code);
+                pre.appendChild(deleteBtn);
+                
+                // 插入代码块到光标位置
+                if (selection.getRangeAt && selection.rangeCount) {
                     const range = selection.getRangeAt(0);
                     range.deleteContents();
                     range.insertNode(pre);
-                    
-                    const codeRange = document.createRange();
-                    codeRange.selectNodeContents(code);
-                    selection.removeAllRanges();
-                    selection.addRange(codeRange);
                 } else {
-                    noteContentEditor.appendChild(pre);
-                    const codeRange = document.createRange();
-                    codeRange.selectNodeContents(code);
-                    selection.removeAllRanges();
-                    selection.addRange(codeRange);
+                    content.appendChild(pre);
                 }
                 
-                addCodeDeleteButtons();
-                showToast('代码块已插入');
+                content.focus();
+                showToast('代码块插入成功');
             });
-        }
 
-        // ========== 代码块删除功能 ==========
-        function addCodeDeleteButtons() {
-            if (!noteContentEditor) return;
-            
-            const codeBlocks = noteContentEditor.querySelectorAll('pre');
-            codeBlocks.forEach(block => {
-                if (!block.querySelector('.code-delete-btn')) {
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'code-delete-btn';
-                    deleteBtn.innerHTML = '×';
-                    deleteBtn.style.position = 'relative';
-                    deleteBtn.style.float = 'right';
-                    deleteBtn.style.margin = '0 5px';
-                    deleteBtn.style.border = 'none';
-                    deleteBtn.style.background = 'transparent';
-                    deleteBtn.style.color = '#ff4444';
-                    deleteBtn.style.cursor = 'pointer';
-                    
-                    deleteBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        block.remove();
-                        showToast('代码块已删除');
-                    });
-                    block.appendChild(deleteBtn);
+            // 保存笔记
+            document.getElementById('saveNoteBtn').addEventListener('click', async () => {
+                await saveNote(notebookId, noteId);
+            });
+
+            // 取消编辑
+            document.getElementById('cancelEditBtn').addEventListener('click', () => {
+                if (confirm('确定要取消编辑吗？未保存的内容将会丢失')) {
+                    clearAutoSaveTimer();
+                    loadNotes(notebookId);
+                }
+            });
+
+            // 快捷键支持
+            content.addEventListener('keydown', function(e) {
+                // Ctrl+B 加粗
+                if (e.ctrlKey && e.key === 'b') {
+                    e.preventDefault();
+                    document.execCommand('bold', false, null);
+                }
+                // Ctrl+I 斜体
+                else if (e.ctrlKey && e.key === 'i') {
+                    e.preventDefault();
+                    document.execCommand('italic', false, null);
+                }
+                // Ctrl+U 下划线
+                else if (e.ctrlKey && e.key === 'u') {
+                    e.preventDefault();
+                    document.execCommand('underline', false, null);
+                }
+                // Ctrl+S 保存
+                else if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    saveNote(notebookId, noteId);
+                }
+            });
+
+            // 图片右键菜单（阻止默认行为）
+            content.addEventListener('contextmenu', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                }
+            });
+
+            // 图片点击显示编辑工具栏
+            content.addEventListener('click', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    showImageEditToolbar(e.target);
+                } else {
+                    hideAllImageEditToolbars();
                 }
             });
         }
-        
-        addCodeDeleteButtons();
-        if (noteContentEditor) {
-            noteContentEditor.addEventListener('DOMNodeInserted', (e) => {
-                if (e.target.tagName === 'PRE') addCodeDeleteButtons();
+
+        // 显示图片编辑工具栏
+        function showImageEditToolbar(img) {
+            // 先隐藏所有已存在的工具栏
+            hideAllImageEditToolbars();
+            
+            // 创建图片编辑工具栏
+            const toolbar = document.createElement('div');
+            toolbar.className = 'image-edit-toolbar';
+            toolbar.style.top = (img.offsetTop - 30) + 'px';
+            toolbar.style.left = (img.offsetLeft) + 'px';
+            
+            // 删除按钮
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'image-edit-btn delete';
+            deleteBtn.innerHTML = '🗑️';
+            deleteBtn.title = '删除图片';
+            deleteBtn.addEventListener('click', function() {
+                img.remove();
+                toolbar.remove();
             });
+            
+            // 调整大小按钮（仅作为示意，实际可结合拖拽实现）
+            const resizeBtn = document.createElement('button');
+            resizeBtn.className = 'image-edit-btn resize';
+            resizeBtn.innerHTML = '📏';
+            resizeBtn.title = '调整大小';
+            resizeBtn.addEventListener('click', function() {
+                const newWidth = prompt('请输入图片宽度（像素）', img.width);
+                if (newWidth && !isNaN(newWidth)) {
+                    img.style.width = newWidth + 'px';
+                    img.style.height = 'auto';
+                }
+            });
+            
+            toolbar.appendChild(deleteBtn);
+            toolbar.appendChild(resizeBtn);
+            img.parentNode.insertBefore(toolbar, img);
         }
 
-        // ========== 工具栏功能（安全写法） ==========
-        // 字体选择
-        const fontFamily = document.getElementById('fontFamily');
-        if (fontFamily && noteContentEditor) {
-            fontFamily.addEventListener('change', (e) => {
-                noteContentEditor.focus();
-                document.execCommand('fontName', false, e.target.value);
-            });
+        // 隐藏所有图片编辑工具栏
+        function hideAllImageEditToolbars() {
+            const toolbars = document.querySelectorAll('.image-edit-toolbar');
+            toolbars.forEach(toolbar => toolbar.remove());
         }
 
-        // 字号选择
-        const fontSize = document.getElementById('fontSize');
-        if (fontSize && noteContentEditor) {
-            fontSize.addEventListener('change', (e) => {
-                noteContentEditor.focus();
-                document.execCommand('fontSize', false, e.target.value);
-            });
+        // 启动自动保存定时器
+        function startAutoSave(notebookId, noteId) {
+            // 清除已有定时器
+            clearAutoSaveTimer();
+            
+            // 设置新的自动保存定时器
+            autoSaveTimer = setInterval(async () => {
+                await saveNote(notebookId, noteId, true);
+            }, AUTO_SAVE_DELAY);
         }
 
-        // 粗体/斜体/下划线
-        const boldBtn = document.getElementById('boldBtn');
-        const italicBtn = document.getElementById('italicBtn');
-        const underlineBtn = document.getElementById('underlineBtn');
-        
-        if (boldBtn && noteContentEditor) {
-            boldBtn.addEventListener('click', function() {
-                noteContentEditor.focus();
-                document.execCommand('bold', false, null);
-                this.classList.toggle('active', document.queryCommandState('bold'));
-            });
-        }
-        
-        if (italicBtn && noteContentEditor) {
-            italicBtn.addEventListener('click', function() {
-                noteContentEditor.focus();
-                document.execCommand('italic', false, null);
-                this.classList.toggle('active', document.queryCommandState('italic'));
-            });
-        }
-        
-        if (underlineBtn && noteContentEditor) {
-            underlineBtn.addEventListener('click', function() {
-                noteContentEditor.focus();
-                document.execCommand('underline', false, null);
-                this.classList.toggle('active', document.queryCommandState('underline'));
-            });
+        // 清除自动保存定时器
+        function clearAutoSaveTimer() {
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = null;
+            }
         }
 
-        // 对齐方式
-        function resetAlignButtons() {
-            document.querySelectorAll('.align-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-        }
-        
-        const alignLeftBtn = document.getElementById('alignLeftBtn');
-        const alignCenterBtn = document.getElementById('alignCenterBtn');
-        const alignRightBtn = document.getElementById('alignRightBtn');
-        const alignJustifyBtn = document.getElementById('alignJustifyBtn');
-        
-        if (alignLeftBtn && noteContentEditor) {
-            alignLeftBtn.addEventListener('click', function() {
-                noteContentEditor.focus();
-                document.execCommand('justifyLeft', false, null);
-                resetAlignButtons();
-                this.classList.add('active');
-            });
-        }
-        
-        if (alignCenterBtn && noteContentEditor) {
-            alignCenterBtn.addEventListener('click', function() {
-                noteContentEditor.focus();
-                document.execCommand('justifyCenter', false, null);
-                resetAlignButtons();
-                this.classList.add('active');
-            });
-        }
-        
-        if (alignRightBtn && noteContentEditor) {
-            alignRightBtn.addEventListener('click', function() {
-                noteContentEditor.focus();
-                document.execCommand('justifyRight', false, null);
-                resetAlignButtons();
-                this.classList.add('active');
-            });
-        }
-        
-        if (alignJustifyBtn && noteContentEditor) {
-            alignJustifyBtn.addEventListener('click', function() {
-                noteContentEditor.focus();
-                document.execCommand('justifyFull', false, null);
-                resetAlignButtons();
-                this.classList.add('active');
-            });
-        }
+        // 保存笔记
+        async function saveNote(notebookId, noteId, isAutoSave = false) {
+            const title = document.getElementById('noteTitle').value.trim() || '无标题笔记';
+            const content = document.getElementById('noteContent').innerHTML;
+            
+            if (!currentUser || !notebookId) {
+                showToast('保存失败：请先登录', 'error');
+                return;
+            }
 
-        // 字体颜色/背景色
-        const fontColor = document.getElementById('fontColor');
-        const bgColor = document.getElementById('bgColor');
-        
-        if (fontColor && noteContentEditor) {
-            fontColor.addEventListener('change', function() {
-                noteContentEditor.focus();
-                document.execCommand('foreColor', false, this.value);
-            });
-        }
-        
-        if (bgColor && noteContentEditor) {
-            bgColor.addEventListener('change', function() {
-                noteContentEditor.focus();
-                document.execCommand('backColor', false, this.value);
-            });
-        }
+            try {
+                if (noteId) {
+                    // 更新现有笔记
+                    const { error } = await supabase
+                        .from('notes')
+                        .update({
+                            title: title,
+                            content: content,
+                            update_time: new Date()
+                        })
+                        .eq('id', noteId)
+                        .eq('user_id', currentUser.id);
 
-        // 自动保存功能
-        if (noteTitleInput && noteContentEditor) {
-            function setupAutoSave() {
-                if (autoSaveTimer) clearTimeout(autoSaveTimer);
-                autoSaveTimer = setTimeout(() => {
-                    const title = noteTitleInput.value.trim() || '无标题笔记';
-                    const content = noteContentEditor.value;
-                    if (content && currentUser && noteId) {
-                        // 仅自动保存已有笔记，新建笔记不自动保存
-                        supabase
-                            .from('notes')
-                            .update({
-                                title: title,
-                                content: content,
-                                update_time: new Date()
-                            })
-                            .eq('id', noteId)
-                            .eq('user_id', currentUser.id)
-                            .then(() => {
-                                showToast('笔记已自动保存', 'info');
-                            })
-                            .catch(err => {
-                                console.error('自动保存失败：', err);
-                            });
+                    if (error) throw error;
+                    
+                    if (!isAutoSave) {
+                        showToast('笔记更新成功');
+                        clearAutoSaveTimer();
+                        loadNotes(notebookId);
+                    } else {
+                        console.log('自动保存笔记成功');
                     }
-                }, AUTO_SAVE_DELAY);
+                } else {
+                    // 创建新笔记
+                    const { error } = await supabase
+                        .from('notes')
+                        .insert([{
+                            title: title,
+                            content: content,
+                            notebook_id: notebookId,
+                            user_id: currentUser.id,
+                            create_time: new Date(),
+                            update_time: new Date()
+                        }]);
+
+                    if (error) throw error;
+                    
+                    showToast('笔记创建成功');
+                    clearAutoSaveTimer();
+                    loadNotes(notebookId);
+                }
+            } catch (err) {
+                showToast(`保存失败：${err.message}`, 'error');
+            }
+        }
+
+        // 显示提示框
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            
+            // 根据类型设置不同背景色
+            switch(type) {
+                case 'error':
+                    toast.style.backgroundColor = 'rgba(220, 53, 69, 0.9)';
+                    break;
+                case 'success':
+                    toast.style.backgroundColor = 'rgba(25, 135, 84, 0.9)';
+                    break;
+                case 'warning':
+                    toast.style.backgroundColor = 'rgba(255, 193, 7, 0.9)';
+                    break;
+                default:
+                    toast.style.backgroundColor = 'rgba(51, 51, 51, 0.9)';
             }
             
-            noteTitleInput.addEventListener('input', setupAutoSave);
-            noteContentEditor.addEventListener('input', setupAutoSave);
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
         }
 
-        // 聚焦编辑器
-        if (noteContentEditor) noteContentEditor.focus();
-    }
-
-    // ========== 5. 初始化页面 ==========
-    function init() {
-        bindUserActivityListeners();
-        initUserState();
-        
-        // 创建笔记集按钮事件
-        if (createNotebookBtn && newNotebookInput) {
-            createNotebookBtn.addEventListener('click', async () => {
-                const name = newNotebookInput.value.trim();
-                if (!name) {
-                    showToast('笔记集名称不能为空', 'error');
-                    return;
-                }
-
-                if (!currentUser) {
-                    showToast('请先登录后创建笔记集', 'error');
-                    return;
-                }
-
-                try {
-                    const { data: existingNotebooks, error: queryError } = await supabase
-                        .from('notebooks')
-                        .select('name')
-                        .eq('user_id', currentUser.id)
-                        .eq('name', name);
-
-                    if (queryError) throw queryError;
-
-                    if (existingNotebooks.length > 0) {
-                        showToast('该笔记集名称已存在', 'error');
-                        return;
-                    }
-
-                    const { error: insertError } = await supabase
-                        .from('notebooks')
-                        .insert([
-                            {
-                                name: name,
-                                user_id: currentUser.id,
-                                create_time: new Date(),
-                                update_time: new Date()
-                            }
-                        ]);
-
-                    if (insertError) throw insertError;
-
-                    newNotebookInput.value = '';
-                    loadNotebooks();
-                    showToast('笔记集创建成功');
-                } catch (err) {
-                    showToast(`创建失败：${err.message}`, 'error');
-                }
-            });
+        // 显示弹窗
+        function showModal(type) {
+            const modal = document.getElementById(`${type}Modal`);
+            modal.classList.add('show');
+            // 禁止背景滚动
+            document.body.style.overflow = 'hidden';
         }
-        
-        // 登录弹窗事件绑定
-        const closeLoginModal = document.getElementById('closeLoginModal');
-        const cancelLoginBtn = document.getElementById('cancelLoginBtn');
-        const doLoginBtn = document.getElementById('doLoginBtn');
-        const toRegisterLink = document.getElementById('toRegisterLink');
-        const loginUsername = document.getElementById('loginUsername');
-        const loginPassword = document.getElementById('loginPassword');
-        
-        if (closeLoginModal) closeLoginModal.addEventListener('click', () => hideModal('login'));
-        if (cancelLoginBtn) cancelLoginBtn.addEventListener('click', () => hideModal('login'));
-        if (doLoginBtn && loginUsername && loginPassword) {
-            doLoginBtn.addEventListener('click', () => {
-                const username = loginUsername.value.trim();
-                const password = loginPassword.value.trim();
-                if (!username || !password) {
-                    showToast('用户名和密码不能为空', 'error');
-                    return;
-                }
-                login(username, password);
-            });
-        }
-        if (toRegisterLink) toRegisterLink.addEventListener('click', () => {
-            hideModal('login');
-            showModal('register');
-        });
-        
-        // 注册弹窗事件绑定
-        const closeRegisterModal = document.getElementById('closeRegisterModal');
-        const cancelRegisterBtn = document.getElementById('cancelRegisterBtn');
-        const doRegisterBtn = document.getElementById('doRegisterBtn');
-        const toLoginLink = document.getElementById('toLoginLink');
-        const registerUsername = document.getElementById('registerUsername');
-        const registerPassword = document.getElementById('registerPassword');
-        const registerConfirmPassword = document.getElementById('registerConfirmPassword');
-        
-        if (closeRegisterModal) closeRegisterModal.addEventListener('click', () => hideModal('register'));
-        if (cancelRegisterBtn) cancelRegisterBtn.addEventListener('click', () => hideModal('register'));
-        if (doRegisterBtn && registerUsername && registerPassword && registerConfirmPassword) {
-            doRegisterBtn.addEventListener('click', () => {
-                const username = registerUsername.value.trim();
-                const password = registerPassword.value.trim();
-                const confirmPassword = registerConfirmPassword.value.trim();
-                
-                if (!username || !password || !confirmPassword) {
-                    showToast('请填写完整信息', 'error');
-                    return;
-                }
-                
-                if (password !== confirmPassword) {
-                    showToast('两次输入的密码不一致', 'error');
-                    return;
-                }
-                
-                register(username, password, username); // 注册时用用户名作为邮箱（根据你的逻辑调整）
-            });
-        }
-        if (toLoginLink) toLoginLink.addEventListener('click', () => {
-            hideModal('register');
-            showModal('login');
-        });
-    }
 
-    // 执行初始化
-    init();
-
-// ========== 6. 确保Supabase SDK加载后再执行 ==========
-// 检查SDK是否已加载，未加载则动态引入
-if (typeof window.supabase === 'undefined') {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-    script.onload = function() {
-        // SDK加载完成后执行DOMContentLoaded逻辑
-        document.dispatchEvent(new Event('DOMContentLoaded'));
-    };
-    document.head.appendChild(script);
-}
-</script>
+        // 隐藏弹窗
+        function hideModal(type) {
+            const modal = document.getElementById(`${type}Modal`);
+            modal.classList.remove('show');
+            // 恢复背景滚动
+            document.body.style.overflow = '';
+        }
+    </script>
 </body>
 </html>
