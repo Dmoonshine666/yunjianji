@@ -21,7 +21,6 @@
         header {
             position: relative;
             background-color: #fff8e8;
-            /* 多层背景：遮罩 + 波浪1 + 波浪2 + 山峦 */
             background-image: 
                 linear-gradient(rgba(255, 248, 232, 0.85), rgba(255, 248, 232, 0.95)),
                 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><path d="M0,180 Q200,160 400,180 T800,180 L800,200 L0,200 Z" fill="%23dcc8a8" opacity="0.5"/></svg>'),
@@ -177,6 +176,7 @@
             box-shadow: 0 4px 12px rgba(139, 69, 19, 0.08);
             display: flex;
             flex-direction: column;
+            flex-shrink: 0; /* 防止侧边栏被压缩 */
         }
         .sidebar h3 {
             font-family: "STKaiti", "KaiTi", serif;
@@ -203,7 +203,7 @@
         .notebook-list-container::-webkit-scrollbar { width: 6px; }
         .notebook-list-container::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 3px; }
         
-        /* ✅ 笔记集样式：按钮始终显示，无悬停特效 */
+        /* ✅ 笔记集样式：按钮始终显示，增大按钮尺寸 */
         .notebook-item {
             padding: 12px 15px;
             margin-bottom: 10px;
@@ -230,17 +230,22 @@
             box-shadow: 0 2px 8px rgba(200, 90, 90, 0.1);
         }
         .notebook-name {
-            max-width: 140px; /* 稍微缩小给按钮留空间 */
+            max-width: 120px; /* 缩小给大按钮留空间 */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        /* 按钮组始终显示 */
+        /* 按钮组始终显示，增大尺寸 */
         .notebook-actions { 
             display: flex; 
-            gap: 6px; 
-            opacity: 1; /* 强制不透明 */
-            transition: none; /* 移除过渡 */
+            gap: 8px; 
+            opacity: 1;
+            transition: none;
+        }
+        .btn-notebook-edit, .btn-notebook-delete {
+            padding: 6px 12px !important; /* 增大内边距 */
+            font-size: 14px !important; /* 增大字体 */
+            min-width: 32px; /* 最小宽度 */
         }
 
         /* 内容区 */
@@ -251,6 +256,7 @@
             border-radius: 12px;
             padding: 25px;
             box-shadow: 0 4px 12px rgba(139, 69, 19, 0.08);
+            min-width: 0; /* 防止内容溢出 */
         }
         
         .note-header {
@@ -264,23 +270,23 @@
         .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; font-size: 1.8rem; }
         .note-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* 稍微缩小卡片最小宽度 */
+            gap: 18px;
         }
         
-        /* ✅ 笔记卡片样式：按钮始终显示，无悬停特效 */
+        /* ✅ 笔记卡片样式：稍微变小，按钮始终显示 */
         .note-card {
             background: #fff;
             border: 1px solid #e6d8c7;
             border-radius: 10px;
-            padding: 20px;
+            padding: 16px; /* 缩小内边距 */
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s; /* 只保留卡片本身的动效 */
+            transition: transform 0.3s, box-shadow 0.3s;
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: 220px;
+            height: 200px; /* 缩小高度 */
         }
         .note-card::before {
             content: '';
@@ -296,13 +302,13 @@
         .note-card:hover::before { width: 8px; background: #c85a5a; }
         .note-card h4 {
             font-family: "STKaiti", "KaiTi", serif;
-            margin-bottom: 12px;
-            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-size: 1.2rem; /* 缩小字体 */
             color: #8B4513;
             line-height: 1.4;
         }
         .note-card p {
-            font-size: 0.95rem;
+            font-size: 0.9rem; /* 缩小字体 */
             color: #666;
             line-height: 1.6;
             display: -webkit-box;
@@ -311,17 +317,21 @@
             overflow: hidden;
             flex: 1;
         }
-        .note-time { font-size: 0.85rem; color: #999; margin-top: 15px; text-align: right; font-style: italic; }
+        .note-time { font-size: 0.8rem; color: #999; margin-top: 12px; text-align: right; font-style: italic; }
         /* 按钮组始终显示 */
         .note-actions { 
             position: absolute; 
-            bottom: 15px; 
-            right: 15px; 
+            bottom: 12px; 
+            right: 12px; 
             display: flex; 
-            gap: 8px; 
-            opacity: 1; /* 强制不透明 */
-            transform: none; /* 移除位移 */
-            transition: none; /* 移除过渡 */
+            gap: 6px; 
+            opacity: 1;
+            transform: none;
+            transition: none;
+        }
+        .btn-note-edit, .btn-note-delete {
+            padding: 4px 8px !important;
+            font-size: 12px !important;
         }
 
         /* ========== 编辑器样式 (单行工具栏优化) ========== */
@@ -338,11 +348,11 @@
         }
         .editor-title:focus { outline: none; border-color: #c85a5a; background: #fffbf0; }
 
-        /* ✅ 单行工具栏 */
+        /* ✅ 单行工具栏 - 强制不换行 */
         .editor-toolbar {
             display: flex;
             flex-wrap: nowrap; /* 强制不换行 */
-            gap: 6px; /* 缩小间距 */
+            gap: 6px;
             padding: 10px;
             background: #f9f5eb;
             border: 2px solid #d2b48c;
@@ -353,30 +363,29 @@
             white-space: nowrap;
             align-items: center;
         }
-        /* 自定义滚动条样式，使其更美观 */
         .editor-toolbar::-webkit-scrollbar { height: 6px; }
         .editor-toolbar::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 3px; }
         .editor-toolbar::-webkit-scrollbar-track { background: #f0e6d2; }
 
         .toolbar-group {
             display: flex;
-            gap: 4px; /* 组内间距缩小 */
+            gap: 4px;
             padding-right: 8px;
             margin-right: 8px;
             align-items: center;
             border-right: 1px solid #e0d0b0;
-            flex-shrink: 0; /* 防止压缩 */
+            flex-shrink: 0;
         }
         .toolbar-group:last-child { border-right: none; padding-right: 0; margin-right: 0; }
         
         .toolbar-btn {
-            width: 36px; /* 稍微缩小一点以适应单行 */
-            height: 36px;
+            width: 34px; /* 稍微缩小以适应单行 */
+            height: 34px;
             border: 1px solid #d2b48c;
             border-radius: 6px;
             background: #fff;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             color: #8B4513;
             display: flex;
             align-items: center;
@@ -400,7 +409,7 @@
         }
         
         .toolbar-select {
-            height: 36px;
+            height: 34px;
             border: 1px solid #d2b48c;
             border-radius: 6px;
             background: #fff;
@@ -409,14 +418,14 @@
             padding: 0 8px;
             cursor: pointer;
             outline: none;
-            font-size: 14px;
+            font-size: 13px;
             flex-shrink: 0;
         }
         .toolbar-select:focus { border-color: #c85a5a; }
 
         .color-picker-wrapper {
             position: relative;
-            width: 36px; height: 36px;
+            width: 34px; height: 34px;
             overflow: hidden;
             border-radius: 6px;
             border: 1px solid #d2b48c;
@@ -545,7 +554,7 @@
             header::before, header::after { display: none; }
             .user-actions { justify-content: center; }
             .note-list { grid-template-columns: 1fr; }
-            .notebook-name { max-width: 100px; }
+            .notebook-name { max-width: 80px; }
         }
     </style>
 </head>
@@ -939,8 +948,8 @@
                             html += '<li class="notebook-item ' + isActive + '" data-id="' + nb.id + '">' +
                                 '<span class="notebook-name">' + escapeHtml(nb.name) + '</span>' +
                                 '<div class="notebook-actions">' +
-                                '<button class="btn btn-edit btn-notebook-edit" style="padding:4px 8px;font-size:12px;" data-id="' + nb.id + '" data-name="' + escapeHtml(nb.name) + '">改</button>' +
-                                '<button class="btn btn-danger btn-notebook-delete" style="padding:4px 8px;font-size:12px;" data-id="' + nb.id + '">删</button>' +
+                                '<button class="btn btn-edit btn-notebook-edit" data-id="' + nb.id + '" data-name="' + escapeHtml(nb.name) + '">改</button>' +
+                                '<button class="btn btn-danger btn-notebook-delete" data-id="' + nb.id + '">删</button>' +
                                 '</div></li>';
                         }
                         list.innerHTML = html;
@@ -1057,8 +1066,8 @@
                                         '<p>' + escapeHtml(contentText) + '</p>' +
                                         '<div class="note-time">' + formatDate(note.updated_at) + '</div>' +
                                         '<div class="note-actions">' +
-                                        '<button class="btn btn-edit btn-note-edit" style="padding:4px 10px;font-size:12px;">编辑</button>' +
-                                        '<button class="btn btn-danger btn-note-delete" style="padding:4px 10px;font-size:12px;">删除</button>' +
+                                        '<button class="btn btn-edit btn-note-edit">编辑</button>' +
+                                        '<button class="btn btn-danger btn-note-delete">删除</button>' +
                                         '</div></div>';
                                 }
                             }
@@ -1130,7 +1139,7 @@
                 });
         }
 
-        // ✅ 最终定稿版：单行工具栏 + 始终显示的按钮 + 波浪背景
+        // ✅ 最终优化版：布局稳定 + 单行工具栏 + 按钮尺寸调整
         function showEditor(title, content) {
             var contentArea = document.getElementById('contentArea');
             var isEdit = appState.currentNoteId ? '编辑笔记' : '新建笔记';
@@ -1147,7 +1156,7 @@
                 
                 '<div class="editor-toolbar">' +
                     '<div class="toolbar-group">' +
-                        '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 100px;">' +
+                        '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 95px;">' +
                             '<option value="SimSun">宋体</option>' +
                             '<option value="KaiTi">楷体</option>' +
                             '<option value="STKaiti">华文楷体</option>' +
@@ -1157,7 +1166,7 @@
                         '</select>' +
                     '</div>' +
                     '<div class="toolbar-group">' +
-                        '<select class="toolbar-select" id="fontSize" title="字号" style="width: 80px;">' +
+                        '<select class="toolbar-select" id="fontSize" title="字号" style="width: 75px;">' +
                             '<option value="1">八号</option>' +
                             '<option value="1">七号</option>' +
                             '<option value="1">小六</option>' +
@@ -1186,7 +1195,7 @@
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnUL" title="无序列表">•</button>' +
                         '<button class="toolbar-btn" id="btnOL" title="有序列表">1.</button>' +
-                        '<button class="toolbar-btn" id="btnQuote" title="引用">”</button>' +
+                        '<button class="toolbar-btn" id="btnQuote" title="引用">"</button>' +
                         '<button class="toolbar-btn" id="btnCode" title="代码">&lt;/&gt;</button>' +
                     '</div>' +
                     '<div class="toolbar-group">' +
