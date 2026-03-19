@@ -164,6 +164,7 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            /*新加的*/transition: all 0.3s ease;
         }
         .sidebar h3 {
             font-family: "STKaiti", "KaiTi", serif;
@@ -387,7 +388,7 @@
             overflow: hidden;
         }
          /*.原有的toolbar-btn:hover { background: #f5e8d5; border-color: #c85a5a; color: #c85a5a; }
-        .toolbar-btn.active { background: #e6d8c7; border-color: #8B4513; color: #8B4513; }
+        .toolbar-btn.active { background: #e6d8c7; border-color: #8B4513; color: #8B4513; }*/
         
         .toolbar-select {
             height: 28px;
@@ -402,7 +403,7 @@
             outline: none;
             flex-shrink: 0;
         }
-        .toolbar-select:focus { border-color: #c85a5a; }*/
+        .toolbar-select:focus { border-color: #c85a5a; }
         .toolbar-btn::before {
             content: "";
             position: absolute;
@@ -440,18 +441,13 @@
             flex-shrink: 0;
         }
         .color-picker-wrapper input[type="color"] {
-            /*原有的 position: absolute;
+            position: absolute;
             top: -50%; left: -50%;
             width: 200%; height: 200%;
             cursor: pointer;
             border: none;
             padding: 0;
-            background: none; */
-            width: 20px;
-            height: 20px;
-            border: none;
-            padding: 0;
-            cursor: pointer;
+            background: none;
         }
 
         .editor-content {
