@@ -5,373 +5,311 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>云笺记 - 古风云端笔记</title>
     <style>
-        :root {
-            --bg-color: #f5f0e6;
-            --paper-color: #fffbf0;
-            --primary-color: #8B4513;
-            --accent-color: #c85a5a;
-            --border-color: #d2b48c;
-            --text-color: #333;
-            --shadow: 0 4px 12px rgba(139, 69, 19, 0.15);
-        }
-
+        /* ========== 恢复原始界面风格 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: "Microsoft YaHei", "SimSun", sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            background-image: 
-                linear-gradient(rgba(245, 240, 230, 0.9), rgba(245, 240, 230, 0.9)),
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><path d="M0,0 L40,40 M40,0 L0,40" stroke="%23e6d8c7" stroke-width="1" fill="none"/></svg>');
-            background-size: cover, 40px;
-            min-height: 100vh;
+            background-color: #f5f0e6;
+            color: #333;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,100 M100,0 L0,100" stroke="%23e6d8c7" stroke-width="0.5" fill="none"/></svg>');
+            background-size: 100px;
         }
-
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-
-        /* Header */
+        .container { max-width: 1280px; margin: 0 auto; padding: 20px; }
         header {
-            background: linear-gradient(to right, #fff8e8, #fff);
-            color: var(--primary-color);
-            padding: 20px 30px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            margin-bottom: 25px;
-            border: 1px solid var(--border-color);
+            background-color: #fff8e8;
+            color: #8B4513;
+            padding: 25px 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 2px solid #c37e7ed1;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: relative;
-            overflow: hidden;
         }
-        header::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 4px;
-            background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
-        }
-        header h1 { font-family: "STKaiti", "KaiTi", serif; font-size: 2.2rem; letter-spacing: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        header p { font-family: "STKaiti", "KaiTi", serif; opacity: 0.8; font-size: 0.9rem; margin-top: 4px; }
-        .user-actions { display: flex; gap: 12px; align-items: center; }
-
-        /* Toast */
+        header h1 { font-family: "STKaiti", "KaiTi", serif; font-size: 2.5rem; letter-spacing: 4px; }
+        header p { font-family: "STKaiti", "KaiTi", serif; opacity: 0.8; }
+        .user-actions { display: flex; gap: 10px; }
+        
         .toast {
-            position: fixed; top: 80px; left: 50%;
-            transform: translateX(-50%) translateY(-20px);
-            padding: 12px 24px;
-            background-color: rgba(40, 40, 40, 0.95);
+            position: fixed; top: 60px; left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 20px;
+            background-color: rgba(51, 51, 51, 0.9);
             color: #fff;
-            border-radius: 50px;
+            border-radius: 6px;
             z-index: 9999;
             opacity: 0;
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            font-family: "STKaiti", serif;
-            letter-spacing: 1px;
+            transition: opacity 0.3s;
+            max-width: 80%;
         }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        .toast.error { background-color: rgba(178, 34, 34, 0.95); }
-        .toast.info { background-color: rgba(51, 102, 153, 0.95); }
-        .toast.success { background-color: rgba(34, 139, 34, 0.95); }
+        .toast.show { opacity: 1; }
+        .toast.error { background-color: rgba(178, 34, 34, 0.9); }
+        .toast.info { background-color: rgba(51, 102, 153, 0.9); }
+        .toast.success { background-color: rgba(34, 139, 34, 0.9); }
 
-        /* Modal */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(60, 40, 20, 0.6);
-            backdrop-filter: blur(4px);
-            display: flex; align-items: center; justify-content: center;
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             z-index: 10000;
-            opacity: 0; visibility: hidden;
+            opacity: 0;
+            visibility: hidden;
             transition: all 0.3s;
         }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal {
-            background: #fffdf5;
-            border: 2px solid var(--accent-color);
-            border-radius: 16px;
-            padding: 30px;
-            width: 90%; max-width: 420px;
+            background: #fff8e8;
+            border: 2px solid #c85a5a;
+            border-radius: 10px;
+            padding: 25px;
+            width: 100%;
+            max-width: 450px;
             position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            transform: scale(0.9);
-            transition: transform 0.3s;
         }
-        .modal-overlay.show .modal { transform: scale(1); }
         .modal-close {
-            position: absolute; top: 15px; right: 20px;
+            position: absolute; top: 15px; right: 15px;
             background: none; border: none;
-            font-size: 1.8rem; color: var(--primary-color);
-            cursor: pointer; transition: transform 0.2s;
+            font-size: 1.5rem; color: #8B4513;
+            cursor: pointer;
         }
-        .modal-close:hover { transform: rotate(90deg); color: var(--accent-color); }
         .modal-title {
             font-family: "STKaiti", "KaiTi", serif;
-            color: var(--primary-color);
+            color: #8B4513;
             font-size: 1.8rem;
             text-align: center;
-            margin-bottom: 25px;
-            border-bottom: 2px dashed var(--border-color);
-            padding-bottom: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #d2b48c;
+            padding-bottom: 10px;
         }
-        .form-group { margin-bottom: 18px; }
+        .form-group { margin-bottom: 15px; }
         .form-label {
-            display: block; margin-bottom: 8px;
-            color: var(--primary-color); font-family: "STKaiti", "KaiTi", serif;
-            font-weight: bold;
+            display: block; margin-bottom: 5px;
+            color: #8B4513; font-family: "STKaiti", "KaiTi", serif;
         }
         .form-input {
-            width: 100%; padding: 12px 15px;
-            border: 1px solid var(--border-color);
+            width: 100%; padding: 10px 12px;
+            border: 1px solid #d2b48c;
             border-radius: 8px;
             background: #fff;
-            font-family: inherit;
-            transition: all 0.3s;
         }
         .form-input:focus {
             outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(200, 90, 90, 0.15);
+            border-color: #c85a5a;
+            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.2);
         }
-        .form-actions { display: flex; gap: 12px; margin-top: 25px; }
+        .form-actions { display: flex; gap: 10px; margin-top: 20px; }
         .form-switch {
-            text-align: center; margin-top: 20px;
-            color: var(--primary-color); font-family: "STKaiti", "KaiTi", serif;
-            font-size: 0.9rem;
+            text-align: center; margin-top: 15px;
+            color: #8B4513; font-family: "STKaiti", "KaiTi", serif;
         }
-        .form-switch a { color: var(--accent-color); text-decoration: none; font-weight: bold; }
+        .form-switch a { color: #c85a5a; text-decoration: none; cursor: pointer; }
         .form-switch a:hover { text-decoration: underline; }
 
-        /* Main Layout */
-        .main { display: flex; gap: 25px; min-height: calc(100vh - 160px); }
-        
-        /* Sidebar */
+        .main { display: flex; gap: 20px; min-height: calc(100vh - 180px); }
         .sidebar {
-            width: 300px;
-            background: #fffdf5;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
+            width: 290px;
+            background: #fff8e8;
+            border: 2px solid #d2b48c;
+            border-radius: 10px;
+            padding: 15px;
         }
         .sidebar h3 {
             font-family: "STKaiti", "KaiTi", serif;
-            color: var(--primary-color);
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--border-color);
-            font-size: 1.4rem;
+            color: #8B4513;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #d2b48c;
         }
-        .create-notebook { display: flex; gap: 8px; margin-bottom: 20px; }
+        .create-notebook { display: flex; gap: 10px; margin-bottom: 20px; }
         .create-notebook input {
-            flex: 1; padding: 10px;
-            border: 1px solid var(--border-color);
+            flex: 1; padding: 8px 12px;
+            border: 1px solid #d2b48c;
             border-radius: 6px;
             font-family: "STKaiti", "KaiTi", serif;
-            background: #fff;
         }
         .notebook-list { list-style: none; }
         .notebook-list-container {
             flex: 1;
             overflow-y: auto;
-            padding-right: 5px;
+            max-height: 500px;
         }
-        /* Custom Scrollbar */
-        .notebook-list-container::-webkit-scrollbar { width: 6px; }
-        .notebook-list-container::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-        
         .notebook-item {
-            padding: 12px 15px;
-            margin-bottom: 10px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
             background: #fff;
-            border: 1px solid #eee;
-            border-left: 4px solid transparent;
+            border: 2px solid #e6d8c7;
             border-radius: 8px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-family: "STKaiti", "KaiTi", serif;
-            transition: all 0.2s;
-            font-size: 1.05rem;
         }
-        .notebook-item:hover { 
-            background: #fcf8f0; 
-            transform: translateX(5px);
-            border-left-color: var(--border-color);
-        }
+        .notebook-item:hover { background: #f9f3e6; }
         .notebook-item.active {
             background: #f5e8d5;
-            border-left-color: var(--accent-color);
-            border-color: var(--accent-color);
-            box-shadow: 0 2px 8px rgba(200, 90, 90, 0.1);
+            border-color: #c85a5a;
         }
         .notebook-name {
-            max-width: 160px;
+            max-width: 180px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .notebook-actions { display: flex; gap: 6px; opacity: 0; transition: opacity 0.2s; }
-        .notebook-item:hover .notebook-actions { opacity: 1; }
+        .notebook-actions { display: flex; gap: 5px; }
 
-        /* Content Area */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: "STKaiti", "KaiTi", serif;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn-primary {
+            background: linear-gradient(135deg, #c85a5a, #a04040);
+            color: #fff;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #cd3b3b, #c22e2e);
+            color: #fff;
+        }
+        .btn-edit {
+            background: linear-gradient(135deg, #d6b257, #e2b951);
+            color: #fff;
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #f5f0e6, #e6d8c7);
+            color: #8B4513;
+            border: 1px solid #d2b48c;
+        }
+
         .content {
             flex: 1;
-            background: #fffdf5;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: var(--shadow);
-            position: relative;
+            background: #fff8e8;
+            border: 2px solid #d2b48c;
+            border-radius: 10px;
+            padding: 20px;
         }
-        
-        /* Note Header & List */
         .note-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px dashed var(--border-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #d2b48c;
         }
-        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: var(--primary-color); font-size: 1.6rem; }
+        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; }
         .note-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
         }
         .note-card {
             background: #fff;
-            border: 1px solid #eee;
-            border-radius: 10px;
-            padding: 20px;
+            border: 1px solid #e6d8c7;
+            border-radius: 8px;
+            padding: 15px;
             cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 200px;
-        }
-        .note-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-            background: var(--border-color);
-            transition: width 0.3s;
+            transition: all 0.2s;
         }
         .note-card:hover {
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
         }
-        .note-card:hover::before { width: 8px; background: var(--accent-color); }
         .note-card h4 {
             font-family: "STKaiti", "KaiTi", serif;
-            margin-bottom: 12px;
-            font-size: 1.2rem;
-            color: var(--primary-color);
-            line-height: 1.4;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .note-card p {
             font-size: 0.9rem;
             color: #666;
-            line-height: 1.6;
             display: -webkit-box;
-            -webkit-line-clamp: 4;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            flex: 1;
         }
-        .note-time { font-size: 0.8rem; color: #999; margin-top: 15px; text-align: right; font-style: italic; }
-        .note-actions { 
-            position: absolute; bottom: 15px; right: 15px; 
-            display: flex; gap: 8px; 
-            opacity: 0; transform: translateY(10px);
-            transition: all 0.3s;
-        }
-        .note-card:hover .note-actions { opacity: 1; transform: translateY(0); }
+        .note-time { font-size: 0.8rem; color: #999; margin: 10px 0; }
+        .note-actions { display: flex; gap: 5px; }
 
-        /* Editor Styles */
+        /* ========== 保留并优化的编辑器样式 ========== */
         .editor-title {
             width: 100%;
-            padding: 12px 0;
-            border: none;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 20px;
-            font-size: 1.8rem;
+            padding: 10px 15px;
+            border: 1px solid #d2b48c;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
             font-family: "STKaiti", "KaiTi", serif;
-            color: var(--primary-color);
-            background: transparent;
         }
-        .editor-title:focus { outline: none; border-bottom-color: var(--accent-color); }
-
-        /* Enhanced Toolbar */
+        
+        /* 增强版工具栏样式 (适配旧界面) */
         .editor-toolbar {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            padding: 12px;
-            background: #f9f5eb;
-            border: 1px solid var(--border-color);
+            padding: 10px;
+            background: #f9f3e6;
+            border: 1px solid #d2b48c;
             border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
+            margin-bottom: 10px;
         }
         .toolbar-group {
             display: flex;
-            gap: 6px;
-            padding-right: 12px;
-            border-right: 1px solid #e0d0b0;
-            margin-right: 12px;
+            gap: 4px;
+            padding-right: 8px;
+            border-right: 1px solid #d2b48c;
+            margin-right: 8px;
             align-items: center;
         }
         .toolbar-group:last-child { border-right: none; padding-right: 0; margin-right: 0; }
         
         .toolbar-btn {
-            width: 34px; height: 34px;
-            border: 1px solid transparent;
+            width: 32px; height: 32px;
+            border: 1px solid #d2b48c;
             border-radius: 6px;
             background: #fff;
             cursor: pointer;
-            font-size: 15px;
-            color: var(--primary-color);
+            font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .toolbar-btn:hover { 
-            background: var(--accent-color); 
-            color: #fff; 
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(200, 90, 90, 0.3);
-        }
-        .toolbar-btn.active { 
-            background: var(--primary-color); 
-            color: #fff; 
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
+        .toolbar-btn:hover { background: #f5e8d5; border-color: #c85a5a; }
+        .toolbar-btn.active { background: #e6d8c7; border-color: #8B4513; }
+        
         .toolbar-select {
-            height: 34px;
-            border: 1px solid var(--border-color);
+            height: 32px;
+            border: 1px solid #d2b48c;
             border-radius: 6px;
             background: #fff;
-            color: var(--primary-color);
-            font-family: inherit;
-            padding: 0 8px;
+            color: #8B4513;
+            font-family: "STKaiti", "KaiTi", serif;
+            padding: 0 5px;
             cursor: pointer;
+            outline: none;
         }
+        .toolbar-select:focus { border-color: #c85a5a; }
+
         .color-picker-wrapper {
             position: relative;
-            width: 34px; height: 34px;
+            width: 32px; height: 32px;
             overflow: hidden;
             border-radius: 6px;
-            border: 1px solid var(--border-color);
+            border: 1px solid #d2b48c;
             cursor: pointer;
+            background: #fff;
         }
         .color-picker-wrapper input[type="color"] {
             position: absolute;
@@ -385,95 +323,83 @@
 
         .editor-content {
             width: 100%;
-            min-height: 400px;
-            padding: 20px;
-            border: 1px solid #eee;
+            min-height: 300px;
+            padding: 15px;
+            border: 1px solid #d2b48c;
             border-radius: 8px;
             background: #fff;
-            font-size: 1.05rem;
+            font-size: 1rem;
             line-height: 1.8;
-            color: #333;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
-            outline: none;
         }
-        .editor-content:focus { border-color: var(--border-color); }
+        .editor-content:focus {
+            outline: none;
+            border-color: #c85a5a;
+        }
         
-        /* Editor Content Styling */
+        /* 编辑器内容样式补充 */
         .editor-content blockquote {
-            border-left: 4px solid var(--accent-color);
+            border-left: 4px solid #c85a5a;
             margin: 10px 0;
-            padding: 10px 20px;
+            padding: 5px 15px;
             background: #fff8f8;
             color: #666;
-            font-style: italic;
         }
         .editor-content pre {
-            background: #2d2d2d;
-            color: #ccc;
-            padding: 15px;
-            border-radius: 6px;
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
             overflow-x: auto;
             font-family: Consolas, monospace;
-            margin: 10px 0;
+            border: 1px solid #ddd;
         }
         .editor-content ul, .editor-content ol { padding-left: 25px; margin: 10px 0; }
-        .editor-content img { max-width: 100%; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .editor-content img { max-width: 100%; border-radius: 4px; }
 
         .empty-state {
             text-align: center;
-            padding: 80px 20px;
-            color: #aaa;
+            padding: 60px 20px;
+            color: #999;
             font-family: "STKaiti", "KaiTi", serif;
         }
-        .empty-state h3 { font-size: 1.5rem; margin-bottom: 10px; color: var(--primary-color); }
-
-        /* Buttons */
-        .btn {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: "STKaiti", "KaiTi", serif;
-            font-size: 14px;
-            font-weight: bold;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .btn-primary { background: linear-gradient(135deg, var(--accent-color), #a04040); color: #fff; }
-        .btn-danger { background: linear-gradient(135deg, #cd3b3b, #c22e2e); color: #fff; }
-        .btn-edit { background: linear-gradient(135deg, #d6b257, #e2b951); color: #fff; }
-        .btn-secondary { background: #fff; color: var(--primary-color); border: 1px solid var(--border-color); }
 
         .loading {
-            display: flex; align-items: center; justify-content: center; padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
         }
         .loading::after {
-            content: ""; width: 30px; height: 30px;
-            border: 3px solid var(--border-color);
-            border-top-color: var(--accent-color);
+            content: "";
+            width: 30px; height: 30px;
+            border: 3px solid #d2b48c;
+            border-top-color: #c85a5a;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .debug-panel {
-            position: fixed; bottom: 10px; right: 10px;
-            background: #222; color: #0f0;
-            padding: 10px; border-radius: 5px;
-            font-size: 12px; max-width: 300px; max-height: 200px;
-            overflow-y: auto; z-index: 99999;
-            display: none; font-family: monospace;
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: #222;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 99999;
+            display: none;
         }
         .debug-panel.show { display: block; }
 
         @media (max-width: 768px) {
             .main { flex-direction: column; }
-            .sidebar { width: 100%; height: 300px; }
+            .sidebar { width: 100%; }
             header { flex-direction: column; gap: 15px; text-align: center; }
             .user-actions { justify-content: center; }
-            .note-list { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -514,7 +440,6 @@
     <div class="toast" id="toast"></div>
     <div class="debug-panel" id="debugPanel"></div>
 
-    <!-- Login Modal -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal">
             <button class="modal-close" id="closeLoginBtn">×</button>
@@ -537,7 +462,6 @@
         </div>
     </div>
 
-    <!-- Register Modal -->
     <div class="modal-overlay" id="registerModal">
         <div class="modal">
             <button class="modal-close" id="closeRegisterBtn">×</button>
@@ -674,6 +598,11 @@
             }
             
             appState.supabase.auth.getSession().then(function(result) {
+                debug('getSession 结果:' + JSON.stringify({
+                    hasError: !!result.error,
+                    hasSession: !!result.data.session
+                }));
+                
                 if (result.error) {
                     debug('获取会话错误:' + result.error.message);
                     updateUIForLoggedOut();
@@ -714,6 +643,11 @@
                 email: email,
                 password: password
             }).then(function(result) {
+                debug('登录结果:' + JSON.stringify({
+                    hasError: !!result.error,
+                    hasUser: !!result.data.user
+                }));
+                
                 if (result.error) throw result.error;
                 
                 appState.currentUser = result.data.user;
@@ -768,6 +702,11 @@
                     data: { username: username }
                 }
             }).then(function(result) {
+                debug('注册结果:' + JSON.stringify({
+                    hasError: !!result.error,
+                    hasUser: !!result.data.user
+                }));
+                
                 if (result.error) throw result.error;
 
                 if (result.data.user) {
@@ -858,7 +797,7 @@
 
                     var data = result.data || [];
                     if (data.length === 0) {
-                        list.innerHTML = '<li class="empty-state" style="padding:20px;text-align:center;color:#999;">暂无笔记集，请创建</li>';
+                        list.innerHTML = '<li class="empty-state">暂无笔记集，请创建</li>';
                     } else {
                         var html = '';
                         for (var i = 0; i < data.length; i++) {
@@ -867,8 +806,8 @@
                             html += '<li class="notebook-item ' + isActive + '" data-id="' + nb.id + '">' +
                                 '<span class="notebook-name">' + escapeHtml(nb.name) + '</span>' +
                                 '<div class="notebook-actions">' +
-                                '<button class="btn btn-edit btn-notebook-edit" style="padding:4px 8px;font-size:12px;" data-id="' + nb.id + '" data-name="' + escapeHtml(nb.name) + '">改</button>' +
-                                '<button class="btn btn-danger btn-notebook-delete" style="padding:4px 8px;font-size:12px;" data-id="' + nb.id + '">删</button>' +
+                                '<button class="btn btn-edit btn-notebook-edit" data-id="' + nb.id + '" data-name="' + escapeHtml(nb.name) + '">改</button>' +
+                                '<button class="btn btn-danger btn-notebook-delete" data-id="' + nb.id + '">删</button>' +
                                 '</div></li>';
                         }
                         list.innerHTML = html;
@@ -975,7 +914,7 @@
 
                             var notesHtml = '';
                             if (notes.length === 0) {
-                                notesHtml = '<div class="empty-state" style="grid-column:1/-1">暂无笔记，快去写一篇吧</div>';
+                                notesHtml = '<div class="empty-state" style="grid-column:1/-1">暂无笔记</div>';
                             } else {
                                 for (var i = 0; i < notes.length; i++) {
                                     var note = notes[i];
@@ -985,8 +924,8 @@
                                         '<p>' + escapeHtml(contentText) + '</p>' +
                                         '<div class="note-time">' + formatDate(note.updated_at) + '</div>' +
                                         '<div class="note-actions">' +
-                                        '<button class="btn btn-edit btn-note-edit" style="padding:4px 10px;font-size:12px;">编辑</button>' +
-                                        '<button class="btn btn-danger btn-note-delete" style="padding:4px 10px;font-size:12px;">删除</button>' +
+                                        '<button class="btn btn-edit btn-note-edit" data-id="' + note.id + '">编辑</button>' +
+                                        '<button class="btn btn-danger btn-note-delete" data-id="' + note.id + '">删除</button>' +
                                         '</div></div>';
                                 }
                             }
@@ -1058,7 +997,7 @@
                 });
         }
 
-        // ✅ 增强版编辑器 UI
+        // ✅ 最终版：保留旧界面风格 + 完整功能工具栏 (含字体/字号)
         function showEditor(title, content) {
             var contentArea = document.getElementById('contentArea');
             var isEdit = appState.currentNoteId ? '编辑笔记' : '新建笔记';
@@ -1068,50 +1007,67 @@
                 '<div class="note-header">' +
                 '<h3>' + isEdit + '</h3>' +
                 '<div>' +
-                '<button class="btn btn-primary" id="saveNoteBtn">保存墨宝</button>' +
+                '<button class="btn btn-primary" id="saveNoteBtn">保存</button>' +
                 '<button class="btn btn-secondary" id="cancelNoteBtn">取消</button>' +
                 '</div></div>' +
-                '<input type="text" class="editor-title" id="noteTitle" placeholder="在此输入标题..." value="' + escapeHtml(title) + '">' +
+                '<input type="text" class="editor-title" id="noteTitle" placeholder="标题" value="' + escapeHtml(title) + '">' +
                 
                 '<div class="editor-toolbar">' +
-                    // 字体样式组
+                    // 1. 字体家族 (新增)
+                    '<div class="toolbar-group">' +
+                        '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 100px;">' +
+                            '<option value="SimSun">宋体</option>' +
+                            '<option value="KaiTi">楷体</option>' +
+                            '<option value="STKaiti">华文楷体</option>' +
+                            '<option value="Microsoft YaHei">微软雅黑</option>' +
+                            '<option value="SimHei">黑体</option>' +
+                            '<option value="FangSong">仿宋</option>' +
+                        '</select>' +
+                    '</div>' +
+                    // 2. 字号 (新增)
+                    '<div class="toolbar-group">' +
+                        '<select class="toolbar-select" id="fontSize" title="字号" style="width: 80px;">' +
+                            '<option value="3">正常</option>' +
+                            '<option value="1">小</option>' +
+                            '<option value="2">稍小</option>' +
+                            '<option value="4">稍大</option>' +
+                            '<option value="5">大</option>' +
+                            '<option value="6">特大</option>' +
+                            '<option value="7">极大</option>' +
+                        '</select>' +
+                    '</div>' +
+                    // 3. 基础样式
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnBold" title="加粗"><b>B</b></button>' +
                         '<button class="toolbar-btn" id="btnItalic" title="斜体"><i>I</i></button>' +
                         '<button class="toolbar-btn" id="btnUnderline" title="下划线"><u>U</u></button>' +
                         '<button class="toolbar-btn" id="btnStrike" title="删除线"><s>S</s></button>' +
                     '</div>' +
-                    // 对齐组
+                    // 4. 对齐
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnLeft" title="左对齐">L</button>' +
                         '<button class="toolbar-btn" id="btnCenter" title="居中">C</button>' +
                         '<button class="toolbar-btn" id="btnRight" title="右对齐">R</button>' +
                     '</div>' +
-                    // 列表组
+                    // 5. 列表与块
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnUL" title="无序列表">•</button>' +
                         '<button class="toolbar-btn" id="btnOL" title="有序列表">1.</button>' +
-                        '<button class="toolbar-btn" id="btnQuote" title="引用块">”</button>' +
-                        '<button class="toolbar-btn" id="btnCode" title="代码块">&lt;/&gt;</button>' +
+                        '<button class="toolbar-btn" id="btnQuote" title="引用">”</button>' +
+                        '<button class="toolbar-btn" id="btnCode" title="代码">&lt;/&gt;</button>' +
                     '</div>' +
-                    // 格式组
+                    // 6. 颜色与清除
                     '<div class="toolbar-group">' +
-                        '<select class="toolbar-select" id="fontSize" title="字号">' +
-                            '<option value="3">正常</option>' +
-                            '<option value="1">小</option>' +
-                            '<option value="5">大</option>' +
-                            '<option value="7">特大</option>' +
-                        '</select>' +
                         '<div class="color-picker-wrapper" title="字体颜色">' +
                             '<input type="color" id="fontColor" value="#333333">' +
                         '</div>' +
                         '<button class="toolbar-btn" id="btnClear" title="清除格式">🧹</button>' +
                     '</div>' +
-                    // 插入组
+                    // 7. 插入
                     '<div class="toolbar-group">' +
-                        '<button class="toolbar-btn" id="btnLink" title="插入链接">🔗</button>' +
+                        '<button class="toolbar-btn" id="btnLink" title="链接">🔗</button>' +
                         '<input type="file" id="imageUpload" accept="image/*" style="display:none">' +
-                        '<button class="toolbar-btn" id="btnImage" title="插入图片">🖼️</button>' +
+                        '<button class="toolbar-btn" id="btnImage" title="图片">🖼️</button>' +
                     '</div>' +
                 '</div>' +
                 '<div class="editor-content" id="noteContent" contenteditable="true">' + content + '</div>';
@@ -1125,7 +1081,16 @@
                 loadNotes(notebookId);
             });
 
-            // 基础格式
+            // 字体与字号
+            document.getElementById('fontFamily').addEventListener('change', function() {
+                execCmd('fontName', this.value);
+            });
+            document.getElementById('fontSize').addEventListener('change', function() {
+                execCmd('fontSize', this.value);
+                this.value = '3'; // 重置以便下次选择
+            });
+
+            // 基础样式
             document.getElementById('btnBold').addEventListener('click', function() { execCmd('bold'); });
             document.getElementById('btnItalic').addEventListener('click', function() { execCmd('italic'); });
             document.getElementById('btnUnderline').addEventListener('click', function() { execCmd('underline'); });
@@ -1145,18 +1110,13 @@
                 if(selection.rangeCount > 0) {
                     var range = selection.getRangeAt(0);
                     var pre = document.createElement('pre');
-                    pre.textContent = selection.toString() || '在此输入代码...';
+                    pre.textContent = selection.toString() || '代码...';
                     range.deleteContents();
                     range.insertNode(pre);
                 }
             });
 
-            // 字号与颜色
-            document.getElementById('fontSize').addEventListener('change', function() {
-                execCmd('fontSize', this.value);
-                // 重置选择以便继续输入
-                this.value = '3'; 
-            });
+            // 颜色与清除
             document.getElementById('fontColor').addEventListener('change', function() {
                 execCmd('foreColor', this.value);
             });
@@ -1187,33 +1147,21 @@
         function insertImage(input) {
             var file = input.files[0];
             if (!file) return;
-            
-            // 简单限制大小
             if (file.size > 2 * 1024 * 1024) {
                 showToast('图片过大，请上传小于 2MB 的图片', 'error');
                 input.value = '';
                 return;
             }
-
             var reader = new FileReader();
             reader.onload = function(e) {
                 var img = document.createElement('img');
                 img.src = e.target.result;
                 img.style.maxWidth = '100%';
-                img.style.display = 'block';
-                img.style.margin = '10px auto';
-                
                 var content = document.getElementById('noteContent');
                 content.focus();
                 var selection = window.getSelection();
                 if (selection.rangeCount > 0) {
                     selection.getRangeAt(0).insertNode(img);
-                    // 光标移到图片后
-                    var range = document.createRange();
-                    range.setStartAfter(img);
-                    range.collapse(true);
-                    selection.removeAllRanges();
-                    selection.addRange(range);
                 } else {
                     content.appendChild(img);
                 }
@@ -1264,12 +1212,12 @@
                 showToast('保存失败：' + getFriendlyError(err.message), 'error');
             }).finally(function() {
                 btn.disabled = false;
-                btn.textContent = '保存墨宝';
+                btn.textContent = '保存';
             });
         }
 
         function deleteNote(noteId) {
-            if (!confirm('确定删除此笔记？此操作不可恢复。')) return;
+            if (!confirm('确定删除此笔记？')) return;
             if (!appState.supabase) return;
             appState.supabase
                 .from('notes')
