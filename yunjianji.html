@@ -11,38 +11,38 @@
             font-family: "Microsoft YaHei", "SimSun", sans-serif;
             background-color: #f5f0e6;
             color: #333;
-            /* 保留原有的淡雅纹理 */
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,100 M100,0 L0,100" stroke="%23e6d8c7" stroke-width="0.5" fill="none"/></svg>');
             background-size: 100px;
             min-height: 100vh;
         }
         .container { max-width: 1280px; margin: 0 auto; padding: 20px; }
 
-        /* ========== 头部美化 (重点优化) ========== */
+        /* ========== 头部美化 (增强波浪纹理) ========== */
         header {
             position: relative;
             background-color: #fff8e8;
-            /* 增加古风纹理背景 */
+            /* 多层背景：遮罩 + 波浪1 + 波浪2 + 山峦 */
             background-image: 
-                linear-gradient(rgba(255, 248, 232, 0.9), rgba(255, 248, 232, 0.9)),
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><path d="M0,150 Q200,100 400,150 T800,150 L800,200 L0,200 Z" fill="%23e6d8c7" opacity="0.4"/><path d="M0,170 Q200,120 400,170 T800,170 L800,200 L0,200 Z" fill="%23d2b48c" opacity="0.3"/></svg>');
-            background-size: cover, 100% 100%;
+                linear-gradient(rgba(255, 248, 232, 0.85), rgba(255, 248, 232, 0.95)),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><path d="M0,180 Q200,160 400,180 T800,180 L800,200 L0,200 Z" fill="%23dcc8a8" opacity="0.5"/></svg>'),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><path d="M0,160 Q200,140 400,160 T800,160 L800,200 L0,200 Z" fill="%23c8b494" opacity="0.4"/></svg>'),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><path d="M0,150 Q200,100 400,150 T800,150 L800,200 L0,200 Z" fill="%23e6d8c7" opacity="0.4"/></svg>');
+            background-size: cover, 100% 100%, 100% 100%, 100% 100%;
             background-repeat: no-repeat;
+            background-position: bottom;
             
             color: #8B4513;
             padding: 30px 40px;
             border-radius: 12px;
-            /* 更精致的边框和阴影 */
             box-shadow: 0 6px 16px rgba(139, 69, 19, 0.15);
             margin-bottom: 25px;
             border: 2px solid #c37e7ed1;
-            border-top: 4px solid #8B4513; /* 顶部加深 */
+            border-top: 4px solid #8B4513;
             display: flex;
             align-items: center;
             justify-content: space-between;
             overflow: hidden;
         }
-        /* 装饰角标 */
         header::before {
             content: '✦';
             position: absolute;
@@ -203,6 +203,7 @@
         .notebook-list-container::-webkit-scrollbar { width: 6px; }
         .notebook-list-container::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 3px; }
         
+        /* ✅ 笔记集样式：按钮始终显示，无悬停特效 */
         .notebook-item {
             padding: 12px 15px;
             margin-bottom: 10px;
@@ -220,7 +221,6 @@
         }
         .notebook-item:hover { 
             background: #fcf8f0; 
-            transform: translateX(5px);
             border-left-color: #d2b48c;
         }
         .notebook-item.active {
@@ -230,13 +230,18 @@
             box-shadow: 0 2px 8px rgba(200, 90, 90, 0.1);
         }
         .notebook-name {
-            max-width: 160px;
+            max-width: 140px; /* 稍微缩小给按钮留空间 */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .notebook-actions { display: flex; gap: 6px; opacity: 0; transition: opacity 0.2s; }
-        .notebook-item:hover .notebook-actions { opacity: 1; }
+        /* 按钮组始终显示 */
+        .notebook-actions { 
+            display: flex; 
+            gap: 6px; 
+            opacity: 1; /* 强制不透明 */
+            transition: none; /* 移除过渡 */
+        }
 
         /* 内容区 */
         .content {
@@ -262,13 +267,15 @@
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 20px;
         }
+        
+        /* ✅ 笔记卡片样式：按钮始终显示，无悬停特效 */
         .note-card {
             background: #fff;
             border: 1px solid #e6d8c7;
             border-radius: 10px;
             padding: 20px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: transform 0.3s, box-shadow 0.3s; /* 只保留卡片本身的动效 */
             position: relative;
             overflow: hidden;
             display: flex;
@@ -305,15 +312,19 @@
             flex: 1;
         }
         .note-time { font-size: 0.85rem; color: #999; margin-top: 15px; text-align: right; font-style: italic; }
+        /* 按钮组始终显示 */
         .note-actions { 
-            position: absolute; bottom: 15px; right: 15px; 
-            display: flex; gap: 8px; 
-            opacity: 0; transform: translateY(10px);
-            transition: all 0.3s;
+            position: absolute; 
+            bottom: 15px; 
+            right: 15px; 
+            display: flex; 
+            gap: 8px; 
+            opacity: 1; /* 强制不透明 */
+            transform: none; /* 移除位移 */
+            transition: none; /* 移除过渡 */
         }
-        .note-card:hover .note-actions { opacity: 1; transform: translateY(0); }
 
-        /* ========== 编辑器样式 (重点优化) ========== */
+        /* ========== 编辑器样式 (单行工具栏优化) ========== */
         .editor-title {
             width: 100%;
             padding: 15px;
@@ -327,44 +338,53 @@
         }
         .editor-title:focus { outline: none; border-color: #c85a5a; background: #fffbf0; }
 
-        /* 增强版工具栏 */
+        /* ✅ 单行工具栏 */
         .editor-toolbar {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding: 12px;
+            flex-wrap: nowrap; /* 强制不换行 */
+            gap: 6px; /* 缩小间距 */
+            padding: 10px;
             background: #f9f5eb;
             border: 2px solid #d2b48c;
             border-radius: 8px;
             margin-bottom: 15px;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
+            overflow-x: auto; /* 允许横向滚动 */
+            white-space: nowrap;
+            align-items: center;
         }
+        /* 自定义滚动条样式，使其更美观 */
+        .editor-toolbar::-webkit-scrollbar { height: 6px; }
+        .editor-toolbar::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 3px; }
+        .editor-toolbar::-webkit-scrollbar-track { background: #f0e6d2; }
+
         .toolbar-group {
             display: flex;
-            gap: 6px;
-            padding-right: 12px;
-            border-right: 1px solid #e0d0b0;
-            margin-right: 12px;
+            gap: 4px; /* 组内间距缩小 */
+            padding-right: 8px;
+            margin-right: 8px;
             align-items: center;
+            border-right: 1px solid #e0d0b0;
+            flex-shrink: 0; /* 防止压缩 */
         }
         .toolbar-group:last-child { border-right: none; padding-right: 0; margin-right: 0; }
         
         .toolbar-btn {
-            /* 增大按钮尺寸 */
-            width: 40px; height: 40px;
+            width: 36px; /* 稍微缩小一点以适应单行 */
+            height: 36px;
             border: 1px solid #d2b48c;
             border-radius: 6px;
             background: #fff;
             cursor: pointer;
-            /* 增大字体 */
-            font-size: 18px;
+            font-size: 16px;
             color: #8B4513;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             font-weight: bold;
+            flex-shrink: 0;
         }
         .toolbar-btn:hover { 
             background: #c85a5a; 
@@ -380,28 +400,29 @@
         }
         
         .toolbar-select {
-            height: 40px;
+            height: 36px;
             border: 1px solid #d2b48c;
             border-radius: 6px;
             background: #fff;
             color: #8B4513;
             font-family: "STKaiti", "KaiTi", serif;
-            padding: 0 10px;
+            padding: 0 8px;
             cursor: pointer;
             outline: none;
-            font-size: 16px;
-            min-width: 100px;
+            font-size: 14px;
+            flex-shrink: 0;
         }
         .toolbar-select:focus { border-color: #c85a5a; }
 
         .color-picker-wrapper {
             position: relative;
-            width: 40px; height: 40px;
+            width: 36px; height: 36px;
             overflow: hidden;
             border-radius: 6px;
             border: 1px solid #d2b48c;
             cursor: pointer;
             background: #fff;
+            flex-shrink: 0;
         }
         .color-picker-wrapper input[type="color"] {
             position: absolute;
@@ -427,7 +448,6 @@
         }
         .editor-content:focus { border-color: #c85a5a; background: #fffbf0; }
         
-        /* 编辑器内容样式 */
         .editor-content blockquote {
             border-left: 4px solid #c85a5a;
             margin: 15px 0;
@@ -450,7 +470,6 @@
         .editor-content ul, .editor-content ol { padding-left: 25px; margin: 15px 0; }
         .editor-content img { max-width: 100%; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: 10px 0; }
         
-        /* 表格样式 */
         .editor-content table {
             width: 100%;
             border-collapse: collapse;
@@ -479,7 +498,6 @@
         }
         .empty-state h3 { font-size: 1.6rem; margin-bottom: 10px; color: #8B4513; }
 
-        /* 按钮通用 */
         .btn {
             padding: 10px 24px;
             border: none;
@@ -527,8 +545,7 @@
             header::before, header::after { display: none; }
             .user-actions { justify-content: center; }
             .note-list { grid-template-columns: 1fr; }
-            .toolbar-group { border-right: none; margin-right: 0; padding-right: 0; }
-            .editor-toolbar { justify-content: center; }
+            .notebook-name { max-width: 100px; }
         }
     </style>
 </head>
@@ -1113,7 +1130,7 @@
                 });
         }
 
-        // ✅ 最终精修版：美化标题背景 + 专业字号 + 大图标 + 表格功能
+        // ✅ 最终定稿版：单行工具栏 + 始终显示的按钮 + 波浪背景
         function showEditor(title, content) {
             var contentArea = document.getElementById('contentArea');
             var isEdit = appState.currentNoteId ? '编辑笔记' : '新建笔记';
@@ -1129,9 +1146,8 @@
                 '<input type="text" class="editor-title" id="noteTitle" placeholder="在此输入标题..." value="' + escapeHtml(title) + '">' +
                 
                 '<div class="editor-toolbar">' +
-                    // 1. 字体家族
                     '<div class="toolbar-group">' +
-                        '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 110px;">' +
+                        '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 100px;">' +
                             '<option value="SimSun">宋体</option>' +
                             '<option value="KaiTi">楷体</option>' +
                             '<option value="STKaiti">华文楷体</option>' +
@@ -1140,9 +1156,8 @@
                             '<option value="FangSong">仿宋</option>' +
                         '</select>' +
                     '</div>' +
-                    // 2. 专业字号 (包含四号、小四号等)
                     '<div class="toolbar-group">' +
-                        '<select class="toolbar-select" id="fontSize" title="字号" style="width: 90px;">' +
+                        '<select class="toolbar-select" id="fontSize" title="字号" style="width: 80px;">' +
                             '<option value="1">八号</option>' +
                             '<option value="1">七号</option>' +
                             '<option value="1">小六</option>' +
@@ -1157,38 +1172,32 @@
                             '<option value="7">二号</option>' +
                         '</select>' +
                     '</div>' +
-                    // 3. 基础样式
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnBold" title="加粗"><b>B</b></button>' +
                         '<button class="toolbar-btn" id="btnItalic" title="斜体"><i>I</i></button>' +
                         '<button class="toolbar-btn" id="btnUnderline" title="下划线"><u>U</u></button>' +
                         '<button class="toolbar-btn" id="btnStrike" title="删除线"><s>S</s></button>' +
                     '</div>' +
-                    // 4. 对齐
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnLeft" title="左对齐">L</button>' +
                         '<button class="toolbar-btn" id="btnCenter" title="居中">C</button>' +
                         '<button class="toolbar-btn" id="btnRight" title="右对齐">R</button>' +
                     '</div>' +
-                    // 5. 列表与块
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnUL" title="无序列表">•</button>' +
                         '<button class="toolbar-btn" id="btnOL" title="有序列表">1.</button>' +
                         '<button class="toolbar-btn" id="btnQuote" title="引用">”</button>' +
                         '<button class="toolbar-btn" id="btnCode" title="代码">&lt;/&gt;</button>' +
                     '</div>' +
-                    // 6. 表格 (新增)
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnTable" title="插入表格">▦</button>' +
                     '</div>' +
-                    // 7. 颜色与清除
                     '<div class="toolbar-group">' +
                         '<div class="color-picker-wrapper" title="字体颜色">' +
                             '<input type="color" id="fontColor" value="#333333">' +
                         '</div>' +
                         '<button class="toolbar-btn" id="btnClear" title="清除格式">🧹</button>' +
                     '</div>' +
-                    // 8. 插入
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnLink" title="链接">🔗</button>' +
                         '<input type="file" id="imageUpload" accept="image/*" style="display:none">' +
@@ -1206,27 +1215,23 @@
                 loadNotes(notebookId);
             });
 
-            // 字体与字号
             document.getElementById('fontFamily').addEventListener('change', function() {
                 execCmd('fontName', this.value);
             });
             document.getElementById('fontSize').addEventListener('change', function() {
                 execCmd('fontSize', this.value);
-                this.value = '3'; // 重置
+                this.value = '3';
             });
 
-            // 基础样式
             document.getElementById('btnBold').addEventListener('click', function() { execCmd('bold'); });
             document.getElementById('btnItalic').addEventListener('click', function() { execCmd('italic'); });
             document.getElementById('btnUnderline').addEventListener('click', function() { execCmd('underline'); });
             document.getElementById('btnStrike').addEventListener('click', function() { execCmd('strikeThrough'); });
             
-            // 对齐
             document.getElementById('btnLeft').addEventListener('click', function() { execCmd('justifyLeft'); });
             document.getElementById('btnCenter').addEventListener('click', function() { execCmd('justifyCenter'); });
             document.getElementById('btnRight').addEventListener('click', function() { execCmd('justifyRight'); });
             
-            // 列表与块
             document.getElementById('btnUL').addEventListener('click', function() { execCmd('insertUnorderedList'); });
             document.getElementById('btnOL').addEventListener('click', function() { execCmd('insertOrderedList'); });
             document.getElementById('btnQuote').addEventListener('click', function() { execCmd('formatBlock', 'blockquote'); });
@@ -1241,7 +1246,6 @@
                 }
             });
 
-            // ✅ 新增：表格功能
             document.getElementById('btnTable').addEventListener('click', function() {
                 var rows = prompt("请输入行数 (默认 3):", "3");
                 var cols = prompt("请输入列数 (默认 3):", "3");
@@ -1276,7 +1280,6 @@
                     var range = selection.getRangeAt(0);
                     range.deleteContents();
                     range.insertNode(table);
-                    // 光标移到表格后
                     var newRange = document.createRange();
                     newRange.setStartAfter(table);
                     newRange.collapse(true);
@@ -1287,7 +1290,6 @@
                 }
             });
 
-            // 颜色与清除
             document.getElementById('fontColor').addEventListener('change', function() {
                 execCmd('foreColor', this.value);
             });
@@ -1295,13 +1297,11 @@
                 execCmd('removeFormat');
             });
 
-            // 链接
             document.getElementById('btnLink').addEventListener('click', function() {
                 var url = prompt('请输入链接地址:', 'https://');
                 if (url) execCmd('createLink', url);
             });
 
-            // 图片
             document.getElementById('btnImage').addEventListener('click', function() {
                 document.getElementById('imageUpload').click();
             });
