@@ -11,31 +11,37 @@
             font-family: "Microsoft YaHei", "SimSun", sans-serif;
             background-color: #f5f0e6;
             color: #333;
+            /* 恢复经典的斜线纹理背景 */
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,100 M100,0 L0,100" stroke="%23e6d8c7" stroke-width="0.5" fill="none"/></svg>');
             background-size: 100px;
             min-height: 100vh;
         }
         .container { max-width: 1280px; margin: 0 auto; padding: 20px; }
 
-        /* ========== 头部样式 (保持优化后的样子) ========== */
+        /* ========== 头部样式优化 (重点美化) ========== */
         header {
+            /* 使用更丰富的古风渐变背景 */
             background: linear-gradient(135deg, #fff8e8 0%, #fdf6e3 50%, #f5ebd5 100%);
+            /* 增加纹理叠加 */
             background-image: 
                 linear-gradient(135deg, rgba(255,248,232,0.9) 0%, rgba(245,235,213,0.9) 100%),
                 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="20" fill="none" stroke="%23d4c5a9" stroke-width="1" opacity="0.3"/><path d="M10,50 Q30,30 50,50" fill="none" stroke="%23d4c5a9" stroke-width="1" opacity="0.2"/></svg>');
             background-size: 100% 100%, 60px;
+            
             color: #8B4513;
             padding: 25px 40px;
             border-radius: 12px;
+            /* 双层边框效果，更有层次感 */
             box-shadow: 0 6px 12px rgba(139, 69, 19, 0.15), inset 0 0 0 1px #e6d8c7;
             margin-bottom: 20px;
-            border: 2px solid #c37e7ed1;
+            border: 2px solid #c37e7ed1; /* 保持原有的红褐色边框 */
             display: flex;
             align-items: center;
             justify-content: space-between;
             position: relative;
             overflow: hidden;
         }
+        /* 顶部装饰线 */
         header::before {
             content: '';
             position: absolute;
@@ -148,6 +154,7 @@
 
         .main { display: flex; gap: 20px; min-height: calc(100vh - 180px); }
         
+        /* 侧边栏 */
         .sidebar {
             width: 290px;
             background: #fff8e8;
@@ -179,6 +186,7 @@
             max-height: 500px;
             padding-right: 5px;
         }
+        /* 自定义滚动条 */
         .notebook-list-container::-webkit-scrollbar { width: 6px; }
         .notebook-list-container::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 3px; }
         
@@ -209,6 +217,7 @@
         }
         .notebook-actions { display: flex; gap: 5px; }
 
+        /* 按钮通用 */
         .btn {
             padding: 8px 16px;
             border: none;
@@ -239,6 +248,7 @@
             border: 1px solid #d2b48c;
         }
 
+        /* 内容区 */
         .content {
             flex: 1;
             background: #fff8e8;
@@ -299,7 +309,7 @@
         .note-time { font-size: 0.8rem; color: #999; margin: 10px 0 0; text-align: right; font-style: italic; }
         .note-actions { display: flex; gap: 5px; margin-top: 10px; justify-content: flex-end; }
 
-        /* ========== 编辑器样式 (重点优化按钮) ========== */
+        /* ========== 编辑器样式 (单行工具栏优化) ========== */
         .editor-title {
             width: 100%;
             padding: 10px 15px;
@@ -311,124 +321,137 @@
             background: #fff;
         }
         
+        /* 单行工具栏核心样式 */
         .editor-toolbar {
             display: flex;
-            flex-wrap: nowrap;
-            gap: 8px; /* 稍微增加间距让呼吸感更好 */
-            padding: 10px;
+            flex-wrap: nowrap; /* 强制不换行 */
+            gap: 6px;
+            padding: 9px 10px;
             background: #f9f3e6;
             border: 1px solid #d2b48c;
             border-radius: 8px;
             margin-bottom: 10px;
-            overflow-x: auto;
+            overflow-x: auto; /* 如果屏幕极窄允许横向滚动 */
             align-items: center;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+            /* 以下是自己加 */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            min-width: 100%;
+            -ms-overflow-style: none;
         }
-        .editor-toolbar::-webkit-scrollbar { height: 4px; }
-        .editor-toolbar::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 2px; }
+        .editor-toolbar::-webkit-scrollbar { 
+           /*原有的，下面是加的  height: 4px;  */
+            display: none;
+        }
+        /*原有的  .editor-toolbar::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 2px; } */
 
         .toolbar-group {
             display: flex;
-            gap: 6px;
-            padding-right: 10px;
-            margin-right: 10px;
+            gap: 4px;
+            padding-right: 8px;
+            margin-right: 8px;
             border-right: 1px solid #d2b48c;
             align-items: center;
-            flex-shrink: 0;
+            flex-shrink: 0; /* 防止被压缩 */
+            /* 下面是加的 */
+            flex-wrap: nowrap;
+            white-space: nowrap;
         }
         .toolbar-group:last-child { border-right: none; padding-right: 0; margin-right: 0; }
         
-        /* ✅ 核心按钮样式优化 */
         .toolbar-btn {
-            width: 30px;
-            height: 30px;
-            border: 1px solid #d2b48c;
-            border-radius: 6px;
-            /* 默认渐变背景 */
-            background: linear-gradient(145deg, #fffbf0, #f5ebd5);
+             /* 原有的width: 30px; height: 30px; /* 稍微缩小按钮以适应单行 */
+            /*border: 1px solid #d2b48c;
+            border-radius: 4px;
+            background: #fff;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: all 0.2s;
             flex-shrink: 0;
-            color: #8B4513;
-            box-shadow: 0 2px 3px rgba(139, 69, 19, 0.1);
+            color: #555;*/
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: 1px solid #d2b48c;
+            background: linear-gradient(135deg, #fff 0%, #f9f3e6 100%);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
         }
+         /*.原有的toolbar-btn:hover { background: #f5e8d5; border-color: #c85a5a; color: #c85a5a; }
+        .toolbar-btn.active { background: #e6d8c7; border-color: #8B4513; color: #8B4513; }
         
-        /* 悬停效果 */
-        .toolbar-btn:hover {
-            transform: translateY(-2px);
-            background: linear-gradient(145deg, #fff8e8, #f5e8d5);
-            border-color: #c85a5a;
-            color: #c85a5a;
-            box-shadow: 0 4px 8px rgba(200, 90, 90, 0.25);
-        }
-        
-        /* 激活/选中状态 */
-        .toolbar-btn.active {
-            background: linear-gradient(145deg, #e6d8c7, #d2b48c);
-            border-color: #8B4513;
-            color: #5c2e0e;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-            transform: translateY(0);
-        }
-
-        /* 下拉选择器样式适配 */
         .toolbar-select {
-            height: 30px;
+            height: 28px;
             border: 1px solid #d2b48c;
-            border-radius: 6px;
-            background: linear-gradient(145deg, #fffbf0, #f5ebd5);
+            border-radius: 4px;
+            background: #fff;
             color: #8B4513;
             font-family: "STKaiti", "KaiTi", serif;
             font-size: 12px;
-            padding: 0 6px;
+            padding: 0 4px;
             cursor: pointer;
             outline: none;
             flex-shrink: 0;
-            box-shadow: 0 2px 3px rgba(139, 69, 19, 0.1);
-            transition: all 0.2s;
         }
-        .toolbar-select:hover {
+        .toolbar-select:focus { border-color: #c85a5a; }*/
+        .toolbar-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(200,90,90,0.05) 0%, rgba(200,90,90,0.15) 50%, rgba(200,90,90,0.05) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+        }
+        .toolbar-btn:hover::before {
+            transform: translateX(100%);
+        }
+        .toolbar-btn:hover {
+            background: linear-gradient(135deg, #f5e8d5 0%, #f9f3e6 100%);
             border-color: #c85a5a;
-            background: linear-gradient(145deg, #fff8e8, #f5e8d5);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.05);
         }
-        .toolbar-select:focus {
-            border-color: #c85a5a;
-            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.2);
-        }
+        .toolbar-btn.active {
+            background: linear-gradient(135deg, #e6d8c7 0%, #f5e8d5 100%);
+            border-color: #8B4513;
+            font-weight: bold;
+        }   /* 到这为止 */
 
-        /* 颜色选择器包装器适配 */
         .color-picker-wrapper {
             position: relative;
-            width: 30px;
-            height: 30px;
+            width: 28px; height: 28px;
             overflow: hidden;
-            border-radius: 6px;
+            border-radius: 4px;
             border: 1px solid #d2b48c;
             cursor: pointer;
-            background: linear-gradient(145deg, #fffbf0, #f5ebd5);
+            background: #fff;
             flex-shrink: 0;
-            box-shadow: 0 2px 3px rgba(139, 69, 19, 0.1);
-            transition: all 0.2s;
-        }
-        .color-picker-wrapper:hover {
-            transform: translateY(-2px);
-            border-color: #c85a5a;
-            box-shadow: 0 4px 8px rgba(200, 90, 90, 0.25);
         }
         .color-picker-wrapper input[type="color"] {
-            position: absolute;
+            /*原有的 position: absolute;
             top: -50%; left: -50%;
             width: 200%; height: 200%;
             cursor: pointer;
             border: none;
             padding: 0;
-            background: none;
+            background: none; */
+            width: 20px;
+            height: 20px;
+            border: none;
+            padding: 0;
+            cursor: pointer;
         }
 
         .editor-content {
@@ -441,10 +464,10 @@
             font-size: 1rem;
             line-height: 1.8;
             outline: none;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
         }
         .editor-content:focus { border-color: #c85a5a; box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.1); }
         
+        /* 编辑器内容特殊样式 */
         .editor-content blockquote {
             border-left: 4px solid #c85a5a;
             margin: 10px 0;
@@ -465,6 +488,7 @@
         .editor-content ul, .editor-content ol { padding-left: 25px; margin: 10px 0; }
         .editor-content img { max-width: 100%; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
+        /* 表格样式 */
         .editor-content table {
             width: 100%;
             border-collapse: collapse;
@@ -531,7 +555,7 @@
             .sidebar { width: 100%; height: 250px; }
             header { flex-direction: column; gap: 15px; text-align: center; padding: 20px; }
             .user-actions { justify-content: center; width: 100%; }
-            .editor-toolbar { flex-wrap: wrap; }
+            .editor-toolbar { flex-wrap: wrap; } /* 移动端允许换行 */
         }
     </style>
 </head>
@@ -572,6 +596,7 @@
     <div class="toast" id="toast"></div>
     <div class="debug-panel" id="debugPanel"></div>
 
+    <!-- 登录模态框 -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal">
             <button class="modal-close" id="closeLoginBtn">×</button>
@@ -594,6 +619,7 @@
         </div>
     </div>
 
+    <!-- 注册模态框 -->
     <div class="modal-overlay" id="registerModal">
         <div class="modal">
             <button class="modal-close" id="closeRegisterBtn">×</button>
@@ -629,11 +655,13 @@
     (function() {
         'use strict';
         
+        // ========== 配置 ==========
         var CONFIG = {
             supabaseUrl: 'https://zeiwdwplhgcpedhoxxqd.supabase.co',
             supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA'
         };
 
+        // ========== 全局状态 ==========
         var appState = {
             supabase: null,
             currentUser: null,
@@ -641,6 +669,7 @@
             currentNoteId: null
         };
 
+        // ========== 调试日志 ==========
         function debug(msg) {
             var panel = document.getElementById('debugPanel');
             var time = new Date().toLocaleTimeString();
@@ -649,6 +678,7 @@
             console.log('[DEBUG]', msg);
         }
 
+        // ========== 工具函数 ==========
         function showToast(message, type) {
             type = type || 'success';
             var toast = document.getElementById('toast');
@@ -692,6 +722,7 @@
             return message;
         }
 
+        // ========== 模态框函数 ==========
         function showModal(type) {
             var modal = document.getElementById(type + 'Modal');
             if (modal) {
@@ -715,6 +746,7 @@
             }, 300);
         }
 
+        // ========== 认证相关 ==========
         function checkAuth() {
             debug('检查登录状态...');
             if (!appState.supabase) {
@@ -891,6 +923,7 @@
             debug('UI 更新为未登录状态');
         }
 
+        // ========== 笔记集相关 ==========
         function loadNotebooks() {
             if (!appState.currentUser || !appState.supabase) return;
 
@@ -1107,6 +1140,7 @@
                 });
         }
 
+        // ✅ 最终优化版：单行工具栏 + 专业字号 + 表格功能
         function showEditor(title, content) {
             var contentArea = document.getElementById('contentArea');
             var isEdit = appState.currentNoteId ? '编辑笔记' : '新建笔记';
@@ -1122,6 +1156,7 @@
                 '<input type="text" class="editor-title" id="noteTitle" placeholder="标题" value="' + escapeHtml(title) + '">' +
                 
                 '<div class="editor-toolbar">' +
+                    // 1. 字体家族
                     '<div class="toolbar-group">' +
                         '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 90px;">' +
                             '<option value="SimSun">宋体</option>' +
@@ -1130,50 +1165,55 @@
                             '<option value="Microsoft YaHei">微软雅黑</option>' +
                             '<option value="SimHei">黑体</option>' +
                             '<option value="FangSong">仿宋</option>' +
+                            '<option value="Arial">Arial</option>' +
+                            '<option value="Times New Roman">Times New Roman</option>' +
                         '</select>' +
                     '</div>' +
+                    // 2. 专业字号 (中文排版标准)
                     '<div class="toolbar-group">' +
                         '<select class="toolbar-select" id="fontSize" title="字号" style="width: 70px;">' +
-                            '<option value="1">八号</option>' +
-                            '<option value="1">七号</option>' +
-                            '<option value="2">小六</option>' +
-                            '<option value="2">六号</option>' +
                             '<option value="3">小五</option>' +
-                            '<option value="3" selected>五号</option>' +
+                            '<option value="3">五号</option>' +
                             '<option value="4">小四</option>' +
-                            '<option value="5">四号</option>' +
+                            '<option value="5" selected>四号</option>' +
                             '<option value="6">小三</option>' +
                             '<option value="6">三号</option>' +
                             '<option value="7">小二</option>' +
                             '<option value="7">二号</option>' +
                         '</select>' +
                     '</div>' +
+                    // 3. 基础样式
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnBold" title="加粗"><b>B</b></button>' +
                         '<button class="toolbar-btn" id="btnItalic" title="斜体"><i>I</i></button>' +
                         '<button class="toolbar-btn" id="btnUnderline" title="下划线"><u>U</u></button>' +
                         '<button class="toolbar-btn" id="btnStrike" title="删除线"><s>S</s></button>' +
                     '</div>' +
+                    // 4. 对齐
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnLeft" title="左对齐">L</button>' +
                         '<button class="toolbar-btn" id="btnCenter" title="居中">C</button>' +
                         '<button class="toolbar-btn" id="btnRight" title="右对齐">R</button>' +
                     '</div>' +
+                    // 5. 列表与块
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnUL" title="无序列表">•</button>' +
                         '<button class="toolbar-btn" id="btnOL" title="有序列表">1.</button>' +
-                        '<button class="toolbar-btn" id="btnQuote" title="引用">”</button>' +
+                        '<button class="toolbar-btn" id="btnQuote" title="引用">“”</button>' +
                         '<button class="toolbar-btn" id="btnCode" title="代码">&lt;/&gt;</button>' +
                     '</div>' +
+                    // 6. 表格 (新增)
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnTable" title="插入表格" style="font-weight:bold;">▦</button>' +
                     '</div>' +
+                    // 7. 颜色与清除
                     '<div class="toolbar-group">' +
                         '<div class="color-picker-wrapper" title="字体颜色">' +
                             '<input type="color" id="fontColor" value="#333333">' +
                         '</div>' +
                         '<button class="toolbar-btn" id="btnClear" title="清除格式">🧹</button>' +
                     '</div>' +
+                    // 8. 插入
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnLink" title="链接">🔗</button>' +
                         '<input type="file" id="imageUpload" accept="image/*" style="display:none">' +
@@ -1191,22 +1231,28 @@
                 loadNotes(notebookId);
             });
 
+            // 字体与字号
             document.getElementById('fontFamily').addEventListener('change', function() {
                 execCmd('fontName', this.value);
             });
             document.getElementById('fontSize').addEventListener('change', function() {
                 execCmd('fontSize', this.value);
+                // 不重置，方便连续调整，或者根据需要重置
+                // this.value = '3'; 
             });
 
+            // 基础样式
             document.getElementById('btnBold').addEventListener('click', function() { execCmd('bold'); });
             document.getElementById('btnItalic').addEventListener('click', function() { execCmd('italic'); });
             document.getElementById('btnUnderline').addEventListener('click', function() { execCmd('underline'); });
             document.getElementById('btnStrike').addEventListener('click', function() { execCmd('strikeThrough'); });
             
+            // 对齐
             document.getElementById('btnLeft').addEventListener('click', function() { execCmd('justifyLeft'); });
             document.getElementById('btnCenter').addEventListener('click', function() { execCmd('justifyCenter'); });
             document.getElementById('btnRight').addEventListener('click', function() { execCmd('justifyRight'); });
             
+            // 列表与块
             document.getElementById('btnUL').addEventListener('click', function() { execCmd('insertUnorderedList'); });
             document.getElementById('btnOL').addEventListener('click', function() { execCmd('insertOrderedList'); });
             document.getElementById('btnQuote').addEventListener('click', function() { execCmd('formatBlock', 'blockquote'); });
@@ -1221,11 +1267,13 @@
                 }
             });
 
+            // 表格功能 (新增)
             document.getElementById('btnTable').addEventListener('click', function() {
                 var tableHtml = '<table><tr><th>标题 1</th><th>标题 2</th><th>标题 3</th></tr><tr><td>内容 1</td><td>内容 2</td><td>内容 3</td></tr><tr><td>内容 4</td><td>内容 5</td><td>内容 6</td></tr></table><p><br/></p>';
                 execCmd('insertHTML', tableHtml);
             });
 
+            // 颜色与清除
             document.getElementById('fontColor').addEventListener('change', function() {
                 execCmd('foreColor', this.value);
             });
@@ -1233,11 +1281,13 @@
                 execCmd('removeFormat');
             });
 
+            // 链接
             document.getElementById('btnLink').addEventListener('click', function() {
                 var url = prompt('请输入链接地址:', 'https://');
                 if (url) execCmd('createLink', url);
             });
 
+            // 图片
             document.getElementById('btnImage').addEventListener('click', function() {
                 document.getElementById('imageUpload').click();
             });
@@ -1392,6 +1442,7 @@
                 '</div>';
         }
 
+        // ========== 事件绑定 ==========
         function bindEvents() {
             document.getElementById('loginBtn').addEventListener('click', function() { showModal('login'); });
             document.getElementById('registerBtn').addEventListener('click', function() { showModal('register'); });
@@ -1423,6 +1474,7 @@
             });
         }
 
+        // ========== 初始化 ==========
         function init() {
             debug('=== 应用初始化开始 ===');
             
