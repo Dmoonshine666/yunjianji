@@ -5,53 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>云笺记 - 古风云端笔记</title>
     <style>
-        /* ========== 恢复原始界面风格 ========== */
+        /* ========== 全局与基础 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: "Microsoft YaHei", "SimSun", sans-serif;
             background-color: #f5f0e6;
             color: #333;
+            /* 保留原有的淡雅纹理 */
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,100 M100,0 L0,100" stroke="%23e6d8c7" stroke-width="0.5" fill="none"/></svg>');
             background-size: 100px;
+            min-height: 100vh;
         }
         .container { max-width: 1280px; margin: 0 auto; padding: 20px; }
+
+        /* ========== 头部美化 (重点优化) ========== */
         header {
+            position: relative;
             background-color: #fff8e8;
+            /* 增加古风纹理背景 */
+            background-image: 
+                linear-gradient(rgba(255, 248, 232, 0.9), rgba(255, 248, 232, 0.9)),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><path d="M0,150 Q200,100 400,150 T800,150 L800,200 L0,200 Z" fill="%23e6d8c7" opacity="0.4"/><path d="M0,170 Q200,120 400,170 T800,170 L800,200 L0,200 Z" fill="%23d2b48c" opacity="0.3"/></svg>');
+            background-size: cover, 100% 100%;
+            background-repeat: no-repeat;
+            
             color: #8B4513;
-            padding: 25px 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            padding: 30px 40px;
+            border-radius: 12px;
+            /* 更精致的边框和阴影 */
+            box-shadow: 0 6px 16px rgba(139, 69, 19, 0.15);
+            margin-bottom: 25px;
             border: 2px solid #c37e7ed1;
+            border-top: 4px solid #8B4513; /* 顶部加深 */
             display: flex;
             align-items: center;
             justify-content: space-between;
+            overflow: hidden;
         }
-        header h1 { font-family: "STKaiti", "KaiTi", serif; font-size: 2.5rem; letter-spacing: 4px; }
-        header p { font-family: "STKaiti", "KaiTi", serif; opacity: 0.8; }
-        .user-actions { display: flex; gap: 10px; }
-        
+        /* 装饰角标 */
+        header::before {
+            content: '✦';
+            position: absolute;
+            top: 10px; left: 15px;
+            font-size: 20px;
+            color: #c85a5a;
+            opacity: 0.6;
+        }
+        header::after {
+            content: '✦';
+            position: absolute;
+            top: 10px; right: 15px;
+            font-size: 20px;
+            color: #c85a5a;
+            opacity: 0.6;
+        }
+
+        header h1 { 
+            font-family: "STKaiti", "KaiTi", serif; 
+            font-size: 2.8rem; 
+            letter-spacing: 6px; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+        header p { 
+            font-family: "STKaiti", "KaiTi", serif; 
+            opacity: 0.8; 
+            font-size: 1.1rem;
+            margin-top: 5px;
+            z-index: 1;
+        }
+        .user-actions { display: flex; gap: 12px; z-index: 1; }
+
+        /* ========== 提示与模态框 ========== */
         .toast {
-            position: fixed; top: 60px; left: 50%;
+            position: fixed; top: 80px; left: 50%;
             transform: translateX(-50%);
-            padding: 12px 20px;
-            background-color: rgba(51, 51, 51, 0.9);
+            padding: 12px 24px;
+            background-color: rgba(51, 51, 51, 0.95);
             color: #fff;
-            border-radius: 6px;
+            border-radius: 8px;
             z-index: 9999;
             opacity: 0;
             transition: opacity 0.3s;
-            max-width: 80%;
+            font-family: "STKaiti", serif;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         .toast.show { opacity: 1; }
-        .toast.error { background-color: rgba(178, 34, 34, 0.9); }
-        .toast.info { background-color: rgba(51, 102, 153, 0.9); }
-        .toast.success { background-color: rgba(34, 139, 34, 0.9); }
+        .toast.error { background-color: rgba(178, 34, 34, 0.95); }
+        .toast.info { background-color: rgba(51, 102, 153, 0.95); }
+        .toast.success { background-color: rgba(34, 139, 34, 0.95); }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(60, 40, 20, 0.6);
+            backdrop-filter: blur(3px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -62,249 +111,292 @@
         }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal {
-            background: #fff8e8;
+            background: #fffdf5;
             border: 2px solid #c85a5a;
-            border-radius: 10px;
-            padding: 25px;
-            width: 100%;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
             max-width: 450px;
             position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .modal-close {
-            position: absolute; top: 15px; right: 15px;
+            position: absolute; top: 15px; right: 20px;
             background: none; border: none;
-            font-size: 1.5rem; color: #8B4513;
+            font-size: 1.8rem; color: #8B4513;
             cursor: pointer;
+            transition: transform 0.2s;
         }
+        .modal-close:hover { transform: rotate(90deg); color: #c85a5a; }
         .modal-title {
             font-family: "STKaiti", "KaiTi", serif;
             color: #8B4513;
-            font-size: 1.8rem;
+            font-size: 2rem;
             text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #d2b48c;
-            padding-bottom: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px dashed #d2b48c;
+            padding-bottom: 15px;
         }
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 18px; }
         .form-label {
-            display: block; margin-bottom: 5px;
+            display: block; margin-bottom: 8px;
             color: #8B4513; font-family: "STKaiti", "KaiTi", serif;
+            font-weight: bold;
         }
         .form-input {
-            width: 100%; padding: 10px 12px;
+            width: 100%; padding: 12px 15px;
             border: 1px solid #d2b48c;
             border-radius: 8px;
             background: #fff;
+            font-family: inherit;
+            transition: all 0.3s;
         }
         .form-input:focus {
             outline: none;
             border-color: #c85a5a;
-            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.2);
+            box-shadow: 0 0 0 3px rgba(200, 90, 90, 0.15);
         }
-        .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .form-actions { display: flex; gap: 12px; margin-top: 25px; }
         .form-switch {
-            text-align: center; margin-top: 15px;
+            text-align: center; margin-top: 20px;
             color: #8B4513; font-family: "STKaiti", "KaiTi", serif;
         }
-        .form-switch a { color: #c85a5a; text-decoration: none; cursor: pointer; }
+        .form-switch a { color: #c85a5a; text-decoration: none; font-weight: bold; }
         .form-switch a:hover { text-decoration: underline; }
 
-        .main { display: flex; gap: 20px; min-height: calc(100vh - 180px); }
+        /* ========== 主布局 ========== */
+        .main { display: flex; gap: 25px; min-height: calc(100vh - 200px); }
+        
+        /* 侧边栏 */
         .sidebar {
-            width: 290px;
-            background: #fff8e8;
+            width: 300px;
+            background: #fffdf5;
             border: 2px solid #d2b48c;
-            border-radius: 10px;
-            padding: 15px;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.08);
+            display: flex;
+            flex-direction: column;
         }
         .sidebar h3 {
             font-family: "STKaiti", "KaiTi", serif;
             color: #8B4513;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #d2b48c;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #d2b48c;
+            font-size: 1.5rem;
         }
         .create-notebook { display: flex; gap: 10px; margin-bottom: 20px; }
         .create-notebook input {
-            flex: 1; padding: 8px 12px;
+            flex: 1; padding: 10px 12px;
             border: 1px solid #d2b48c;
-            border-radius: 6px;
+            border-radius: 8px;
             font-family: "STKaiti", "KaiTi", serif;
+            background: #fff;
         }
         .notebook-list { list-style: none; }
         .notebook-list-container {
             flex: 1;
             overflow-y: auto;
-            max-height: 500px;
+            padding-right: 5px;
         }
+        .notebook-list-container::-webkit-scrollbar { width: 6px; }
+        .notebook-list-container::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 3px; }
+        
         .notebook-item {
-            padding: 10px 12px;
-            margin-bottom: 8px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
             background: #fff;
-            border: 2px solid #e6d8c7;
+            border: 1px solid #e6d8c7;
+            border-left: 4px solid transparent;
             border-radius: 8px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-family: "STKaiti", "KaiTi", serif;
+            transition: all 0.2s;
+            font-size: 1.1rem;
         }
-        .notebook-item:hover { background: #f9f3e6; }
+        .notebook-item:hover { 
+            background: #fcf8f0; 
+            transform: translateX(5px);
+            border-left-color: #d2b48c;
+        }
         .notebook-item.active {
             background: #f5e8d5;
+            border-left-color: #c85a5a;
             border-color: #c85a5a;
+            box-shadow: 0 2px 8px rgba(200, 90, 90, 0.1);
         }
         .notebook-name {
-            max-width: 180px;
+            max-width: 160px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .notebook-actions { display: flex; gap: 5px; }
+        .notebook-actions { display: flex; gap: 6px; opacity: 0; transition: opacity 0.2s; }
+        .notebook-item:hover .notebook-actions { opacity: 1; }
 
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: "STKaiti", "KaiTi", serif;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        .btn:hover { transform: translateY(-2px); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .btn-primary {
-            background: linear-gradient(135deg, #c85a5a, #a04040);
-            color: #fff;
-        }
-        .btn-danger {
-            background: linear-gradient(135deg, #cd3b3b, #c22e2e);
-            color: #fff;
-        }
-        .btn-edit {
-            background: linear-gradient(135deg, #d6b257, #e2b951);
-            color: #fff;
-        }
-        .btn-secondary {
-            background: linear-gradient(135deg, #f5f0e6, #e6d8c7);
-            color: #8B4513;
-            border: 1px solid #d2b48c;
-        }
-
+        /* 内容区 */
         .content {
             flex: 1;
-            background: #fff8e8;
+            background: #fffdf5;
             border: 2px solid #d2b48c;
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.08);
         }
+        
         .note-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #d2b48c;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #d2b48c;
         }
-        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; }
+        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; font-size: 1.8rem; }
         .note-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
         }
         .note-card {
             background: #fff;
             border: 1px solid #e6d8c7;
-            border-radius: 8px;
-            padding: 15px;
+            border-radius: 10px;
+            padding: 20px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 220px;
+        }
+        .note-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: #d2b48c;
+            transition: width 0.3s;
         }
         .note-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
         }
+        .note-card:hover::before { width: 8px; background: #c85a5a; }
         .note-card h4 {
             font-family: "STKaiti", "KaiTi", serif;
-            margin-bottom: 8px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+            color: #8B4513;
+            line-height: 1.4;
         }
         .note-card p {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #666;
+            line-height: 1.6;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            flex: 1;
         }
-        .note-time { font-size: 0.8rem; color: #999; margin: 10px 0; }
-        .note-actions { display: flex; gap: 5px; }
+        .note-time { font-size: 0.85rem; color: #999; margin-top: 15px; text-align: right; font-style: italic; }
+        .note-actions { 
+            position: absolute; bottom: 15px; right: 15px; 
+            display: flex; gap: 8px; 
+            opacity: 0; transform: translateY(10px);
+            transition: all 0.3s;
+        }
+        .note-card:hover .note-actions { opacity: 1; transform: translateY(0); }
 
-        /* ========== 保留并优化的编辑器样式 ========== */
+        /* ========== 编辑器样式 (重点优化) ========== */
         .editor-title {
             width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #d2b48c;
+            padding: 15px;
+            border: 2px solid #d2b48c;
             border-radius: 8px;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-size: 1.6rem;
             font-family: "STKaiti", "KaiTi", serif;
+            color: #8B4513;
+            background: #fff;
         }
-        
-        /* 增强版工具栏样式 (适配旧界面) */
+        .editor-title:focus { outline: none; border-color: #c85a5a; background: #fffbf0; }
+
+        /* 增强版工具栏 */
         .editor-toolbar {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            padding: 10px;
-            background: #f9f3e6;
-            border: 1px solid #d2b48c;
+            gap: 10px;
+            padding: 12px;
+            background: #f9f5eb;
+            border: 2px solid #d2b48c;
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
         }
         .toolbar-group {
             display: flex;
-            gap: 4px;
-            padding-right: 8px;
-            border-right: 1px solid #d2b48c;
-            margin-right: 8px;
+            gap: 6px;
+            padding-right: 12px;
+            border-right: 1px solid #e0d0b0;
+            margin-right: 12px;
             align-items: center;
         }
         .toolbar-group:last-child { border-right: none; padding-right: 0; margin-right: 0; }
         
         .toolbar-btn {
-            width: 32px; height: 32px;
+            /* 增大按钮尺寸 */
+            width: 40px; height: 40px;
             border: 1px solid #d2b48c;
             border-radius: 6px;
             background: #fff;
             cursor: pointer;
-            font-size: 14px;
+            /* 增大字体 */
+            font-size: 18px;
+            color: #8B4513;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-weight: bold;
         }
-        .toolbar-btn:hover { background: #f5e8d5; border-color: #c85a5a; }
-        .toolbar-btn.active { background: #e6d8c7; border-color: #8B4513; }
+        .toolbar-btn:hover { 
+            background: #c85a5a; 
+            color: #fff; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(200, 90, 90, 0.3);
+            border-color: #c85a5a;
+        }
+        .toolbar-btn.active { 
+            background: #8B4513; 
+            color: #fff; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
         
         .toolbar-select {
-            height: 32px;
+            height: 40px;
             border: 1px solid #d2b48c;
             border-radius: 6px;
             background: #fff;
             color: #8B4513;
             font-family: "STKaiti", "KaiTi", serif;
-            padding: 0 5px;
+            padding: 0 10px;
             cursor: pointer;
             outline: none;
+            font-size: 16px;
+            min-width: 100px;
         }
         .toolbar-select:focus { border-color: #c85a5a; }
 
         .color-picker-wrapper {
             position: relative;
-            width: 32px; height: 32px;
+            width: 40px; height: 40px;
             overflow: hidden;
             border-radius: 6px;
             border: 1px solid #d2b48c;
@@ -323,54 +415,94 @@
 
         .editor-content {
             width: 100%;
-            min-height: 300px;
-            padding: 15px;
-            border: 1px solid #d2b48c;
+            min-height: 400px;
+            padding: 20px;
+            border: 2px solid #e6d8c7;
             border-radius: 8px;
             background: #fff;
-            font-size: 1rem;
+            font-size: 1.1rem;
             line-height: 1.8;
-        }
-        .editor-content:focus {
+            color: #333;
             outline: none;
-            border-color: #c85a5a;
         }
+        .editor-content:focus { border-color: #c85a5a; background: #fffbf0; }
         
-        /* 编辑器内容样式补充 */
+        /* 编辑器内容样式 */
         .editor-content blockquote {
             border-left: 4px solid #c85a5a;
-            margin: 10px 0;
-            padding: 5px 15px;
+            margin: 15px 0;
+            padding: 10px 20px;
             background: #fff8f8;
             color: #666;
+            font-style: italic;
+            font-family: "KaiTi", serif;
         }
         .editor-content pre {
-            background: #f4f4f4;
-            padding: 10px;
-            border-radius: 4px;
+            background: #2d2d2d;
+            color: #ccc;
+            padding: 15px;
+            border-radius: 6px;
             overflow-x: auto;
             font-family: Consolas, monospace;
+            margin: 15px 0;
             border: 1px solid #ddd;
         }
-        .editor-content ul, .editor-content ol { padding-left: 25px; margin: 10px 0; }
-        .editor-content img { max-width: 100%; border-radius: 4px; }
+        .editor-content ul, .editor-content ol { padding-left: 25px; margin: 15px 0; }
+        .editor-content img { max-width: 100%; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: 10px 0; }
+        
+        /* 表格样式 */
+        .editor-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 1rem;
+        }
+        .editor-content th, .editor-content td {
+            border: 1px solid #d2b48c;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .editor-content th {
+            background-color: #f5e8d5;
+            color: #8B4513;
+            font-weight: bold;
+            font-family: "STKaiti", serif;
+        }
+        .editor-content tr:nth-child(even) { background-color: #fffbf0; }
+        .editor-content tr:hover { background-color: #fcefe6; }
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: #999;
+            padding: 80px 20px;
+            color: #aaa;
             font-family: "STKaiti", "KaiTi", serif;
         }
+        .empty-state h3 { font-size: 1.6rem; margin-bottom: 10px; color: #8B4513; }
+
+        /* 按钮通用 */
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: "STKaiti", "KaiTi", serif;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-primary { background: linear-gradient(135deg, #c85a5a, #a04040); color: #fff; }
+        .btn-danger { background: linear-gradient(135deg, #cd3b3b, #c22e2e); color: #fff; }
+        .btn-edit { background: linear-gradient(135deg, #d6b257, #e2b951); color: #fff; }
+        .btn-secondary { background: linear-gradient(135deg, #f5f0e6, #e6d8c7); color: #8B4513; border: 1px solid #d2b48c; }
 
         .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
+            display: flex; align-items: center; justify-content: center; padding: 40px;
         }
         .loading::after {
-            content: "";
-            width: 30px; height: 30px;
+            content: ""; width: 30px; height: 30px;
             border: 3px solid #d2b48c;
             border-top-color: #c85a5a;
             border-radius: 50%;
@@ -379,27 +511,24 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .debug-panel {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: #222;
-            color: #0f0;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            max-width: 300px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 99999;
-            display: none;
+            position: fixed; bottom: 10px; right: 10px;
+            background: #222; color: #0f0;
+            padding: 10px; border-radius: 5px;
+            font-size: 12px; max-width: 300px; max-height: 200px;
+            overflow-y: auto; z-index: 99999;
+            display: none; font-family: monospace;
         }
         .debug-panel.show { display: block; }
 
         @media (max-width: 768px) {
             .main { flex-direction: column; }
-            .sidebar { width: 100%; }
-            header { flex-direction: column; gap: 15px; text-align: center; }
+            .sidebar { width: 100%; height: auto; max-height: 300px; }
+            header { flex-direction: column; gap: 15px; text-align: center; padding: 20px; }
+            header::before, header::after { display: none; }
             .user-actions { justify-content: center; }
+            .note-list { grid-template-columns: 1fr; }
+            .toolbar-group { border-right: none; margin-right: 0; padding-right: 0; }
+            .editor-toolbar { justify-content: center; }
         }
     </style>
 </head>
@@ -440,6 +569,7 @@
     <div class="toast" id="toast"></div>
     <div class="debug-panel" id="debugPanel"></div>
 
+    <!-- Login Modal -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal">
             <button class="modal-close" id="closeLoginBtn">×</button>
@@ -462,6 +592,7 @@
         </div>
     </div>
 
+    <!-- Register Modal -->
     <div class="modal-overlay" id="registerModal">
         <div class="modal">
             <button class="modal-close" id="closeRegisterBtn">×</button>
@@ -598,11 +729,6 @@
             }
             
             appState.supabase.auth.getSession().then(function(result) {
-                debug('getSession 结果:' + JSON.stringify({
-                    hasError: !!result.error,
-                    hasSession: !!result.data.session
-                }));
-                
                 if (result.error) {
                     debug('获取会话错误:' + result.error.message);
                     updateUIForLoggedOut();
@@ -643,11 +769,6 @@
                 email: email,
                 password: password
             }).then(function(result) {
-                debug('登录结果:' + JSON.stringify({
-                    hasError: !!result.error,
-                    hasUser: !!result.data.user
-                }));
-                
                 if (result.error) throw result.error;
                 
                 appState.currentUser = result.data.user;
@@ -702,11 +823,6 @@
                     data: { username: username }
                 }
             }).then(function(result) {
-                debug('注册结果:' + JSON.stringify({
-                    hasError: !!result.error,
-                    hasUser: !!result.data.user
-                }));
-                
                 if (result.error) throw result.error;
 
                 if (result.data.user) {
@@ -797,7 +913,7 @@
 
                     var data = result.data || [];
                     if (data.length === 0) {
-                        list.innerHTML = '<li class="empty-state">暂无笔记集，请创建</li>';
+                        list.innerHTML = '<li class="empty-state" style="padding:20px;text-align:center;color:#999;">暂无笔记集，请创建</li>';
                     } else {
                         var html = '';
                         for (var i = 0; i < data.length; i++) {
@@ -806,8 +922,8 @@
                             html += '<li class="notebook-item ' + isActive + '" data-id="' + nb.id + '">' +
                                 '<span class="notebook-name">' + escapeHtml(nb.name) + '</span>' +
                                 '<div class="notebook-actions">' +
-                                '<button class="btn btn-edit btn-notebook-edit" data-id="' + nb.id + '" data-name="' + escapeHtml(nb.name) + '">改</button>' +
-                                '<button class="btn btn-danger btn-notebook-delete" data-id="' + nb.id + '">删</button>' +
+                                '<button class="btn btn-edit btn-notebook-edit" style="padding:4px 8px;font-size:12px;" data-id="' + nb.id + '" data-name="' + escapeHtml(nb.name) + '">改</button>' +
+                                '<button class="btn btn-danger btn-notebook-delete" style="padding:4px 8px;font-size:12px;" data-id="' + nb.id + '">删</button>' +
                                 '</div></li>';
                         }
                         list.innerHTML = html;
@@ -914,7 +1030,7 @@
 
                             var notesHtml = '';
                             if (notes.length === 0) {
-                                notesHtml = '<div class="empty-state" style="grid-column:1/-1">暂无笔记</div>';
+                                notesHtml = '<div class="empty-state" style="grid-column:1/-1">暂无笔记，快去写一篇吧</div>';
                             } else {
                                 for (var i = 0; i < notes.length; i++) {
                                     var note = notes[i];
@@ -924,8 +1040,8 @@
                                         '<p>' + escapeHtml(contentText) + '</p>' +
                                         '<div class="note-time">' + formatDate(note.updated_at) + '</div>' +
                                         '<div class="note-actions">' +
-                                        '<button class="btn btn-edit btn-note-edit" data-id="' + note.id + '">编辑</button>' +
-                                        '<button class="btn btn-danger btn-note-delete" data-id="' + note.id + '">删除</button>' +
+                                        '<button class="btn btn-edit btn-note-edit" style="padding:4px 10px;font-size:12px;">编辑</button>' +
+                                        '<button class="btn btn-danger btn-note-delete" style="padding:4px 10px;font-size:12px;">删除</button>' +
                                         '</div></div>';
                                 }
                             }
@@ -997,7 +1113,7 @@
                 });
         }
 
-        // ✅ 最终版：保留旧界面风格 + 完整功能工具栏 (含字体/字号)
+        // ✅ 最终精修版：美化标题背景 + 专业字号 + 大图标 + 表格功能
         function showEditor(title, content) {
             var contentArea = document.getElementById('contentArea');
             var isEdit = appState.currentNoteId ? '编辑笔记' : '新建笔记';
@@ -1007,15 +1123,15 @@
                 '<div class="note-header">' +
                 '<h3>' + isEdit + '</h3>' +
                 '<div>' +
-                '<button class="btn btn-primary" id="saveNoteBtn">保存</button>' +
+                '<button class="btn btn-primary" id="saveNoteBtn">保存墨宝</button>' +
                 '<button class="btn btn-secondary" id="cancelNoteBtn">取消</button>' +
                 '</div></div>' +
-                '<input type="text" class="editor-title" id="noteTitle" placeholder="标题" value="' + escapeHtml(title) + '">' +
+                '<input type="text" class="editor-title" id="noteTitle" placeholder="在此输入标题..." value="' + escapeHtml(title) + '">' +
                 
                 '<div class="editor-toolbar">' +
-                    // 1. 字体家族 (新增)
+                    // 1. 字体家族
                     '<div class="toolbar-group">' +
-                        '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 100px;">' +
+                        '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 110px;">' +
                             '<option value="SimSun">宋体</option>' +
                             '<option value="KaiTi">楷体</option>' +
                             '<option value="STKaiti">华文楷体</option>' +
@@ -1024,16 +1140,21 @@
                             '<option value="FangSong">仿宋</option>' +
                         '</select>' +
                     '</div>' +
-                    // 2. 字号 (新增)
+                    // 2. 专业字号 (包含四号、小四号等)
                     '<div class="toolbar-group">' +
-                        '<select class="toolbar-select" id="fontSize" title="字号" style="width: 80px;">' +
-                            '<option value="3">正常</option>' +
-                            '<option value="1">小</option>' +
-                            '<option value="2">稍小</option>' +
-                            '<option value="4">稍大</option>' +
-                            '<option value="5">大</option>' +
-                            '<option value="6">特大</option>' +
-                            '<option value="7">极大</option>' +
+                        '<select class="toolbar-select" id="fontSize" title="字号" style="width: 90px;">' +
+                            '<option value="1">八号</option>' +
+                            '<option value="1">七号</option>' +
+                            '<option value="1">小六</option>' +
+                            '<option value="2">六号</option>' +
+                            '<option value="2">小五</option>' +
+                            '<option value="3">五号</option>' +
+                            '<option value="4">小四</option>' +
+                            '<option value="5">四号</option>' +
+                            '<option value="6">小三</option>' +
+                            '<option value="6">三号</option>' +
+                            '<option value="7">小二</option>' +
+                            '<option value="7">二号</option>' +
                         '</select>' +
                     '</div>' +
                     // 3. 基础样式
@@ -1056,14 +1177,18 @@
                         '<button class="toolbar-btn" id="btnQuote" title="引用">”</button>' +
                         '<button class="toolbar-btn" id="btnCode" title="代码">&lt;/&gt;</button>' +
                     '</div>' +
-                    // 6. 颜色与清除
+                    // 6. 表格 (新增)
+                    '<div class="toolbar-group">' +
+                        '<button class="toolbar-btn" id="btnTable" title="插入表格">▦</button>' +
+                    '</div>' +
+                    // 7. 颜色与清除
                     '<div class="toolbar-group">' +
                         '<div class="color-picker-wrapper" title="字体颜色">' +
                             '<input type="color" id="fontColor" value="#333333">' +
                         '</div>' +
                         '<button class="toolbar-btn" id="btnClear" title="清除格式">🧹</button>' +
                     '</div>' +
-                    // 7. 插入
+                    // 8. 插入
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnLink" title="链接">🔗</button>' +
                         '<input type="file" id="imageUpload" accept="image/*" style="display:none">' +
@@ -1087,7 +1212,7 @@
             });
             document.getElementById('fontSize').addEventListener('change', function() {
                 execCmd('fontSize', this.value);
-                this.value = '3'; // 重置以便下次选择
+                this.value = '3'; // 重置
             });
 
             // 基础样式
@@ -1113,6 +1238,52 @@
                     pre.textContent = selection.toString() || '代码...';
                     range.deleteContents();
                     range.insertNode(pre);
+                }
+            });
+
+            // ✅ 新增：表格功能
+            document.getElementById('btnTable').addEventListener('click', function() {
+                var rows = prompt("请输入行数 (默认 3):", "3");
+                var cols = prompt("请输入列数 (默认 3):", "3");
+                
+                rows = parseInt(rows) || 3;
+                cols = parseInt(cols) || 3;
+                
+                if (rows < 1 || cols < 1) {
+                    showToast("行列数必须大于 0", "error");
+                    return;
+                }
+
+                var table = document.createElement('table');
+                var tbody = document.createElement('tbody');
+                
+                for (var i = 0; i < rows; i++) {
+                    var tr = document.createElement('tr');
+                    for (var j = 0; j < cols; j++) {
+                        var td = document.createElement(i === 0 ? 'th' : 'td');
+                        td.contentEditable = "true";
+                        td.innerHTML = i === 0 && j === 0 ? "表头" : (i === 0 ? "标题" : "内容");
+                        tr.appendChild(td);
+                    }
+                    tbody.appendChild(tr);
+                }
+                table.appendChild(tbody);
+                
+                var content = document.getElementById('noteContent');
+                content.focus();
+                var selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    var range = selection.getRangeAt(0);
+                    range.deleteContents();
+                    range.insertNode(table);
+                    // 光标移到表格后
+                    var newRange = document.createRange();
+                    newRange.setStartAfter(table);
+                    newRange.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
+                } else {
+                    content.appendChild(table);
                 }
             });
 
@@ -1212,12 +1383,12 @@
                 showToast('保存失败：' + getFriendlyError(err.message), 'error');
             }).finally(function() {
                 btn.disabled = false;
-                btn.textContent = '保存';
+                btn.textContent = '保存墨宝';
             });
         }
 
         function deleteNote(noteId) {
-            if (!confirm('确定删除此笔记？')) return;
+            if (!confirm('确定删除此笔记？此操作不可恢复。')) return;
             if (!appState.supabase) return;
             appState.supabase
                 .from('notes')
