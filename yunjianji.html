@@ -4,176 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>云笺记 - 古风云端笔记</title>
-    <!-- 引入Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* 全局样式 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: "Microsoft YaHei", "SimSun", sans-serif;
-            background-color: #f5f0e6; /* 宣纸底色 */
+            background-color: #f5f0e6;
             color: #333;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,100 M100,0 L0,100" stroke="#e6d8c7" stroke-width="0.5" fill="none"/></svg>');
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,100 M100,0 L0,100" stroke="%23e6d8c7" stroke-width="0.5" fill="none"/></svg>');
             background-size: 100px;
         }
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-        /* 头部样式 */
+        .container { max-width: 1280px; margin: 0 auto; padding: 20px; }
         header {
-            background-color: #fff8e8; /* 浅宣纸色 */
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 800 120"><path d="M0,60 C150,100 250,20 400,60 C550,100 650,20 800,60 L800,120 L0,120 Z" fill="%23f5e8d5" opacity="0.5"/></svg>');
-            background-repeat: no-repeat;
-            background-position: center;
-            color: #8B4513; /* 墨棕色 */
+            background-color: #fff8e8;
+            color: #8B4513;
             padding: 25px 40px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            border: 2px solid #c37e7ed1; 
-            position: relative;
+            border: 2px solid #c37e7ed1;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            width: 100%;
-            box-sizing: border-box;
         }
-        /* 古风装饰元素 */
-        header::before {
-            content: "✎"; /* 毛笔笔触符号 */
-            font-size: 3rem;
-            color: #c85a5a;
-            opacity: 0.3;
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        header::after {
-            content: "墨"; /* 印章文字 */
-            font-size: 1.5rem;
-            color: #fff;
-            background-color: #c85a5a;
-            width: 40px;
-            height: 40px;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            right: 30px;
-            top: 50%;
-            transform: translateY(-50%);
-            box-shadow: 2px 2px 0 #8B4513;
-        }
-        .header-text {
-            position: relative;
-            z-index: 1;
-            margin-left: 40px;
-        }
-        header h1 {
-            font-size: 2.8rem;
-            font-family: "STKaiti", "KaiTi", serif;
-            letter-spacing: 4px;
-            margin-bottom: 5px;
-        }
-        header p {
-            font-size: 1.1rem;
-            opacity: 0.8;
-            font-family: "STKaiti", "KaiTi", serif;
-            letter-spacing: 2px;
-        }
-        /* 用户操作区样式 */
-        .user-actions {
-            display: flex;
-            gap: 10px;
-            z-index: 1;
-            margin-right: 60px;
-        }
-        /* 提示框样式 */
+        header h1 { font-family: "STKaiti", "KaiTi", serif; font-size: 2.5rem; letter-spacing: 4px; }
+        header p { font-family: "STKaiti", "KaiTi", serif; opacity: 0.8; }
+        .user-actions { display: flex; gap: 10px; }
+        
         .toast {
-            position: fixed;
-            top: 60px;          
-            left: 50%;         
-            transform: translateX(-50%) translateY(0);
+            position: fixed; top: 60px; left: 50%;
+            transform: translateX(-50%);
             padding: 12px 20px;
             background-color: rgba(51, 51, 51, 0.9);
             color: #fff;
             border-radius: 6px;
-            font-family: "STKaiti", "KaiTi", serif;
             z-index: 9999;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s;
             max-width: 80%;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-        /* 登录/注册弹窗样式 */
+        .toast.show { opacity: 1; }
+        .toast.error { background-color: rgba(178, 34, 34, 0.9); }
+        .toast.info { background-color: rgba(51, 102, 153, 0.9); }
+
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10000;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
-        .modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal {
-            background-color: #fff8e8;
+            background: #fff8e8;
             border: 2px solid #c85a5a;
             border-radius: 10px;
             padding: 25px;
             width: 100%;
             max-width: 450px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             position: relative;
-            transform: translateY(-20px);
-            transition: transform 0.3s ease;
-        }
-        .modal-overlay.show .modal {
-            transform: translateY(0);
         }
         .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: #8B4513;
+            position: absolute; top: 15px; right: 15px;
+            background: none; border: none;
+            font-size: 1.5rem; color: #8B4513;
             cursor: pointer;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.2s ease;
-        }
-        .modal-close:hover {
-            background-color: #f5e8d5;
-            color: #c85a5a;
         }
         .modal-title {
             font-family: "STKaiti", "KaiTi", serif;
@@ -181,116 +81,40 @@
             font-size: 1.8rem;
             text-align: center;
             margin-bottom: 20px;
-            padding-bottom: 10px;
             border-bottom: 1px solid #d2b48c;
+            padding-bottom: 10px;
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
+        .form-group { margin-bottom: 15px; }
         .form-label {
-            display: block;
-            margin-bottom: 5px;
-            color: #8B4513;
-            font-family: "STKaiti", "KaiTi", serif;
+            display: block; margin-bottom: 5px;
+            color: #8B4513; font-family: "STKaiti", "KaiTi", serif;
         }
         .form-input {
-            width: 100%;
-            padding: 10px 12px;
+            width: 100%; padding: 10px 12px;
             border: 1px solid #d2b48c;
             border-radius: 8px;
-            background-color: #fff;
-            font-family: "Microsoft YaHei", sans-serif;
-            transition: all 0.2s ease;
+            background: #fff;
         }
         .form-input:focus {
             outline: none;
             border-color: #c85a5a;
             box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.2);
         }
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
+        .form-actions { display: flex; gap: 10px; margin-top: 20px; }
         .form-switch {
-            text-align: center;
-            margin-top: 15px;
-            color: #8B4513;
-            font-family: "STKaiti", "KaiTi", serif;
+            text-align: center; margin-top: 15px;
+            color: #8B4513; font-family: "STKaiti", "KaiTi", serif;
         }
-        .form-switch a {
-            color: #c85a5a;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .form-switch a:hover {
-            text-decoration: underline;
-        }
-        /* 主内容区 */
-        .main {
-            display: flex;
-            gap: 20px;
-            min-height: calc(100vh - 180px);
-            transition: all 0.3s ease;
-        }
-        /* 侧边栏布局 */
+        .form-switch a { color: #c85a5a; text-decoration: none; cursor: pointer; }
+        .form-switch a:hover { text-decoration: underline; }
+
+        .main { display: flex; gap: 20px; min-height: calc(100vh - 180px); }
         .sidebar {
             width: 290px;
-            background-color: #fff8e8;
+            background: #fff8e8;
             border: 2px solid #d2b48c;
             border-radius: 10px;
             padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-            overflow: visible !important;
-        }
-        .notebook-list-container {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: visible !important;
-            position: relative;
-        }
-        .list-dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            min-width: 140px;
-            background-color: #fff8e8;
-            border: 1px solid #d2b48c;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            z-index: 9999 !important;
-            display: none;
-            padding: 8px 0;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .notebook-item {
-            padding: 10px 12px;
-            margin-bottom: 8px;
-            background-color: #fff;
-            border: 2px solid #e6d8c7;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-family: "STKaiti", "KaiTi", serif;
-            position: relative;
-            user-select: none;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: rgba(200, 90, 90, 0.1);
-            z-index: 1;
-        }
-        /* 新增：笔记集名称过长显示省略号 */
-        .notebook-name {
-            max-width: 180px; /* 限制最大宽度，可根据需要调整 */
-            white-space: nowrap; /* 不换行 */
-            overflow: hidden; /* 隐藏超出部分 */
-            text-overflow: ellipsis; /* 显示省略号 */
         }
         .sidebar h3 {
             font-family: "STKaiti", "KaiTi", serif;
@@ -299,59 +123,44 @@
             padding-bottom: 8px;
             border-bottom: 1px solid #d2b48c;
         }
-        /* 固定的创建笔记集区域 */
-        .create-notebook {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            width: 100%;
-        }
+        .create-notebook { display: flex; gap: 10px; margin-bottom: 20px; }
         .create-notebook input {
-            flex: 1;
-            padding: 8px 12px;
+            flex: 1; padding: 8px 12px;
             border: 1px solid #d2b48c;
             border-radius: 6px;
-            background-color: #fff;
-            transition: all 0.3s ease;
             font-family: "STKaiti", "KaiTi", serif;
-            font-size: 14px;
         }
-        .create-notebook input:focus {
-            outline: none;
-            border-color: #c85a5a;
-            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.2);
+        .notebook-list { list-style: none; }
+        .notebook-list-container {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 500px;
         }
-        .create-notebook input::placeholder {
-            color: #999;
-            font-style: italic;
-        }
-        /* 笔记集列表区域 */
-        .notebook-list {
-            list-style: none;
-        }
-        .notebook-item:active {
-            transform: translateY(0) scale(0.98);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .notebook-item:hover {
-            background-color: #f9f3e6;
-            border-color: #d2b48c;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .notebook-item.active {
-            background-color: #f5e8d5;
-            border-color: #c85a5a;
-            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.15);
-            font-weight: bold;
-            outline: 1px solid #c85a5a;
-        }
-        .notebook-actions {
+        .notebook-item {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: #fff;
+            border: 2px solid #e6d8c7;
+            border-radius: 8px;
+            cursor: pointer;
             display: flex;
-            gap: 5px;
-            pointer-events: auto;
+            justify-content: space-between;
+            align-items: center;
+            font-family: "STKaiti", "KaiTi", serif;
         }
-        /* 通用按钮样式 - 古风设计 */
+        .notebook-item:hover { background: #f9f3e6; }
+        .notebook-item.active {
+            background: #f5e8d5;
+            border-color: #c85a5a;
+        }
+        .notebook-name {
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .notebook-actions { display: flex; gap: 5px; }
+
         .btn {
             padding: 8px 16px;
             border: none;
@@ -359,307 +168,34 @@
             cursor: pointer;
             font-family: "STKaiti", "KaiTi", serif;
             font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s;
         }
-        .btn::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
-            transform: translateX(-100%);
-            transition: transform 0.6s ease;
-        }
-        .btn:hover::before {
-            transform: translateX(100%);
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        .btn:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        /* 主按钮（创建/保存）- 朱砂红渐变 */
+        .btn:hover { transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .btn-primary {
-            background: linear-gradient(135deg, #c85a5a 0%, #a04040 100%);
+            background: linear-gradient(135deg, #c85a5a, #a04040);
             color: #fff;
-            border: 1px solid #8b3a3a;
         }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #d86a6a 0%, #b05050 100%);
-            border-color: #9b4a4a;
-        }
-        /* 危险按钮（删除）- 暗红渐变 */
         .btn-danger {
-            background: linear-gradient(135deg, #cd3b3b 0%, #c22e2e 100%);
+            background: linear-gradient(135deg, #cd3b3b, #c22e2e);
             color: #fff;
-            border: 1px solid #ec4848;
         }
-        .btn-danger:hover {
-            background: linear-gradient(135deg, #c23232 0%, #9b1010 100%);
-            border-color: #8a1010;
-        }
-        /* 编辑按钮（改）- 琥珀色渐变 */
         .btn-edit {
-            background: linear-gradient(135deg, #d6b257 0%, #e2b951 100%);
+            background: linear-gradient(135deg, #d6b257, #e2b951);
             color: #fff;
-            border: 1px solid #f7cd64;
         }
-        .btn-edit:hover {
-            background: linear-gradient(135deg, #eab530 0%, #c8961b 100%);
-            border-color: #b8860b;
-        }
-        /* 普通按钮（取消）- 浅米色渐变 */
-        .btn:not(.btn-primary):not(.btn-danger):not(.btn-edit) {
-            background: linear-gradient(135deg, #f5f0e6 0%, #e6d8c7 100%);
+        .btn-secondary {
+            background: linear-gradient(135deg, #f5f0e6, #e6d8c7);
             color: #8B4513;
             border: 1px solid #d2b48c;
-        }
-        .btn:not(.btn-primary):not(.btn-danger):not(.btn-edit):hover {
-            background: linear-gradient(135deg, #f9f3e6 0%, #f5e8d5 100%);
-            border-color: #c8b090;
         }
 
-        /* ========== 新的工具栏样式（核心修改） ========== */
-        .editor-toolbar {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 9px 10px;
-            background-color: #f9f3e6;
-            border: 1px solid #d2b48c;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            min-width: 100%;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .editor-toolbar::-webkit-scrollbar {
-            display: none;
-        }
-        .toolbar-group {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding-right: 8px;
-            border-right: 1px solid #e6d8c7;
-            flex-wrap: nowrap;
-            white-space: nowrap;
-        }
-        .toolbar-group:last-child {
-            border-right: none;
-        }
-        /* 工具栏标签（字体/大小） */
-        .toolbar-label {
-            font-size: 0.90rem;
-            color: #8B4513;
-            margin-right: 4px;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        /* 字体/大小下拉框 */
-        .toolbar-select {
-            padding: 5px 8px;
-            border: 1px solid #d2b48c;
-            border-radius: 6px;
-            background-color: #fff;
-            font-size: 15px;
-            transition: border-color 0.2s ease;
-            min-width: 70px;
-            width: auto;
-            font-family: "STKaiti", "KaiTi", serif;
-        }
-        .toolbar-select:focus {
-            outline: none;
-            border-color: #c85a5a;
-            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.1);
-        }
-        /* 工具栏功能按钮（B/I/U/对齐/颜色/图片） */
-        .toolbar-btn {
-            width: 30px;
-            height: 30px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            border: 1px solid #d2b48c;
-            background: linear-gradient(135deg, #fff 0%, #f9f3e6 100%);
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .toolbar-btn::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, rgba(200,90,90,0.05) 0%, rgba(200,90,90,0.15) 50%, rgba(200,90,90,0.05) 100%);
-            transform: translateX(-100%);
-            transition: transform 0.4s ease;
-        }
-        .toolbar-btn:hover::before {
-            transform: translateX(100%);
-        }
-        .toolbar-btn:hover {
-            background: linear-gradient(135deg, #f5e8d5 0%, #f9f3e6 100%);
-            border-color: #c85a5a;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 3px rgba(0,0,0,0.05);
-        }
-        .toolbar-btn.active {
-            background: linear-gradient(135deg, #e6d8c7 0%, #f5e8d5 100%);
-            border-color: #8B4513;
-            font-weight: bold;
-        }
-        /* 颜色选择器样式（新样式） */
-        .toolbar-color {
-            width: 20px;
-            height: 20px;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-        }
-        /* 图片/代码按钮（统一样式） */
-        .img-btn, .code-btn {
-            width: 30px;
-            height: 30px;
-            border-radius: 6px;
-            border: 1px solid #d2b48c;
-            background: linear-gradient(135deg, #fff 0%, #f9f3e6 100%);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: #8B4513;
-            margin: 0 2px;
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .img-btn::before, .code-btn::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, rgba(200,90,90,0.05) 0%, rgba(200,90,90,0.15) 50%, rgba(200,90,90,0.05) 100%);
-            transform: translateX(-100%);
-            transition: transform 0.4s ease;
-        }
-        .img-btn:hover::before, .code-btn:hover::before {
-            transform: translateX(100%);
-        }
-        .img-btn:hover, .code-btn:hover {
-            background: linear-gradient(135deg, #f5e8d5 0%, #f9f3e6 100%);
-            border-color: #c85a5a;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 3px rgba(0,0,0,0.05);
-        }
-        /* 保存/取消按钮 */
-        .editor-actions {
-            margin-left: auto;
-            display: flex;
-            gap: 4px;
-            border-right: none;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .save-btn {
-            height: 30px;
-            padding: 0 12px;
-            border: none;
-            border-radius: 6px;
-            background: linear-gradient(135deg, #c85a5a 0%, #a04040 100%);
-            color: #fff;
-            font-size: 15px;
-            cursor: pointer;
-            margin: 0 4px;
-            font-family: "STKaiti", "KaiTi", serif;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .save-btn:hover {
-            background: linear-gradient(135deg, #d86a6a 0%, #b05050 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        .cancel-btn {
-            height: 30px;
-            padding: 0 12px;
-            border: 1px solid #d2b48c;
-            border-radius: 6px;
-            background: linear-gradient(135deg, #fff 0%, #f9f2e5 100%);
-            color: #8B4513;
-            font-size: 15px;
-            cursor: pointer;
-            margin: 0 2px;
-            font-family: "STKaiti", "KaiTi", serif;
-            transition: all 0.2s ease;
-        }
-        .cancel-btn:hover {
-            background: linear-gradient(135deg, #f5e8d5 0%, #e6d8c7 100%);
-            border-color: #c85a5a;
-            transform: translateY(-1px);
-        }
-        /* ========== 原有样式保留 ========== */
-        /* 隐藏的文件输入框 */
-        #imageUpload {
-            display: none;
-        }
-        /* 图片编辑按钮样式优化 */
-        .image-edit-btn {
-            width: 28px;
-            height: 28px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            background: linear-gradient(135deg, #fff8e8 0%, #f5e8d5 100%);
-            border: 1px solid #d2b48c;
-            transition: all 0.2s ease;
-        }
-        .image-edit-btn:hover {
-            background: linear-gradient(135deg, #f5e8d5 0%, #e6d8c7 100%);
-            border-color: #c85a5a;
-            transform: translateY(-1px);
-        }
-        .image-edit-btn.delete {
-            color: #b22222;
-        }
-        .image-edit-btn.resize {
-            color: #8B4513;
-        }
-        /* 内容区 */
         .content {
             flex: 1;
-            min-width: 720px;
-            background-color: #fff8e8;
+            background: #fff8e8;
             border: 2px solid #d2b48c;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
         }
         .note-header {
             display: flex;
@@ -669,40 +205,30 @@
             padding-bottom: 10px;
             border-bottom: 1px solid #d2b48c;
         }
-        .note-header h3 {
-            font-family: "STKaiti", "KaiTi", serif;
-            color: #8B4513;
-        }
-        .note-header .btn-primary {
-            padding: 8px 16px;
-            font-size: 1rem;
-        }
+        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; }
         .note-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 15px;
-            margin-bottom: 20px;
         }
         .note-card {
-            background-color: #fff;
+            background: #fff;
             border: 1px solid #e6d8c7;
             border-radius: 8px;
             padding: 15px;
-            box-shadow: 0 2px 3px rgba(0,0,0,0.05);
-            transition: all 0.2s ease;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         .note-card:hover {
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-color: #d2b48c;
             transform: translateY(-2px);
         }
         .note-card h4 {
             font-family: "STKaiti", "KaiTi", serif;
-            color: #333;
             margin-bottom: 8px;
-            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .note-card p {
             font-size: 0.9rem;
@@ -711,82 +237,10 @@
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            margin-bottom: 10px;
         }
-        .note-time {
-            font-size: 0.8rem;
-            color: #999;
-            margin-bottom: 10px;
-        }
-        .note-actions {
-            display: flex;
-            gap: 5px;
-        }
-        /* 编辑器样式 */
-        .editor-container {
-            margin-top: 20px;
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-        /* 代码块样式（优化删除体验） */
-        pre {
-            background-color: #f8f8f8;
-            border: 1px solid #e6d8c7;
-            border-radius: 6px;
-            padding: 12px 15px;
-            margin: 10px 0;
-            overflow-x: auto;
-            font-family: "Consolas", "Monaco", monospace;
-            font-size: 14px;
-            position: relative;
-        }
-        pre:hover .code-delete-btn {
-            display: block;
-        }
-        .code-delete-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 20px;
-            height: 20px;
-            border: none;
-            background: #b22222;
-            color: #fff;
-            border-radius: 50%;
-            font-size: 12px;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        code {
-            font-family: "Consolas", "Monaco", monospace;
-            color: #8B4513;
-        }
-        /* 图片编辑样式 */
-        .editor-content img {
-            max-width: 100%;
-            height: auto;
-            margin: 10px 0;
-            border: 1px solid #e6d8c7;
-            border-radius: 6px;
-            resize: both;
-            overflow: auto;
-            min-width: 100px;
-            min-height: 50px;
-        }
-        .image-edit-toolbar {
-            position: absolute;
-            background-color: #fff8e8;
-            border: 1px solid #d2b48c;
-            border-radius: 6px;
-            padding: 6px;
-            display: flex;
-            gap: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 100;
-        }
-        /* 编辑器原有样式 */
+        .note-time { font-size: 0.8rem; color: #999; margin: 10px 0; }
+        .note-actions { display: flex; gap: 5px; }
+
         .editor-title {
             width: 100%;
             padding: 10px 15px;
@@ -795,215 +249,89 @@
             margin-bottom: 10px;
             font-size: 1.3rem;
             font-family: "STKaiti", "KaiTi", serif;
-            transition: all 0.2s ease;
         }
-        .editor-title:focus {
-            outline: none;
-            border-color: #c85a5a;
-            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.2);
+        .editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 10px;
+            background: #f9f3e6;
+            border: 1px solid #d2b48c;
+            border-radius: 8px;
+            margin-bottom: 10px;
         }
+        .toolbar-btn {
+            width: 30px; height: 30px;
+            border: 1px solid #d2b48c;
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .toolbar-btn:hover { background: #f5e8d5; }
+        .toolbar-btn.active { background: #e6d8c7; }
         .editor-content {
             width: 100%;
             min-height: 300px;
             padding: 15px;
             border: 1px solid #d2b48c;
             border-radius: 8px;
-            background-color: #fff;
+            background: #fff;
             font-size: 1rem;
             line-height: 1.8;
-            transition: all 0.2s ease;
-            resize: vertical;
-            font-family: "Microsoft YaHei", sans-serif;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            position: relative;
         }
         .editor-content:focus {
             outline: none;
             border-color: #c85a5a;
-            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.15);
         }
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #999;
             font-family: "STKaiti", "KaiTi", serif;
-            transition: all 0.2s ease;
         }
-        .empty-state img {
-            width: 80px;
-            margin-bottom: 15px;
-            opacity: 0.5;
-            transition: all 0.2s ease;
-        }
-        .empty-state:hover img {
-            opacity: 0.7;
-            transform: scale(1.05);
-        }
-        /* 列表下拉菜单样式 */
-        .list-dropdown-container {
-            position: relative;
-        }
-        .list-dropdown-menu.show {
-            display: block;
-        }
-        .list-dropdown-item {
-            padding: 8px 15px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s ease;
+
+        .loading {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            padding: 40px;
         }
-        .list-dropdown-item:hover {
-            background-color: #f5e8d5;
-            color: #8B4513;
-        }
-        .list-dropdown-item .icon {
-            display: inline-block;
-            width: 16px;
-            text-align: center;
-        }
-        /* 对齐方式图标样式 */
-        .align-icon {
-            display: inline-block;
-            width: 18px;
-            height: 14px;
-            position: relative;
-        }
-        .align-icon::before {
+        .loading::after {
             content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background-color: #333;
+            width: 30px; height: 30px;
+            border: 3px solid #d2b48c;
+            border-top-color: #c85a5a;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-        .align-icon-left::before {
-            top: 0;
-        }
-        .align-icon-left::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 4px;
-            right: 4px;
-            height: 2px;
-            background-color: #333;
-        }
-        .align-icon-left::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 8px;
-            right: 8px;
-            height: 2px;
-            background-color: #333;
-        }
-        .align-icon-center::before {
-            top: 0;
-            left: 2px;
-            right: 2px;
-        }
-        .align-icon-center::after {
-            content: "";
-            position: absolute;
-            left: 4px;
-            top: 4px;
-            right: 4px;
-            height: 2px;
-            background-color: #333;
-        }
-        .align-icon-center::after {
-            content: "";
-            position: absolute;
-            left: 2px;
-            top: 8px;
-            right: 2px;
-            height: 2px;
-            background-color: #333;
-        }
-        .align-icon-right::before {
-            top: 0;
-            left: 4px;
-            right: 0;
-        }
-        .align-icon-right::after {
-            content: "";
-            position: absolute;
-            left: 4px;
-            top: 4px;
-            right: 0;
-            height: 2px;
-            background-color: #333;
-        }
-        .align-icon-right::after {
-            content: "";
-            position: absolute;
-            left: 8px;
-            top: 8px;
-            right: 0;
-            height: 2px;
-            background-color: #333;
-        }
-        .align-icon-justify::before {
-            top: 0;
-        }
-        .align-icon-justify::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 4px;
-            right: 0;
-            height: 2px;
-            background-color: #333;
-        }
-        .align-icon-justify::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 8px;
-            right: 0;
-            height: 2px;
-            background-color: #333;
-        }
-        /* 响应式适配 */
-        @media (max-width: 1200px) {
-            .container {
-                max-width: 100%;
-                padding: 15px;
-            }
-            .sidebar {
-                width: 260px;
-            }
-            .content {
-                min-width: 580px;
-            }
-            /* 响应式调整笔记集名称宽度 */
-            .notebook-name {
-                max-width: 150px;
-            }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .main { flex-direction: column; }
+            .sidebar { width: 100%; }
+            header { flex-direction: column; gap: 15px; text-align: center; }
+            .user-actions { justify-content: center; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div class="header-text">
+            <div>
                 <h1>云笺记</h1>
                 <p>轻挥笔墨，记录流年</p>
             </div>
             <div class="user-actions" id="userActions">
-                <button class="btn btn-primary" id="loginBtn">登录</button>
-                <button class="btn" id="registerBtn">注册</button>
+                <button class="btn btn-primary" onclick="showModal('login')">登录</button>
+                <button class="btn btn-secondary" onclick="showModal('register')">注册</button>
             </div>
         </header>
         <div class="main">
             <div class="sidebar">
                 <h3>我的笔记集</h3>
                 <div class="create-notebook">
-                    <input type="text" id="newNotebookName" placeholder="输入新笔记集名称" disabled>
+                    <input type="text" id="newNotebookName" placeholder="新笔记集名称" disabled>
                     <button class="btn btn-primary" id="createNotebookBtn" disabled>+ 创建</button>
                 </div>
                 <div class="notebook-list-container">
@@ -1013,207 +341,131 @@
             <div class="content">
                 <div id="contentArea">
                     <div class="empty-state">
-                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
-                        <h3>点击笔记集</h3>
-                        <p>即可创建和管理您的笔记</p>
+                        <h3>请选择或创建笔记集</h3>
+                        <p>登录后即可开始创作</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- 提示框 -->
+
     <div class="toast" id="toast"></div>
 
-    <!-- 登录弹窗 -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal">
-            <button class="modal-close" id="closeLoginModal">×</button>
-            <h2 class="modal-title">登录 · 云笺记</h2>
+            <button class="modal-close" onclick="hideModal('login')">×</button>
+            <h2 class="modal-title">登录</h2>
             <div class="form-group">
-                <label class="form-label">用户名</label>
-                <input type="text" class="form-input" id="loginUsername" placeholder="请输入用户名">
+                <label class="form-label">邮箱</label>
+                <input type="email" class="form-input" id="loginEmail" placeholder="请输入邮箱">
             </div>
             <div class="form-group">
                 <label class="form-label">密码</label>
                 <input type="password" class="form-input" id="loginPassword" placeholder="请输入密码">
             </div>
             <div class="form-actions">
-                <button class="btn btn-primary" style="flex:1" id="doLoginBtn">登录</button>
-                <button class="btn" style="flex:1" id="cancelLoginBtn">取消</button>
+                <button class="btn btn-primary" style="flex:1" id="doLoginBtn" onclick="handleLogin()">登录</button>
+                <button class="btn btn-secondary" style="flex:1" onclick="hideModal('login')">取消</button>
             </div>
             <div class="form-switch">
-                还没有账号？<a id="toRegisterLink">立即注册</a>
+                还没有账号？<a onclick="switchModal('login', 'register')">立即注册</a>
             </div>
         </div>
     </div>
 
-    <!-- 注册弹窗 -->
     <div class="modal-overlay" id="registerModal">
         <div class="modal">
-            <button class="modal-close" id="closeRegisterModal">×</button>
-            <h2 class="modal-title">注册 · 云笺记</h2>
+            <button class="modal-close" onclick="hideModal('register')">×</button>
+            <h2 class="modal-title">注册</h2>
             <div class="form-group">
                 <label class="form-label">用户名</label>
-                <input type="text" class="form-input" id="registerUsername" placeholder="请输入用户名（3-16位）">
+                <input type="text" class="form-input" id="registerUsername" placeholder="3-16位字符">
+            </div>
+            <div class="form-group">
+                <label class="form-label">邮箱</label>
+                <input type="email" class="form-input" id="registerEmail" placeholder="请输入有效邮箱">
             </div>
             <div class="form-group">
                 <label class="form-label">密码</label>
-                <input type="password" class="form-input" id="registerPassword" placeholder="请输入密码（6-16位）">
+                <input type="password" class="form-input" id="registerPassword" placeholder="6-16位字符">
             </div>
             <div class="form-group">
                 <label class="form-label">确认密码</label>
-                <input type="password" class="form-input" id="registerConfirmPassword" placeholder="请再次输入密码">
+                <input type="password" class="form-input" id="registerConfirmPassword" placeholder="再次输入密码">
             </div>
             <div class="form-actions">
-                <button class="btn btn-primary" style="flex:1" id="doRegisterBtn">注册</button>
-                <button class="btn" style="flex:1" id="cancelRegisterBtn">取消</button>
+                <button class="btn btn-primary" style="flex:1" id="doRegisterBtn" onclick="handleRegister()">注册</button>
+                <button class="btn btn-secondary" style="flex:1" onclick="hideModal('register')">取消</button>
             </div>
             <div class="form-switch">
-                已有账号？<a id="toLoginLink">立即登录</a>
+                已有账号？<a onclick="switchModal('register', 'login')">立即登录</a>
             </div>
         </div>
     </div>
 
     <script>
-        // 全局变量定义（放在最外层，确保所有函数可访问）
+        // ========== 配置 ==========
+        const CONFIG = {
+            supabaseUrl: 'https://zeiwdwplhgcpedhoxxqd.supabase.co',
+            supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA'
+        };
+
+        // ========== 全局状态 ==========
+        let supabase = null;
         let currentUser = null;
-        const LOGIN_TIMEOUT = 7 * 24 * 60 * 60 * 1000;
-        const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
-        let timeoutCheckTimer = null;
+        let currentNotebookId = null;
+        let currentNoteId = null;
         let autoSaveTimer = null;
-        const AUTO_SAVE_DELAY = 3 * 60 * 1000;
-        let users = JSON.parse(localStorage.getItem('yunjianji_users')) || [];
-        let lastActiveTime = JSON.parse(localStorage.getItem('yunjianji_lastActiveTime')) || null;
 
-        // 页面加载完成后执行所有逻辑（核心：解决DOM未加载就操作的问题）
-        document.addEventListener('DOMContentLoaded', async function() {
-            // ========== 1. 初始化Supabase客户端（仅初始化一次） ==========
-            if (typeof window.supabase !== 'undefined') {
-                supabase = window.supabase.createClient(
-                    'https://zeiwdwplhgcpedhoxxqd.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA'
-                );
-                window.supabase = supabase; // 挂载到window，方便全局访问
-                console.log("Supabase 初始化成功");
+        // ========== 初始化 ==========
+        function init() {
+            // 初始化 Supabase
+            if (window.supabase) {
+                supabase = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+                console.log('Supabase 初始化成功');
             } else {
-                console.error("Supabase SDK 未加载成功");
-                showToast('Supabase加载失败，请刷新页面', 'error');
+                showToast('系统加载失败，请刷新页面', 'error');
                 return;
             }
-        })
+            
+            // 检查登录状态
+            checkAuth();
+            
+            // 绑定全局事件
+            bindGlobalEvents();
+        }
 
-        // ========== 2. 检查登录状态（初始化后立即执行） ==========
-        document.addEventListener('DOMContentLoaded', async function() {
-            await checkUserStatus();
-        });
-
-        // ========== 3. 绑定所有DOM元素（确保元素存在） ==========
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
-        const userActions = document.getElementById('userActions');
-        const loginModal = document.getElementById('loginModal');
-        const registerModal = document.getElementById('registerModal');
-        const newNotebookInput = document.getElementById('newNotebookName');
-        const createNotebookBtn = document.getElementById('createNotebookBtn');
-        const toast = document.getElementById('toast');
-
-        // ========== 4. 核心函数定义（全部放在DOMContentLoaded内，确保作用域统一） ==========
-        
-        // 检查登录状态
-        async function checkUserStatus() {
-            if (!supabase) {
-                console.error("Supabase 未初始化");
-                return;
-            }
+        // ========== 认证相关 ==========
+        async function checkAuth() {
+            if (!supabase) return;
             try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (error) throw error;
+                const { data: { session } } = await supabase.auth.getSession();
                 if (session) {
                     currentUser = session.user;
-                    updateUserState();
-                    await loadNotebooks();
+                    updateUIForLoggedIn();
+                    loadNotebooks();
                 } else {
-                    // 未登录时初始化用户状态
-                    initUserState();
+                    updateUIForLoggedOut();
                 }
             } catch (err) {
-                console.error("检查登录状态失败：", err.message);
-                showToast('检查登录状态失败：' + err.message, 'error');
+                console.error('检查登录状态失败:', err);
+                updateUIForLoggedOut();
             }
         }
 
-        // 更新最后活跃时间
-        function updateLastActiveTime() {
-            lastActiveTime = Date.now();
-            localStorage.setItem('yunjianji_lastActiveTime', JSON.stringify(lastActiveTime));
-        }
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const btn = document.getElementById('doLoginBtn');
 
-        // 检查登录超时
-        function checkLoginTimeout() {
-            if (!currentUser || !lastActiveTime) return;
-            
-            const now = Date.now();
-            if (now - lastActiveTime > LOGIN_TIMEOUT) {
-                showToast('登录已超时，请重新登录', 'info');
-                logout(true);
-                return true;
+            if (!email || !password) {
+                showToast('请填写邮箱和密码', 'error');
+                return;
             }
-            return false;
-        }
 
-        // 绑定用户活动监听
-        function bindUserActivityListeners() {
-            const events = ['click', 'mousemove', 'keypress', 'scroll', 'touchstart', 'input'];
-            events.forEach(event => {
-                document.addEventListener(event, updateLastActiveTime);
-            });
-        }
+            btn.disabled = true;
+            btn.textContent = '登录中...';
 
-        // 初始化用户状态
-        function initUserState() {
-            if (currentUser) {
-                if (checkLoginTimeout()) return;
-                
-                userActions.innerHTML = `
-                    <span style="color:#8B4513;font-family:'STKaiti','KaiTi',serif;margin-right:10px;">欢迎，${currentUser.user_metadata?.username || currentUser.email}📜</span>
-                    <button class="btn btn-danger" id="logoutBtn">退出</button>
-                `;
-                newNotebookInput.disabled = false;
-                createNotebookBtn.disabled = false;
-                
-                // 安全绑定退出按钮
-                const logoutBtn = document.getElementById('logoutBtn');
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', () => logout());
-                }
-                
-                loadNotebooks();
-                timeoutCheckTimer = setInterval(checkLoginTimeout, CHECK_INTERVAL);
-            } else {
-                userActions.innerHTML = `
-                    <button class="btn btn-primary" id="loginBtn_${Date.now()}">登录</button>
-                    <button class="btn" id="registerBtn_${Date.now()}">注册</button>
-                `;
-                newNotebookInput.disabled = true;
-                createNotebookBtn.disabled = true;
-                
-                // 安全绑定登录/注册按钮
-                const dynamicLoginBtn = document.querySelector('[id^="loginBtn_"]');
-                const dynamicRegisterBtn = document.querySelector('[id^="registerBtn_"]');
-                
-                if (dynamicLoginBtn) {
-                    dynamicLoginBtn.addEventListener('click', () => showModal('login'));
-                }
-                if (dynamicRegisterBtn) {
-                    dynamicRegisterBtn.addEventListener('click', () => showModal('register'));
-                }
-            }
-        }
-
-        // 登录功能
-        async function login(email, password) {
-            if (!supabase) return;
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
@@ -1221,869 +473,545 @@
                 });
 
                 if (error) throw error;
+                
                 currentUser = data.user;
                 showToast('登录成功！');
-                updateUserState();
-                await loadNotebooks();
-                hideModal('login'); // 替换closeLoginModal为统一的hideModal
+                hideModal('login');
+                updateUIForLoggedIn();
+                loadNotebooks();
+                
+                // 清空表单
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
             } catch (err) {
-                showToast('登录失败：' + err.message, 'error');
+                showToast('登录失败: ' + getFriendlyError(err.message), 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '登录';
             }
         }
 
-        // 注册功能
-        async function register(username, password, email) {
-            if (!supabase) return;
+        async function handleRegister() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value.trim();
+            const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
+            const btn = document.getElementById('doRegisterBtn');
+
+            // 验证
+            if (!username || username.length < 3 || username.length > 16) {
+                showToast('用户名需3-16位字符', 'error');
+                return;
+            }
+            if (!email || !isValidEmail(email)) {
+                showToast('请输入有效邮箱', 'error');
+                return;
+            }
+            if (!password || password.length < 6 || password.length > 16) {
+                showToast('密码需6-16位字符', 'error');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showToast('两次密码不一致', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '注册中...';
+
             try {
                 const { data, error } = await supabase.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                        data: {
-                            username: username
-                        }
+                        data: { username: username }
                     }
                 });
 
                 if (error) throw error;
+
                 if (data.user) {
-                    showToast('注册成功！请查收验证邮件（若开启）');
-                    currentUser = data.user;
-                    updateUserState();
-                    await loadNotebooks();
-                    hideModal('register'); // 替换closeRegisterModal为统一的hideModal
+                    showToast('注册成功！请查收邮箱验证', 'info');
+                    hideModal('register');
+                    
+                    // 清空表单
+                    document.getElementById('registerUsername').value = '';
+                    document.getElementById('registerEmail').value = '';
+                    document.getElementById('registerPassword').value = '';
+                    document.getElementById('registerConfirmPassword').value = '';
                 }
             } catch (err) {
-                showToast('注册失败：' + err.message, 'error');
+                showToast('注册失败: ' + getFriendlyError(err.message), 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '注册';
             }
         }
 
-        // 登出功能
-        async function logout() {
+        async function handleLogout() {
             if (!supabase) return;
-            const { error } = await supabase.auth.signOut();
-            if (!error) {
+            try {
+                await supabase.auth.signOut();
                 currentUser = null;
+                currentNotebookId = null;
+                currentNoteId = null;
                 showToast('已退出登录');
-                updateUserState();
-                clearNotebooks();
-                if (timeoutCheckTimer) clearInterval(timeoutCheckTimer);
-            } else {
-                showToast('退出失败：' + error.message, 'error');
+                updateUIForLoggedOut();
+                clearContent();
+            } catch (err) {
+                showToast('退出失败', 'error');
             }
         }
 
-        // 显示弹窗
-        function showModal(type) {
-            if (type === 'login' && loginModal) {
-                loginModal.classList.add('show');
-            } else if (type === 'register' && registerModal) {
-                registerModal.classList.add('show');
-            }
-            document.body.style.overflow = 'hidden';
+        function updateUIForLoggedIn() {
+            const username = currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || '用户';
+            document.getElementById('userActions').innerHTML = `
+                <span style="color:#8B4513;font-family:'STKaiti';margin-right:10px;">欢迎，${username}</span>
+                <button class="btn btn-danger" onclick="handleLogout()">退出</button>
+            `;
+            document.getElementById('newNotebookName').disabled = false;
+            document.getElementById('createNotebookBtn').disabled = false;
         }
 
-        // 隐藏弹窗（替换原closeLoginModal/closeRegisterModal）
-        function hideModal(type) {
-            if (type === 'login' && loginModal) {
-                loginModal.classList.remove('show');
-            } else if (type === 'register' && registerModal) {
-                registerModal.classList.remove('show');
-            }
-            document.body.style.overflow = '';
+        function updateUIForLoggedOut() {
+            document.getElementById('userActions').innerHTML = `
+                <button class="btn btn-primary" onclick="showModal('login')">登录</button>
+                <button class="btn btn-secondary" onclick="showModal('register')">注册</button>
+            `;
+            document.getElementById('newNotebookName').disabled = true;
+            document.getElementById('createNotebookBtn').disabled = true;
         }
 
-        // 显示提示框
-        function showToast(message, type = 'success') {
-            if (!toast) return;
-            toast.textContent = message;
-            toast.classList.add('show');
-            
-            if (type === 'error') {
-                toast.style.backgroundColor = 'rgba(178, 34, 34, 0.9)';
-            } else if (type === 'info') {
-                toast.style.backgroundColor = 'rgba(51, 102, 153, 0.9)';
-            } else {
-                toast.style.backgroundColor = 'rgba(51, 51, 51, 0.9)';
-            }
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // 更新用户状态UI
-        function updateUserState() {
-            initUserState(); // 复用初始化逻辑
-        }
-
-        // 清空笔记集显示
-        function clearNotebooks() {
-            const notebookList = document.getElementById('notebookList');
-            if (notebookList) {
-                notebookList.innerHTML = `
-                    <li class="empty-state" style="padding:20px;">
-                        <p>请先登录后使用</p>
-                    </li>
-                `;
-            }
-            const contentArea = document.getElementById('contentArea');
-            if (contentArea) {
-                contentArea.innerHTML = `
-                    <div class="empty-state">
-                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
-                        <h3>选择一个笔记集开始创作</h3>
-                        <p>点击左侧笔记集，或创建新的笔记集</p>
-                    </div>
-                `;
-            }
-        }
-
-        // 加载用户笔记集
+        // ========== 笔记集相关 ==========
         async function loadNotebooks() {
-            const notebookList = document.getElementById('notebookList');
-            if (!notebookList) return;
-            
-            if (!currentUser) {
-                notebookList.innerHTML = `
-                    <li class="empty-state" style="padding:20px;">
-                        <p>请先登录后使用</p>
-                    </li>
-                `;
-                return;
-            }
+            if (!currentUser || !supabase) return;
+
+            const list = document.getElementById('notebookList');
+            list.innerHTML = '<div class="loading"></div>';
 
             try {
-                const { data: userNotebooks, error } = await supabase
+                const { data, error } = await supabase
                     .from('notebooks')
                     .select('*')
-                    .eq('user_id', currentUser.id) // 只查当前用户的笔记集
-                    .order('create_time', { ascending: false });
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
-                if (userNotebooks.length === 0) {
-                    notebookList.innerHTML = `
-                        <li class="empty-state" style="padding:20px;">
-                            <p>暂无笔记集，点击创建按钮添加</p>
-                        </li>
-                    `;
+                if (data.length === 0) {
+                    list.innerHTML = '<li class="empty-state">暂无笔记集，请创建</li>';
                 } else {
-                    notebookList.innerHTML = userNotebooks.map((notebook) => `
-                        <li class="notebook-item" data-id="${notebook.id}">
-                            <span class="notebook-name">${notebook.name}</span>
+                    list.innerHTML = data.map(nb => `
+                        <li class="notebook-item ${currentNotebookId === nb.id ? 'active' : ''}" 
+                            data-id="${nb.id}" onclick="selectNotebook('${nb.id}')">
+                            <span class="notebook-name">${escapeHtml(nb.name)}</span>
                             <div class="notebook-actions">
-                                <button class="btn btn-edit edit-notebook" title="编辑笔记集名称">改</button>
-                                <button class="btn btn-danger delete-notebook" title="删除笔记集">删</button>
+                                <button class="btn btn-edit" onclick="event.stopPropagation(); editNotebook('${nb.id}', '${escapeHtml(nb.name)}')">改</button>
+                                <button class="btn btn-danger" onclick="event.stopPropagation(); deleteNotebook('${nb.id}')">删</button>
                             </div>
                         </li>
                     `).join('');
-                    
-                    // 绑定笔记集点击事件
-                    document.querySelectorAll('.notebook-item').forEach(item => {
-                        item.addEventListener('click', (e) => {
-                            if (e.target.closest('.notebook-actions')) return;
-                            document.querySelectorAll('.notebook-item').forEach(i => i.classList.remove('active'));
-                            item.classList.add('active');
-                            loadNotes(item.dataset.id);
-                        });
-                    });
-                    
-                    // 绑定编辑笔记集事件
-                    document.querySelectorAll('.edit-notebook').forEach(btn => {
-                        btn.addEventListener('click', async (e) => {
-                            e.stopPropagation();
-                            const item = btn.closest('.notebook-item');
-                            const notebookId = item.dataset.id;
-                            const oldName = item.querySelector('.notebook-name').textContent;
-                            const newName = prompt('请输入新的笔记集名称', oldName);
-                            
-                            if (newName && newName.trim() && newName !== oldName) {
-                                try {
-                                    const { error } = await supabase
-                                        .from('notebooks')
-                                        .update({ 
-                                            name: newName.trim(),
-                                            update_time: new Date() 
-                                        })
-                                        .eq('id', notebookId)
-                                        .eq('user_id', currentUser.id);
-
-                                    if (error) throw error;
-                                    
-                                    loadNotebooks();
-                                    showToast('笔记集名称已更新');
-                                } catch (err) {
-                                    showToast('更新失败：' + err.message, 'error');
-                                }
-                            }
-                        });
-                    });
-                    
-                    // 绑定删除笔记集事件
-                    document.querySelectorAll('.delete-notebook').forEach(btn => {
-                        btn.addEventListener('click', async (e) => {
-                            e.stopPropagation();
-                            const item = btn.closest('.notebook-item');
-                            const notebookId = item.dataset.id;
-                            
-                            if (confirm('确定要删除这个笔记集吗？删除后该笔记集下的所有笔记也会被删除！')) {
-                                try {
-                                    // 先删除笔记集中的笔记
-                                    await supabase
-                                        .from('notes')
-                                        .delete()
-                                        .eq('notebook_id', notebookId)
-                                        .eq('user_id', currentUser.id);
-                                    
-                                    // 再删除笔记集
-                                    const { error } = await supabase
-                                        .from('notebooks')
-                                        .delete()
-                                        .eq('id', notebookId)
-                                        .eq('user_id', currentUser.id);
-
-                                    if (error) throw error;
-                                    
-                                    loadNotebooks();
-                                    const contentArea = document.getElementById('contentArea');
-                                    if (contentArea) {
-                                        contentArea.innerHTML = `
-                                            <div class="empty-state">
-                                                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
-                                                <h3>选择一个笔记集开始创作</h3>
-                                                <p>点击左侧笔记集，或创建新的笔记集</p>
-                                            </div>
-                                        `;
-                                    }
-                                    showToast('笔记集已删除');
-                                } catch (err) {
-                                    showToast('删除失败：' + err.message, 'error');
-                                }
-                            }
-                        });
-                    });
                 }
             } catch (err) {
-                notebookList.innerHTML = `
-                    <li class="empty-state" style="padding:20px; color: #ff4444;">
-                        <p>加载失败：${err.message}</p>
-                    </li>
-                `;
+                list.innerHTML = `<li class="empty-state" style="color:red">加载失败: ${err.message}</li>`;
             }
         }
 
-        // 加载笔记集下的笔记
-        async function loadNotes(notebookId) {
-            const contentArea = document.getElementById('contentArea');
-            if (!contentArea) return;
-            
-            if (!currentUser || !notebookId) {
-                contentArea.innerHTML = `
-                    <div class="empty-state">
-                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
-                        <h3>选择一个笔记集开始创作</h3>
-                        <p>点击左侧笔记集，或创建新的笔记集</p>
-                    </div>
-                `;
+        async function createNotebook() {
+            const input = document.getElementById('newNotebookName');
+            const btn = document.getElementById('createNotebookBtn');
+            const name = input.value.trim();
+
+            if (!name) {
+                showToast('请输入笔记集名称', 'error');
                 return;
             }
 
+            btn.disabled = true;
+            btn.textContent = '创建中...';
+
             try {
-                const { data: notebook, error: notebookError } = await supabase
+                const { error } = await supabase
+                    .from('notebooks')
+                    .insert([{
+                        name: name,
+                        user_id: currentUser.id
+                    }]);
+
+                if (error) throw error;
+
+                input.value = '';
+                showToast('创建成功');
+                loadNotebooks();
+            } catch (err) {
+                showToast('创建失败: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '+ 创建';
+            }
+        }
+
+        async function selectNotebook(notebookId) {
+            currentNotebookId = notebookId;
+            currentNoteId = null;
+            
+            // 更新选中状态
+            document.querySelectorAll('.notebook-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.id === notebookId);
+            });
+
+            loadNotes(notebookId);
+        }
+
+        async function loadNotes(notebookId) {
+            if (!supabase) return;
+
+            const content = document.getElementById('contentArea');
+            content.innerHTML = '<div class="loading"></div>';
+
+            try {
+                // 获取笔记集信息
+                const { data: notebook, error: nbError } = await supabase
                     .from('notebooks')
                     .select('name')
                     .eq('id', notebookId)
-                    .eq('user_id', currentUser.id)
                     .single();
 
-                if (notebookError) throw notebookError;
+                if (nbError) throw nbError;
 
+                // 获取笔记列表
                 const { data: notes, error } = await supabase
                     .from('notes')
                     .select('*')
                     .eq('notebook_id', notebookId)
-                    .eq('user_id', currentUser.id)
-                    .order('update_time', { ascending: false });
+                    .order('updated_at', { ascending: false });
 
                 if (error) throw error;
 
-                contentArea.innerHTML = `
+                content.innerHTML = `
                     <div class="note-header">
-                        <h3>${notebook.name}</h3>
-                        <button class="btn btn-primary" id="createNoteBtn_${Date.now()}">+ 新建笔记</button>
+                        <h3>${escapeHtml(notebook.name)}</h3>
+                        <button class="btn btn-primary" onclick="createNote()">+ 新建笔记</button>
                     </div>
-                    <div class="note-list" id="noteList">
-                        ${notes.length === 0 ? `
-                            <div class="empty-state" style="grid-column: 1/-1; padding:40px;">
-                                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='1.5'><path d='M12 2v20M2 12h20'/></svg>" alt="墨痕">
-                                <h3>暂无笔记</h3>
-                                <p>点击新建笔记按钮开始创作</p>
-                            </div>
-                        ` : notes.map((note) => `
-                            <div class="note-card" data-id="${note.id}">
-                                <h4>${note.title || '无标题笔记'}</h4>
-                                <p>${note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) : '无内容'}</p>
-                                <div class="note-time">${new Date(note.update_time).toLocaleString()}</div>
-                                <div class="note-actions">
-                                    <button class="toolbar-btn edit-note" title="编辑笔记">✏️</button>
-                                    <button class="toolbar-btn delete-note" title="删除笔记">🗑️</button>
+                    <div class="note-list">
+                        ${notes.length === 0 ? 
+                            '<div class="empty-state" style="grid-column:1/-1">暂无笔记</div>' :
+                            notes.map(note => `
+                                <div class="note-card" onclick="editNote('${note.id}')">
+                                    <h4>${escapeHtml(note.title || '无标题')}</h4>
+                                    <p>${escapeHtml((note.content || '').replace(/<[^>]*>/g, '').substring(0, 100))}</p>
+                                    <div class="note-time">${formatDate(note.updated_at)}</div>
+                                    <div class="note-actions">
+                                        <button class="btn btn-edit" onclick="event.stopPropagation(); editNote('${note.id}')">编辑</button>
+                                        <button class="btn btn-danger" onclick="event.stopPropagation(); deleteNote('${note.id}')">删除</button>
+                                    </div>
                                 </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-                
-                // 绑定新建笔记按钮事件
-                const createNoteBtn = document.querySelector('[id^="createNoteBtn_"]');
-                if (createNoteBtn) {
-                    createNoteBtn.addEventListener('click', () => {
-                        createNoteEditor(notebookId);
-                    });
-                }
-                
-                // 绑定编辑笔记事件
-                document.querySelectorAll('.edit-note').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const card = btn.closest('.note-card');
-                        const noteId = card.dataset.id;
-                        createNoteEditor(notebookId, noteId);
-                    });
-                });
-                
-                // 绑定删除笔记事件
-                document.querySelectorAll('.delete-note').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const card = btn.closest('.note-card');
-                        const noteId = card.dataset.id;
-                        
-                        if (confirm('确定要删除这条笔记吗？')) {
-                            try {
-                                const { error } = await supabase
-                                    .from('notes')
-                                    .delete()
-                                    .eq('id', noteId)
-                                    .eq('user_id', currentUser.id);
-
-                                if (error) throw error;
-                                
-                                loadNotes(notebookId);
-                                showToast('笔记已删除');
-                            } catch (err) {
-                                showToast('删除失败：' + err.message, 'error');
-                            }
+                            `).join('')
                         }
-                    });
-                });
-            } catch (err) {
-                contentArea.innerHTML = `
-                    <div class="empty-state" style="color: #ff4444;">
-                        <p>加载笔记失败：' + err.message + '</p>
                     </div>
                 `;
+            } catch (err) {
+                content.innerHTML = `<div class="empty-state" style="color:red">加载失败: ${err.message}</div>`;
             }
         }
 
-        // 创建笔记编辑器（优化版，使用新的工具栏样式）
-        async function createNoteEditor(notebookId, noteId = null) {
-            const contentArea = document.getElementById('contentArea');
-            if (!contentArea) return;
-            
-            let note = {
-                title: '',
-                content: '',
-                time: new Date().toISOString()
-            };
+        // ========== 笔记编辑相关 ==========
+        function createNote() {
+            currentNoteId = null;
+            showEditor('', '');
+        }
 
-            if (noteId !== null && currentUser) {
-                try {
-                    const { data: noteData, error } = await supabase
-                        .from('notes')
-                        .select('title, content, update_time')
-                        .eq('id', noteId)
-                        .eq('user_id', currentUser.id)
-                        .single();
-                    
-                    if (!error && noteData) {
-                        note = {
-                            title: noteData.title || '',
-                            content: noteData.content || '',
-                            time: noteData.update_time || new Date().toISOString()
-                        };
-                    }
-                } catch (err) {
-                    showToast('加载笔记内容失败：' + err.message, 'error');
-                }
+        async function editNote(noteId) {
+            if (!supabase) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('notes')
+                    .select('title, content')
+                    .eq('id', noteId)
+                    .single();
+
+                if (error) throw error;
+
+                currentNoteId = noteId;
+                showEditor(data.title || '', data.content || '');
+            } catch (err) {
+                showToast('加载笔记失败', 'error');
             }
+        }
 
-            // 构建编辑器（使用新的工具栏样式）
+        function showEditor(title, content) {
+            const contentArea = document.getElementById('contentArea');
             contentArea.innerHTML = `
-                <div class="editor-container">
-                    <input type="text" class="editor-title" id="noteTitle" placeholder="输入笔记标题" value="${note.title || ''}">
-                    <!-- 新工具栏：使用新的颜色选择器样式 -->
-                    <div class="editor-toolbar">
-                        <div class="toolbar-group">
-                            <span class="toolbar-label">字体</span>
-                            <select class="toolbar-select" id="fontFamily">
-                                <option value="微软雅黑">微软雅黑</option>
-                                <option value="宋体">宋体</option>
-                                <option value="黑体">黑体</option>
-                                <option value="楷体">楷体</option>
-                                <option value="仿宋">仿宋</option>
-                                <option value="Arial">Arial</option>
-                                <option value="Times New Roman">Times New Roman</option>
-                            </select>
-                        </div>
-                        <div class="toolbar-group">
-                            <select class="toolbar-select" id="fontSize">
-                                <option value="1">八号</option>
-                                <option value="2">九号</option>
-                                <option value="3">小四号</option>
-                                <option value="4" selected>四号</option>
-                                <option value="5">小三号</option>
-                                <option value="6">三号</option>
-                                <option value="7">二号</option>
-                            </select>
-                        </div>
-                        <div class="toolbar-group">
-                            <button class="toolbar-btn" id="boldBtn" title="粗体"><b>B</b></button>
-                            <button class="toolbar-btn" id="italicBtn" title="斜体"><i>I</i></button>
-                            <button class="toolbar-btn" id="underlineBtn" title="下划线"><u>U</u></button>
-                        </div>
-                        <div class="toolbar-group">
-                            <button id="alignLeftBtn" class="toolbar-btn align-btn" title="左对齐">
-                                <span class="align-icon align-icon-left"></span>
-                            </button>
-                            <button id="alignCenterBtn" class="toolbar-btn align-btn" title="居中对齐">
-                                <span class="align-icon align-icon-center"></span>
-                            </button>
-                            <button id="alignRightBtn" class="toolbar-btn align-btn" title="右对齐">
-                                <span class="align-icon align-icon-right"></span>
-                            </button>
-                            <button id="alignJustifyBtn" class="toolbar-btn align-btn" title="两端对齐">
-                                <span class="align-icon align-icon-justify"></span>
-                            </button>
-                        </div>
-                        <div class="toolbar-group">
-                            <!-- 新的字体颜色选择器 -->
-                            <button class="toolbar-btn" title="文本颜色">
-                                <input type="color" id="fontColor" class="toolbar-color" value="#000000">
-                            </button>
-                            <!-- 新的背景颜色选择器 -->
-                            <button class="toolbar-btn" title="背景颜色">
-                                <input type="color" id="bgColor" class="toolbar-color" value="#ffffff">
-                            </button>
-                        </div>
-                        <div class="toolbar-group">
-                            <button class="img-btn" id="imgUploadBtn1" title="插入图片">🖼️</button>
-                            <button class="code-btn" id="codeInsertBtn" title="插入代码"><>️</button>
-                            <input type="file" id="imageUpload" accept="image/*">
-                        </div>
-                        <div class="toolbar-group editor-actions">
-                            <button class="save-btn" id="saveNoteBtn">保存</button>
-                            <button class="cancel-btn" id="cancelNoteBtn">取消</button>
-                        </div>
+                <div class="note-header">
+                    <h3>${currentNoteId ? '编辑笔记' : '新建笔记'}</h3>
+                    <div>
+                        <button class="btn btn-primary" onclick="saveNote()">保存</button>
+                        <button class="btn btn-secondary" onclick="loadNotes('${currentNotebookId}')">取消</button>
                     </div>
-                    <div class="editor-content" id="noteContent" contenteditable="true">${note.content || ''}</div>
                 </div>
+                <input type="text" class="editor-title" id="noteTitle" placeholder="标题" value="${escapeHtml(title)}">
+                <div class="editor-toolbar">
+                    <button class="toolbar-btn" onclick="execCmd('bold')"><b>B</b></button>
+                    <button class="toolbar-btn" onclick="execCmd('italic')"><i>I</i></button>
+                    <button class="toolbar-btn" onclick="execCmd('underline')"><u>U</u></button>
+                    <button class="toolbar-btn" onclick="execCmd('justifyLeft')">左</button>
+                    <button class="toolbar-btn" onclick="execCmd('justifyCenter')">中</button>
+                    <button class="toolbar-btn" onclick="execCmd('justifyRight')">右</button>
+                    <input type="color" id="fontColor" onchange="execCmd('foreColor', this.value)" style="width:30px;height:30px;border:none;">
+                    <input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="insertImage(this)">
+                    <button class="toolbar-btn" onclick="document.getElementById('imageUpload').click()">图</button>
+                </div>
+                <div class="editor-content" id="noteContent" contenteditable="true">${content}</div>
             `;
+        }
 
-            // ========== 保留：图片插入功能 ==========
-            const imgUploadBtn1 = document.getElementById('imgUploadBtn1');
-            const imageUpload = document.getElementById('imageUpload');
-            const noteContent = document.getElementById('noteContent');
-            
-            imgUploadBtn1.addEventListener('click', () => {
-                noteContent.focus(); // 先聚焦文本框
-                imageUpload.click();
-            });
-            
-            // 图片上传逻辑：插入到光标位置
-            imageUpload.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        noteContent.focus();
-                        const img = document.createElement('img');
-                        img.src = event.target.result;
-                        img.alt = '上传的图片';
-                        
-                        const selection = window.getSelection();
-                        if (selection.rangeCount > 0) {
-                            const range = selection.getRangeAt(0);
-                            range.deleteContents();
-                            range.insertNode(img);
-                            range.setStartAfter(img);
-                            range.setEndAfter(img);
-                            selection.removeAllRanges();
-                            selection.addRange(range);
-                        } else {
-                            noteContent.appendChild(img);
-                        }
-                        imageUpload.value = '';
-                        showToast('图片已插入');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
+        function execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('noteContent').focus();
+        }
 
-            // ========== 新增：插入代码功能 ==========
-            const codeInsertBtn = document.getElementById('codeInsertBtn');
-            codeInsertBtn.addEventListener('click', () => {
-                noteContent.focus(); // 先聚焦文本框
+        function insertImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '100%';
+                
+                const content = document.getElementById('noteContent');
+                content.focus();
+                
                 const selection = window.getSelection();
-                
-                // 1. 创建代码块元素
-                const pre = document.createElement('pre');
-                const code = document.createElement('code');
-                code.textContent = '// 请输入代码'; // 默认提示文本
-                pre.appendChild(code);
-                
-                // 2. 插入到光标位置
                 if (selection.rangeCount > 0) {
                     const range = selection.getRangeAt(0);
-                    range.deleteContents();
-                    range.insertNode(pre);
-                    
-                    // 3. 聚焦到代码块内部，选中默认提示文本（方便直接输入）
-                    const codeRange = document.createRange();
-                    codeRange.selectNodeContents(code);
-                    selection.removeAllRanges();
-                    selection.addRange(codeRange);
+                    range.insertNode(img);
                 } else {
-                    // 无光标时插入到末尾
-                    noteContent.appendChild(pre);
-                    // 聚焦到代码块
-                    const codeRange = document.createRange();
-                    codeRange.selectNodeContents(code);
-                    selection.removeAllRanges();
-                    selection.addRange(codeRange);
+                    content.appendChild(img);
                 }
-                
-                // 4. 自动添加删除按钮（复用原有逻辑）
-                addCodeDeleteButtons();
-                showToast('代码块已插入');
-            });
-
-            // ========== 保留：代码块删除功能 ==========
-            function addCodeDeleteButtons() {
-                const codeBlocks = document.querySelectorAll('pre');
-                codeBlocks.forEach(block => {
-                    if (!block.querySelector('.code-delete-btn')) {
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.className = 'code-delete-btn';
-                        deleteBtn.innerHTML = '×';
-                        deleteBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            block.remove();
-                            showToast('代码块已删除');
-                        });
-                        block.appendChild(deleteBtn);
-                    }
-                });
-            }
-            addCodeDeleteButtons();
-            noteContent.addEventListener('DOMNodeInserted', (e) => {
-                if (e.target.tagName === 'PRE') addCodeDeleteButtons();
-            });
-
-            // ========== 工具栏功能（更新字体颜色/背景颜色逻辑） ==========
-            // 1. 字体选择
-            document.getElementById('fontFamily').addEventListener('change', (e) => {
-                noteContent.focus();
-                document.execCommand('fontName', false, e.target.value);
-            });
-
-            // 2. 字号选择
-            document.getElementById('fontSize').addEventListener('change', (e) => {
-                noteContent.focus();
-                document.execCommand('fontSize', false, e.target.value);
-            });
-
-            // 3. 粗体/斜体/下划线
-            document.getElementById('boldBtn').addEventListener('click', function() {
-                noteContent.focus();
-                document.execCommand('bold', false, null);
-                this.classList.toggle('active', document.queryCommandState('bold'));
-            });
-            document.getElementById('italicBtn').addEventListener('click', function() {
-                noteContent.focus();
-                document.execCommand('italic', false, null);
-                this.classList.toggle('active', document.queryCommandState('italic'));
-            });
-            document.getElementById('underlineBtn').addEventListener('click', function() {
-                noteContent.focus();
-                document.execCommand('underline', false, null);
-                this.classList.toggle('active', document.queryCommandState('underline'));
-            });
-
-            // 4. 对齐方式
-            function resetAlignButtons() {
-                document.querySelectorAll('.align-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-            }
-            document.getElementById('alignLeftBtn').addEventListener('click', function() {
-                noteContent.focus();
-                document.execCommand('justifyLeft', false, null);
-                resetAlignButtons();
-                this.classList.add('active');
-            });
-            document.getElementById('alignCenterBtn').addEventListener('click', function() {
-                noteContent.focus();
-                document.execCommand('justifyCenter', false, null);
-                resetAlignButtons();
-                this.classList.add('active');
-            });
-            document.getElementById('alignRightBtn').addEventListener('click', function() {
-                noteContent.focus();
-                document.execCommand('justifyRight', false, null);
-                resetAlignButtons();
-                this.classList.add('active');
-            });
-            document.getElementById('alignJustifyBtn').addEventListener('click', function() {
-                noteContent.focus();
-                document.execCommand('justifyFull', false, null);
-                resetAlignButtons();
-                this.classList.add('active');
-            });
-
-            // 5. 字体颜色/背景色（新逻辑：使用color input）
-            document.getElementById('fontColor').addEventListener('change', function() {
-                noteContent.focus();
-                document.execCommand('foreColor', false, this.value);
-            });
-            document.getElementById('bgColor').addEventListener('change', function() {
-                noteContent.focus();
-                document.execCommand('backColor', false, this.value);
-            });
-
-            // 6. 取消按钮（返回笔记列表）
-            document.getElementById('cancelNoteBtn').addEventListener('click', () => {
-                if (confirm('确定要取消编辑吗？未保存的内容将丢失')) {
-                    loadNotes(notebookId);
-                }
-            });
-
-            // ========== 保存笔记功能 ==========
-            document.getElementById('saveNoteBtn').addEventListener('click', async () => {
-                const title = document.getElementById('noteTitle').value.trim() || '无标题笔记';
-                const content = document.getElementById('noteContent').innerHTML;
-                
-                if (!content) {
-                    showToast('笔记内容不能为空', 'error');
-                    return;
-                }
-                
-                if (!currentUser) {
-                    showToast('请先登录后保存笔记', 'error');
-                    return;
-                }
-
-                try {
-                    if (noteId !== null) {
-                        const { error } = await supabase
-                            .from('notes')
-                            .update({
-                                title: title,
-                                content: content,
-                                update_time: new Date()
-                            })
-                            .eq('id', noteId)
-                            .eq('user_id', currentUser.id);
-
-                        if (error) throw error;
-                        showToast('笔记更新成功');
-                    } else {
-                        const { error } = await supabase
-                            .from('notes')
-                            .insert([
-                                {
-                                    title: title,
-                                    content: content,
-                                    notebook_id: notebookId,
-                                    user_id: currentUser.id,
-                                    create_time: new Date(),
-                                    update_time: new Date()
-                                }
-                            ]);
-
-                        if (error) throw error;
-                        showToast('笔记创建成功');
-                    }
-
-                    loadNotes(notebookId);
-                } catch (err) {
-                    showToast(`保存失败：${err.message}`, 'error');
-                }
-            });
-
-            // 自动保存功能
-            const noteTitle = document.getElementById('noteTitle');
-            function setupAutoSave() {
-                if (autoSaveTimer) clearTimeout(autoSaveTimer);
-                autoSaveTimer = setTimeout(() => {
-                    const title = noteTitle.value.trim() || '无标题笔记';
-                    const content = noteContent.innerHTML;
-                    if (content && currentUser && noteId) {
-                        // 仅自动保存已有笔记，新建笔记不自动保存
-                        supabase
-                            .from('notes')
-                            .update({
-                                title: title,
-                                content: content,
-                                update_time: new Date()
-                            })
-                            .eq('id', noteId)
-                            .eq('user_id', currentUser.id)
-                            .then(() => {
-                                showToast('笔记已自动保存', 'info');
-                            })
-                            .catch(err => {
-                                console.error('自动保存失败：', err);
-                            });
-                    }
-                }, AUTO_SAVE_DELAY);
-            }
-            noteTitle.addEventListener('input', setupAutoSave);
-            noteContent.addEventListener('input', setupAutoSave);
-
-            // 聚焦编辑器
-            noteContent.focus();
-        }
-
-        // ========== 5. 初始化页面 ==========
-        function init() {
-            bindUserActivityListeners();
-            initUserState();
-            
-            // 创建笔记集按钮事件
-            if (createNotebookBtn && newNotebookInput) {
-                createNotebookBtn.addEventListener('click', async () => {
-                    const name = newNotebookInput.value.trim();
-                    if (!name) {
-                        showToast('笔记集名称不能为空', 'error');
-                        return;
-                    }
-
-                    if (!currentUser) {
-                        showToast('请先登录后创建笔记集', 'error');
-                        return;
-                    }
-
-                    try {
-                        const { data: existingNotebooks, error: queryError } = await supabase
-                            .from('notebooks')
-                            .select('name')
-                            .eq('user_id', currentUser.id)
-                            .eq('name', name);
-
-                        if (queryError) throw queryError;
-
-                        if (existingNotebooks.length > 0) {
-                            showToast('该笔记集名称已存在', 'error');
-                            return;
-                        }
-
-                        const { error: insertError } = await supabase
-                            .from('notebooks')
-                            .insert([
-                                {
-                                    name: name,
-                                    user_id: currentUser.id,
-                                    create_time: new Date(),
-                                    update_time: new Date()
-                                }
-                            ]);
-
-                        if (insertError) throw insertError;
-
-                        newNotebookInput.value = '';
-                        loadNotebooks();
-                        showToast('笔记集创建成功');
-                    } catch (err) {
-                        showToast(`创建失败：${err.message}`, 'error');
-                    }
-                });
-            }
-            
-            // 登录弹窗事件绑定
-            const closeLoginModal = document.getElementById('closeLoginModal');
-            const cancelLoginBtn = document.getElementById('cancelLoginBtn');
-            const doLoginBtn = document.getElementById('doLoginBtn');
-            const toRegisterLink = document.getElementById('toRegisterLink');
-            const loginUsername = document.getElementById('loginUsername');
-            const loginPassword = document.getElementById('loginPassword');
-            
-            if (closeLoginModal) closeLoginModal.addEventListener('click', () => hideModal('login'));
-            if (cancelLoginBtn) cancelLoginBtn.addEventListener('click', () => hideModal('login'));
-            if (doLoginBtn && loginUsername && loginPassword) {
-                doLoginBtn.addEventListener('click', () => {
-                    const username = loginUsername.value.trim();
-                    const password = loginPassword.value.trim();
-                    if (!username || !password) {
-                        showToast('用户名和密码不能为空', 'error');
-                        return;
-                    }
-                    login(username, password);
-                });
-            }
-            if (toRegisterLink) toRegisterLink.addEventListener('click', () => {
-                hideModal('login');
-                showModal('register');
-            });
-            
-            // 注册弹窗事件绑定
-            const closeRegisterModal = document.getElementById('closeRegisterModal');
-            const cancelRegisterBtn = document.getElementById('cancelRegisterBtn');
-            const doRegisterBtn = document.getElementById('doRegisterBtn');
-            const toLoginLink = document.getElementById('toLoginLink');
-            const registerUsername = document.getElementById('registerUsername');
-            const registerPassword = document.getElementById('registerPassword');
-            const registerConfirmPassword = document.getElementById('registerConfirmPassword');
-            
-            if (closeRegisterModal) closeRegisterModal.addEventListener('click', () => hideModal('register'));
-            if (cancelRegisterBtn) cancelRegisterBtn.addEventListener('click', () => hideModal('register'));
-            if (doRegisterBtn && registerUsername && registerPassword && registerConfirmPassword) {
-                doRegisterBtn.addEventListener('click', () => {
-                    const username = registerUsername.value.trim();
-                    const password = registerPassword.value.trim();
-                    const confirmPassword = registerConfirmPassword.value.trim();
-                    
-                    if (!username || !password || !confirmPassword) {
-                        showToast('请填写完整信息', 'error');
-                        return;
-                    }
-                    
-                    if (password !== confirmPassword) {
-                        showToast('两次输入的密码不一致', 'error');
-                        return;
-                    }
-                    
-                    register(username, password, username); // 注册时用用户名作为邮箱（根据你的逻辑调整）
-                });
-            }
-            if (toLoginLink) toLoginLink.addEventListener('click', () => {
-                hideModal('register');
-                showModal('login');
-            });
-        }
-
-        // 执行初始化
-        init();
-
-        // ========== 6. 确保Supabase SDK加载后再执行 ==========
-        // 检查SDK是否已加载，未加载则动态引入
-        if (typeof window.supabase === 'undefined') {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-            script.onload = function() {
-                // SDK加载完成后执行DOMContentLoaded逻辑
-                document.dispatchEvent(new Event('DOMContentLoaded'));
             };
-            document.head.appendChild(script);
+            reader.readAsDataURL(file);
+            input.value = '';
         }
+
+        async function saveNote() {
+            if (!supabase) return;
+
+            const title = document.getElementById('noteTitle').value.trim() || '无标题';
+            const content = document.getElementById('noteContent').innerHTML;
+            const btn = event.target;
+
+            if (!content.trim()) {
+                showToast('内容不能为空', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '保存中...';
+
+            try {
+                if (currentNoteId) {
+                    // 更新
+                    const { error } = await supabase
+                        .from('notes')
+                        .update({
+                            title: title,
+                            content: content,
+                            updated_at: new Date()
+                        })
+                        .eq('id', currentNoteId)
+                        .eq('user_id', currentUser.id);
+
+                    if (error) throw error;
+                    showToast('更新成功');
+                } else {
+                    // 新建
+                    const { error } = await supabase
+                        .from('notes')
+                        .insert([{
+                            title: title,
+                            content: content,
+                            notebook_id: currentNotebookId,
+                            user_id: currentUser.id
+                        }]);
+
+                    if (error) throw error;
+                    showToast('创建成功');
+                }
+
+                loadNotes(currentNotebookId);
+            } catch (err) {
+                showToast('保存失败: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '保存';
+            }
+        }
+
+        async function deleteNote(noteId) {
+            if (!confirm('确定删除此笔记？')) return;
+            if (!supabase) return;
+
+            try {
+                const { error } = await supabase
+                    .from('notes')
+                    .delete()
+                    .eq('id', noteId)
+                    .eq('user_id', currentUser.id);
+
+                if (error) throw error;
+                showToast('删除成功');
+                loadNotes(currentNotebookId);
+            } catch (err) {
+                showToast('删除失败', 'error');
+            }
+        }
+
+        async function editNotebook(notebookId, oldName) {
+            const newName = prompt('修改笔记集名称:', oldName);
+            if (!newName || newName === oldName) return;
+
+            try {
+                const { error } = await supabase
+                    .from('notebooks')
+                    .update({ name: newName, updated_at: new Date() })
+                    .eq('id', notebookId)
+                    .eq('user_id', currentUser.id);
+
+                if (error) throw error;
+                showToast('修改成功');
+                loadNotebooks();
+            } catch (err) {
+                showToast('修改失败', 'error');
+            }
+        }
+
+        async function deleteNotebook(notebookId) {
+            if (!confirm('确定删除？此操作将删除该笔记集下所有笔记！')) return;
+            if (!supabase) return;
+
+            try {
+                // 先删除笔记
+                await supabase
+                    .from('notes')
+                    .delete()
+                    .eq('notebook_id', notebookId)
+                    .eq('user_id', currentUser.id);
+
+                // 再删除笔记集
+                const { error } = await supabase
+                    .from('notebooks')
+                    .delete()
+                    .eq('id', notebookId)
+                    .eq('user_id', currentUser.id);
+
+                if (error) throw error;
+
+                if (currentNotebookId === notebookId) {
+                    currentNotebookId = null;
+                    clearContent();
+                }
+                showToast('删除成功');
+                loadNotebooks();
+            } catch (err) {
+                showToast('删除失败', 'error');
+            }
+        }
+
+        // ========== 工具函数 ==========
+        function showModal(type) {
+            document.getElementById(type + 'Modal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideModal(type) {
+            document.getElementById(type + 'Modal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function switchModal(from, to) {
+            hideModal(from);
+            setTimeout(() => showModal(to), 300);
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function clearContent() {
+            document.getElementById('contentArea').innerHTML = `
+                <div class="empty-state">
+                    <h3>请选择或创建笔记集</h3>
+                    <p>登录后即可开始创作</p>
+                </div>
+            `;
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#039;');
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleString('zh-CN');
+        }
+
+        function getFriendlyError(message) {
+            if (message.includes('Invalid login')) return '邮箱或密码错误';
+            if (message.includes('Email')) return '邮箱格式问题';
+            if (message.includes('Password')) return '密码强度不足';
+            if (message.includes('Network')) return '网络连接失败';
+            if (message.includes('already')) return '该邮箱已注册';
+            return message;
+        }
+
+        function bindGlobalEvents() {
+            // 创建笔记集
+            document.getElementById('createNotebookBtn').addEventListener('click', createNotebook);
+            
+            // 回车创建笔记集
+            document.getElementById('newNotebookName').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') createNotebook();
+            });
+
+            // 回车登录
+            document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleLogin();
+            });
+
+            // 回车注册
+            document.getElementById('registerConfirmPassword').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleRegister();
+            });
+
+            // 点击遮罩关闭弹窗
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('show');
+                        document.body.style.overflow = '';
+                    }
+                });
+            });
+        }
+
+        // ========== 启动 ==========
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
