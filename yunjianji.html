@@ -5,101 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>云笺记 - 古风云端笔记</title>
     <style>
-        /* ========== 全局与基础 ========== */
+        /* ========== 基础重置与背景 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: "Microsoft YaHei", "SimSun", sans-serif;
             background-color: #f5f0e6;
             color: #333;
+            /* 恢复经典的斜线纹理背景 */
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,100 M100,0 L0,100" stroke="%23e6d8c7" stroke-width="0.5" fill="none"/></svg>');
             background-size: 100px;
             min-height: 100vh;
         }
         .container { max-width: 1280px; margin: 0 auto; padding: 20px; }
 
-        /* ========== 头部美化 (增强波浪纹理) ========== */
+        /* ========== 头部样式优化 (重点美化) ========== */
         header {
-            position: relative;
-            background-color: #fff8e8;
+            /* 使用更丰富的古风渐变背景 */
+            background: linear-gradient(135deg, #fff8e8 0%, #fdf6e3 50%, #f5ebd5 100%);
+            /* 增加纹理叠加 */
             background-image: 
-                linear-gradient(rgba(255, 248, 232, 0.85), rgba(255, 248, 232, 0.95)),
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><path d="M0,180 Q200,160 400,180 T800,180 L800,200 L0,200 Z" fill="%23dcc8a8" opacity="0.5"/></svg>'),
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><path d="M0,160 Q200,140 400,160 T800,160 L800,200 L0,200 Z" fill="%23c8b494" opacity="0.4"/></svg>'),
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><path d="M0,150 Q200,100 400,150 T800,150 L800,200 L0,200 Z" fill="%23e6d8c7" opacity="0.4"/></svg>');
-            background-size: cover, 100% 100%, 100% 100%, 100% 100%;
-            background-repeat: no-repeat;
-            background-position: bottom;
+                linear-gradient(135deg, rgba(255,248,232,0.9) 0%, rgba(245,235,213,0.9) 100%),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="20" fill="none" stroke="%23d4c5a9" stroke-width="1" opacity="0.3"/><path d="M10,50 Q30,30 50,50" fill="none" stroke="%23d4c5a9" stroke-width="1" opacity="0.2"/></svg>');
+            background-size: 100% 100%, 60px;
             
             color: #8B4513;
-            padding: 30px 40px;
+            padding: 25px 40px;
             border-radius: 12px;
-            box-shadow: 0 6px 16px rgba(139, 69, 19, 0.15);
-            margin-bottom: 25px;
-            border: 2px solid #c37e7ed1;
-            border-top: 4px solid #8B4513;
+            /* 双层边框效果，更有层次感 */
+            box-shadow: 0 6px 12px rgba(139, 69, 19, 0.15), inset 0 0 0 1px #e6d8c7;
+            margin-bottom: 20px;
+            border: 2px solid #c37e7ed1; /* 保持原有的红褐色边框 */
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
             overflow: hidden;
         }
+        /* 顶部装饰线 */
         header::before {
-            content: '✦';
+            content: '';
             position: absolute;
-            top: 10px; left: 15px;
-            font-size: 20px;
-            color: #c85a5a;
-            opacity: 0.6;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8B4513, #c85a5a, #8B4513);
+            opacity: 0.8;
         }
-        header::after {
-            content: '✦';
-            position: absolute;
-            top: 10px; right: 15px;
-            font-size: 20px;
-            color: #c85a5a;
-            opacity: 0.6;
-        }
-
         header h1 { 
             font-family: "STKaiti", "KaiTi", serif; 
-            font-size: 2.8rem; 
-            letter-spacing: 6px; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-size: 2.5rem; 
+            letter-spacing: 4px; 
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            position: relative;
             z-index: 1;
         }
         header p { 
             font-family: "STKaiti", "KaiTi", serif; 
             opacity: 0.8; 
             font-size: 1.1rem;
-            margin-top: 5px;
+            position: relative;
             z-index: 1;
         }
-        .user-actions { display: flex; gap: 12px; z-index: 1; }
-
-        /* ========== 提示与模态框 ========== */
+        .user-actions { display: flex; gap: 10px; position: relative; z-index: 1; }
+        
+        /* ========== 通用组件样式 ========== */
         .toast {
-            position: fixed; top: 80px; left: 50%;
+            position: fixed; top: 60px; left: 50%;
             transform: translateX(-50%);
-            padding: 12px 24px;
-            background-color: rgba(51, 51, 51, 0.95);
+            padding: 12px 20px;
+            background-color: rgba(51, 51, 51, 0.9);
             color: #fff;
-            border-radius: 8px;
+            border-radius: 6px;
             z-index: 9999;
             opacity: 0;
             transition: opacity 0.3s;
-            font-family: "STKaiti", serif;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            max-width: 80%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
         .toast.show { opacity: 1; }
-        .toast.error { background-color: rgba(178, 34, 34, 0.95); }
-        .toast.info { background-color: rgba(51, 102, 153, 0.95); }
-        .toast.success { background-color: rgba(34, 139, 34, 0.95); }
+        .toast.error { background-color: rgba(178, 34, 34, 0.9); }
+        .toast.info { background-color: rgba(51, 102, 153, 0.9); }
+        .toast.success { background-color: rgba(34, 139, 34, 0.9); }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(60, 40, 20, 0.6);
-            backdrop-filter: blur(3px);
+            backdrop-filter: blur(2px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -110,19 +101,19 @@
         }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal {
-            background: #fffdf5;
+            background: #fff8e8;
             border: 2px solid #c85a5a;
-            border-radius: 12px;
-            padding: 30px;
-            width: 90%;
+            border-radius: 10px;
+            padding: 25px;
+            width: 100%;
             max-width: 450px;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
         .modal-close {
-            position: absolute; top: 15px; right: 20px;
+            position: absolute; top: 15px; right: 15px;
             background: none; border: none;
-            font-size: 1.8rem; color: #8B4513;
+            font-size: 1.5rem; color: #8B4513;
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -130,86 +121,80 @@
         .modal-title {
             font-family: "STKaiti", "KaiTi", serif;
             color: #8B4513;
-            font-size: 2rem;
+            font-size: 1.8rem;
             text-align: center;
-            margin-bottom: 25px;
-            border-bottom: 2px dashed #d2b48c;
-            padding-bottom: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #d2b48c;
+            padding-bottom: 10px;
         }
-        .form-group { margin-bottom: 18px; }
+        .form-group { margin-bottom: 15px; }
         .form-label {
-            display: block; margin-bottom: 8px;
+            display: block; margin-bottom: 5px;
             color: #8B4513; font-family: "STKaiti", "KaiTi", serif;
-            font-weight: bold;
         }
         .form-input {
-            width: 100%; padding: 12px 15px;
+            width: 100%; padding: 10px 12px;
             border: 1px solid #d2b48c;
             border-radius: 8px;
             background: #fff;
             font-family: inherit;
-            transition: all 0.3s;
         }
         .form-input:focus {
             outline: none;
             border-color: #c85a5a;
-            box-shadow: 0 0 0 3px rgba(200, 90, 90, 0.15);
+            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.2);
         }
-        .form-actions { display: flex; gap: 12px; margin-top: 25px; }
+        .form-actions { display: flex; gap: 10px; margin-top: 20px; }
         .form-switch {
-            text-align: center; margin-top: 20px;
+            text-align: center; margin-top: 15px;
             color: #8B4513; font-family: "STKaiti", "KaiTi", serif;
         }
-        .form-switch a { color: #c85a5a; text-decoration: none; font-weight: bold; }
+        .form-switch a { color: #c85a5a; text-decoration: none; cursor: pointer; }
         .form-switch a:hover { text-decoration: underline; }
 
-        /* ========== 主布局 ========== */
-        .main { display: flex; gap: 25px; min-height: calc(100vh - 200px); }
+        .main { display: flex; gap: 20px; min-height: calc(100vh - 180px); }
         
         /* 侧边栏 */
         .sidebar {
-            width: 300px;
-            background: #fffdf5;
+            width: 290px;
+            background: #fff8e8;
             border: 2px solid #d2b48c;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.08);
+            border-radius: 10px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            flex-shrink: 0; /* 防止侧边栏被压缩 */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
         .sidebar h3 {
             font-family: "STKaiti", "KaiTi", serif;
             color: #8B4513;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #d2b48c;
-            font-size: 1.5rem;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #d2b48c;
         }
         .create-notebook { display: flex; gap: 10px; margin-bottom: 20px; }
         .create-notebook input {
-            flex: 1; padding: 10px 12px;
+            flex: 1; padding: 8px 12px;
             border: 1px solid #d2b48c;
-            border-radius: 8px;
+            border-radius: 6px;
             font-family: "STKaiti", "KaiTi", serif;
-            background: #fff;
         }
         .notebook-list { list-style: none; }
         .notebook-list-container {
             flex: 1;
             overflow-y: auto;
+            max-height: 500px;
             padding-right: 5px;
         }
+        /* 自定义滚动条 */
         .notebook-list-container::-webkit-scrollbar { width: 6px; }
         .notebook-list-container::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 3px; }
         
-        /* ✅ 笔记集样式：按钮始终显示，增大按钮尺寸 */
         .notebook-item {
-            padding: 12px 15px;
-            margin-bottom: 10px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
             background: #fff;
-            border: 1px solid #e6d8c7;
-            border-left: 4px solid transparent;
+            border: 2px solid #e6d8c7;
             border-radius: 8px;
             cursor: pointer;
             display: flex;
@@ -217,217 +202,189 @@
             align-items: center;
             font-family: "STKaiti", "KaiTi", serif;
             transition: all 0.2s;
-            font-size: 1.1rem;
         }
-        .notebook-item:hover { 
-            background: #fcf8f0; 
-            border-left-color: #d2b48c;
-        }
+        .notebook-item:hover { background: #f9f3e6; transform: translateX(3px); }
         .notebook-item.active {
             background: #f5e8d5;
-            border-left-color: #c85a5a;
             border-color: #c85a5a;
-            box-shadow: 0 2px 8px rgba(200, 90, 90, 0.1);
+            box-shadow: 0 2px 5px rgba(200, 90, 90, 0.1);
         }
         .notebook-name {
-            max-width: 120px; /* 缩小给大按钮留空间 */
+            max-width: 160px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        /* 按钮组始终显示，增大尺寸 */
-        .notebook-actions { 
-            display: flex; 
-            gap: 8px; 
-            opacity: 1;
-            transition: none;
+        .notebook-actions { display: flex; gap: 5px; }
+
+        /* 按钮通用 */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: "STKaiti", "KaiTi", serif;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .btn-notebook-edit, .btn-notebook-delete {
-            padding: 6px 12px !important; /* 增大内边距 */
-            font-size: 14px !important; /* 增大字体 */
-            min-width: 32px; /* 最小宽度 */
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn-primary {
+            background: linear-gradient(135deg, #c85a5a, #a04040);
+            color: #fff;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #cd3b3b, #c22e2e);
+            color: #fff;
+        }
+        .btn-edit {
+            background: linear-gradient(135deg, #d6b257, #e2b951);
+            color: #fff;
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #f5f0e6, #e6d8c7);
+            color: #8B4513;
+            border: 1px solid #d2b48c;
         }
 
         /* 内容区 */
         .content {
             flex: 1;
-            background: #fffdf5;
+            background: #fff8e8;
             border: 2px solid #d2b48c;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.08);
-            min-width: 0; /* 防止内容溢出 */
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            position: relative;
         }
-        
         .note-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px dashed #d2b48c;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #d2b48c;
         }
-        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; font-size: 1.8rem; }
+        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; font-size: 1.5rem; }
         .note-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* 稍微缩小卡片最小宽度 */
-            gap: 18px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
         }
-        
-        /* ✅ 笔记卡片样式：稍微变小，按钮始终显示 */
         .note-card {
             background: #fff;
             border: 1px solid #e6d8c7;
-            border-radius: 10px;
-            padding: 16px; /* 缩小内边距 */
+            border-radius: 8px;
+            padding: 15px;
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.2s;
             display: flex;
             flex-direction: column;
-            height: 200px; /* 缩小高度 */
-        }
-        .note-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-            background: #d2b48c;
-            transition: width 0.3s;
+            height: 180px;
         }
         .note-card:hover {
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+            border-color: #c85a5a;
         }
-        .note-card:hover::before { width: 8px; background: #c85a5a; }
         .note-card h4 {
             font-family: "STKaiti", "KaiTi", serif;
-            margin-bottom: 10px;
-            font-size: 1.2rem; /* 缩小字体 */
+            margin-bottom: 8px;
             color: #8B4513;
-            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .note-card p {
-            font-size: 0.9rem; /* 缩小字体 */
+            font-size: 0.9rem;
             color: #666;
-            line-height: 1.6;
             display: -webkit-box;
             -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
             flex: 1;
+            line-height: 1.5;
         }
-        .note-time { font-size: 0.8rem; color: #999; margin-top: 12px; text-align: right; font-style: italic; }
-        /* 按钮组始终显示 */
-        .note-actions { 
-            position: absolute; 
-            bottom: 12px; 
-            right: 12px; 
-            display: flex; 
-            gap: 6px; 
-            opacity: 1;
-            transform: none;
-            transition: none;
-        }
-        .btn-note-edit, .btn-note-delete {
-            padding: 4px 8px !important;
-            font-size: 12px !important;
-        }
+        .note-time { font-size: 0.8rem; color: #999; margin: 10px 0 0; text-align: right; font-style: italic; }
+        .note-actions { display: flex; gap: 5px; margin-top: 10px; justify-content: flex-end; }
 
         /* ========== 编辑器样式 (单行工具栏优化) ========== */
         .editor-title {
             width: 100%;
-            padding: 15px;
-            border: 2px solid #d2b48c;
+            padding: 10px 15px;
+            border: 1px solid #d2b48c;
             border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 1.6rem;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
             font-family: "STKaiti", "KaiTi", serif;
-            color: #8B4513;
             background: #fff;
         }
-        .editor-title:focus { outline: none; border-color: #c85a5a; background: #fffbf0; }
-
-        /* ✅ 单行工具栏 - 强制不换行 */
+        
+        /* 单行工具栏核心样式 */
         .editor-toolbar {
             display: flex;
             flex-wrap: nowrap; /* 强制不换行 */
             gap: 6px;
-            padding: 10px;
-            background: #f9f5eb;
-            border: 2px solid #d2b48c;
+            padding: 8px 10px;
+            background: #f9f3e6;
+            border: 1px solid #d2b48c;
             border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
-            overflow-x: auto; /* 允许横向滚动 */
-            white-space: nowrap;
+            margin-bottom: 10px;
+            overflow-x: auto; /* 如果屏幕极窄允许横向滚动 */
             align-items: center;
         }
-        .editor-toolbar::-webkit-scrollbar { height: 6px; }
-        .editor-toolbar::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 3px; }
-        .editor-toolbar::-webkit-scrollbar-track { background: #f0e6d2; }
+        .editor-toolbar::-webkit-scrollbar { height: 4px; }
+        .editor-toolbar::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 2px; }
 
         .toolbar-group {
             display: flex;
             gap: 4px;
             padding-right: 8px;
             margin-right: 8px;
+            border-right: 1px solid #d2b48c;
             align-items: center;
-            border-right: 1px solid #e0d0b0;
-            flex-shrink: 0;
+            flex-shrink: 0; /* 防止被压缩 */
         }
         .toolbar-group:last-child { border-right: none; padding-right: 0; margin-right: 0; }
         
         .toolbar-btn {
-            width: 34px; /* 稍微缩小以适应单行 */
-            height: 34px;
+            width: 28px; height: 28px; /* 稍微缩小按钮以适应单行 */
             border: 1px solid #d2b48c;
-            border-radius: 6px;
+            border-radius: 4px;
             background: #fff;
             cursor: pointer;
-            font-size: 15px;
-            color: #8B4513;
+            font-size: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            font-weight: bold;
             flex-shrink: 0;
+            color: #555;
         }
-        .toolbar-btn:hover { 
-            background: #c85a5a; 
-            color: #fff; 
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(200, 90, 90, 0.3);
-            border-color: #c85a5a;
-        }
-        .toolbar-btn.active { 
-            background: #8B4513; 
-            color: #fff; 
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
+        .toolbar-btn:hover { background: #f5e8d5; border-color: #c85a5a; color: #c85a5a; }
+        .toolbar-btn.active { background: #e6d8c7; border-color: #8B4513; color: #8B4513; }
         
         .toolbar-select {
-            height: 34px;
+            height: 28px;
             border: 1px solid #d2b48c;
-            border-radius: 6px;
+            border-radius: 4px;
             background: #fff;
             color: #8B4513;
             font-family: "STKaiti", "KaiTi", serif;
-            padding: 0 8px;
+            font-size: 12px;
+            padding: 0 4px;
             cursor: pointer;
             outline: none;
-            font-size: 13px;
             flex-shrink: 0;
         }
         .toolbar-select:focus { border-color: #c85a5a; }
 
         .color-picker-wrapper {
             position: relative;
-            width: 34px; height: 34px;
+            width: 28px; height: 28px;
             overflow: hidden;
-            border-radius: 6px;
+            border-radius: 4px;
             border: 1px solid #d2b48c;
             cursor: pointer;
             background: #fff;
@@ -446,90 +403,74 @@
         .editor-content {
             width: 100%;
             min-height: 400px;
-            padding: 20px;
-            border: 2px solid #e6d8c7;
+            padding: 15px;
+            border: 1px solid #d2b48c;
             border-radius: 8px;
             background: #fff;
-            font-size: 1.1rem;
+            font-size: 1rem;
             line-height: 1.8;
-            color: #333;
             outline: none;
         }
-        .editor-content:focus { border-color: #c85a5a; background: #fffbf0; }
+        .editor-content:focus { border-color: #c85a5a; box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.1); }
         
+        /* 编辑器内容特殊样式 */
         .editor-content blockquote {
             border-left: 4px solid #c85a5a;
-            margin: 15px 0;
-            padding: 10px 20px;
+            margin: 10px 0;
+            padding: 5px 15px;
             background: #fff8f8;
             color: #666;
             font-style: italic;
-            font-family: "KaiTi", serif;
         }
         .editor-content pre {
-            background: #2d2d2d;
-            color: #ccc;
-            padding: 15px;
-            border-radius: 6px;
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
             overflow-x: auto;
             font-family: Consolas, monospace;
-            margin: 15px 0;
             border: 1px solid #ddd;
+            color: #333;
         }
-        .editor-content ul, .editor-content ol { padding-left: 25px; margin: 15px 0; }
-        .editor-content img { max-width: 100%; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: 10px 0; }
+        .editor-content ul, .editor-content ol { padding-left: 25px; margin: 10px 0; }
+        .editor-content img { max-width: 100%; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
+        /* 表格样式 */
         .editor-content table {
             width: 100%;
             border-collapse: collapse;
-            margin: 15px 0;
-            font-size: 1rem;
+            margin: 10px 0;
+            font-size: 0.95rem;
         }
-        .editor-content th, .editor-content td {
+        .editor-content td, .editor-content th {
             border: 1px solid #d2b48c;
             padding: 8px 12px;
             text-align: left;
         }
         .editor-content th {
             background-color: #f5e8d5;
-            color: #8B4513;
             font-weight: bold;
-            font-family: "STKaiti", serif;
+            color: #8B4513;
         }
-        .editor-content tr:nth-child(even) { background-color: #fffbf0; }
-        .editor-content tr:hover { background-color: #fcefe6; }
+        .editor-content tr:nth-child(even) { background-color: #fcfcfc; }
+        .editor-content tr:hover { background-color: #f9f3e6; }
 
         .empty-state {
             text-align: center;
-            padding: 80px 20px;
-            color: #aaa;
+            padding: 60px 20px;
+            color: #999;
             font-family: "STKaiti", "KaiTi", serif;
         }
-        .empty-state h3 { font-size: 1.6rem; margin-bottom: 10px; color: #8B4513; }
-
-        .btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: "STKaiti", "KaiTi", serif;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .btn-primary { background: linear-gradient(135deg, #c85a5a, #a04040); color: #fff; }
-        .btn-danger { background: linear-gradient(135deg, #cd3b3b, #c22e2e); color: #fff; }
-        .btn-edit { background: linear-gradient(135deg, #d6b257, #e2b951); color: #fff; }
-        .btn-secondary { background: linear-gradient(135deg, #f5f0e6, #e6d8c7); color: #8B4513; border: 1px solid #d2b48c; }
+        .empty-state h3 { font-size: 1.5rem; margin-bottom: 10px; color: #8B4513; }
 
         .loading {
-            display: flex; align-items: center; justify-content: center; padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
         }
         .loading::after {
-            content: ""; width: 30px; height: 30px;
+            content: "";
+            width: 30px; height: 30px;
             border: 3px solid #d2b48c;
             border-top-color: #c85a5a;
             border-radius: 50%;
@@ -538,23 +479,29 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .debug-panel {
-            position: fixed; bottom: 10px; right: 10px;
-            background: #222; color: #0f0;
-            padding: 10px; border-radius: 5px;
-            font-size: 12px; max-width: 300px; max-height: 200px;
-            overflow-y: auto; z-index: 99999;
-            display: none; font-family: monospace;
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: #222;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 99999;
+            display: none;
+            font-family: monospace;
         }
         .debug-panel.show { display: block; }
 
         @media (max-width: 768px) {
             .main { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; max-height: 300px; }
+            .sidebar { width: 100%; height: 250px; }
             header { flex-direction: column; gap: 15px; text-align: center; padding: 20px; }
-            header::before, header::after { display: none; }
-            .user-actions { justify-content: center; }
-            .note-list { grid-template-columns: 1fr; }
-            .notebook-name { max-width: 80px; }
+            .user-actions { justify-content: center; width: 100%; }
+            .editor-toolbar { flex-wrap: wrap; } /* 移动端允许换行 */
         }
     </style>
 </head>
@@ -595,7 +542,7 @@
     <div class="toast" id="toast"></div>
     <div class="debug-panel" id="debugPanel"></div>
 
-    <!-- Login Modal -->
+    <!-- 登录模态框 -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal">
             <button class="modal-close" id="closeLoginBtn">×</button>
@@ -618,7 +565,7 @@
         </div>
     </div>
 
-    <!-- Register Modal -->
+    <!-- 注册模态框 -->
     <div class="modal-overlay" id="registerModal">
         <div class="modal">
             <button class="modal-close" id="closeRegisterBtn">×</button>
@@ -939,7 +886,7 @@
 
                     var data = result.data || [];
                     if (data.length === 0) {
-                        list.innerHTML = '<li class="empty-state" style="padding:20px;text-align:center;color:#999;">暂无笔记集，请创建</li>';
+                        list.innerHTML = '<li class="empty-state">暂无笔记集，请创建</li>';
                     } else {
                         var html = '';
                         for (var i = 0; i < data.length; i++) {
@@ -1056,7 +1003,7 @@
 
                             var notesHtml = '';
                             if (notes.length === 0) {
-                                notesHtml = '<div class="empty-state" style="grid-column:1/-1">暂无笔记，快去写一篇吧</div>';
+                                notesHtml = '<div class="empty-state" style="grid-column:1/-1">暂无笔记</div>';
                             } else {
                                 for (var i = 0; i < notes.length; i++) {
                                     var note = notes[i];
@@ -1066,8 +1013,8 @@
                                         '<p>' + escapeHtml(contentText) + '</p>' +
                                         '<div class="note-time">' + formatDate(note.updated_at) + '</div>' +
                                         '<div class="note-actions">' +
-                                        '<button class="btn btn-edit btn-note-edit">编辑</button>' +
-                                        '<button class="btn btn-danger btn-note-delete">删除</button>' +
+                                        '<button class="btn btn-edit btn-note-edit" data-id="' + note.id + '">编辑</button>' +
+                                        '<button class="btn btn-danger btn-note-delete" data-id="' + note.id + '">删除</button>' +
                                         '</div></div>';
                                 }
                             }
@@ -1139,7 +1086,7 @@
                 });
         }
 
-        // ✅ 最终优化版：布局稳定 + 单行工具栏 + 按钮尺寸调整
+        // ✅ 最终优化版：单行工具栏 + 专业字号 + 表格功能
         function showEditor(title, content) {
             var contentArea = document.getElementById('contentArea');
             var isEdit = appState.currentNoteId ? '编辑笔记' : '新建笔记';
@@ -1149,14 +1096,15 @@
                 '<div class="note-header">' +
                 '<h3>' + isEdit + '</h3>' +
                 '<div>' +
-                '<button class="btn btn-primary" id="saveNoteBtn">保存墨宝</button>' +
+                '<button class="btn btn-primary" id="saveNoteBtn">保存</button>' +
                 '<button class="btn btn-secondary" id="cancelNoteBtn">取消</button>' +
                 '</div></div>' +
-                '<input type="text" class="editor-title" id="noteTitle" placeholder="在此输入标题..." value="' + escapeHtml(title) + '">' +
+                '<input type="text" class="editor-title" id="noteTitle" placeholder="标题" value="' + escapeHtml(title) + '">' +
                 
                 '<div class="editor-toolbar">' +
+                    // 1. 字体家族
                     '<div class="toolbar-group">' +
-                        '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 95px;">' +
+                        '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 90px;">' +
                             '<option value="SimSun">宋体</option>' +
                             '<option value="KaiTi">楷体</option>' +
                             '<option value="STKaiti">华文楷体</option>' +
@@ -1165,14 +1113,15 @@
                             '<option value="FangSong">仿宋</option>' +
                         '</select>' +
                     '</div>' +
+                    // 2. 专业字号 (中文排版标准)
                     '<div class="toolbar-group">' +
-                        '<select class="toolbar-select" id="fontSize" title="字号" style="width: 75px;">' +
+                        '<select class="toolbar-select" id="fontSize" title="字号" style="width: 70px;">' +
                             '<option value="1">八号</option>' +
                             '<option value="1">七号</option>' +
-                            '<option value="1">小六</option>' +
+                            '<option value="2">小六</option>' +
                             '<option value="2">六号</option>' +
-                            '<option value="2">小五</option>' +
-                            '<option value="3">五号</option>' +
+                            '<option value="3">小五</option>' +
+                            '<option value="3" selected>五号</option>' +
                             '<option value="4">小四</option>' +
                             '<option value="5">四号</option>' +
                             '<option value="6">小三</option>' +
@@ -1181,32 +1130,38 @@
                             '<option value="7">二号</option>' +
                         '</select>' +
                     '</div>' +
+                    // 3. 基础样式
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnBold" title="加粗"><b>B</b></button>' +
                         '<button class="toolbar-btn" id="btnItalic" title="斜体"><i>I</i></button>' +
                         '<button class="toolbar-btn" id="btnUnderline" title="下划线"><u>U</u></button>' +
                         '<button class="toolbar-btn" id="btnStrike" title="删除线"><s>S</s></button>' +
                     '</div>' +
+                    // 4. 对齐
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnLeft" title="左对齐">L</button>' +
                         '<button class="toolbar-btn" id="btnCenter" title="居中">C</button>' +
                         '<button class="toolbar-btn" id="btnRight" title="右对齐">R</button>' +
                     '</div>' +
+                    // 5. 列表与块
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnUL" title="无序列表">•</button>' +
                         '<button class="toolbar-btn" id="btnOL" title="有序列表">1.</button>' +
-                        '<button class="toolbar-btn" id="btnQuote" title="引用">"</button>' +
+                        '<button class="toolbar-btn" id="btnQuote" title="引用">”</button>' +
                         '<button class="toolbar-btn" id="btnCode" title="代码">&lt;/&gt;</button>' +
                     '</div>' +
+                    // 6. 表格 (新增)
                     '<div class="toolbar-group">' +
-                        '<button class="toolbar-btn" id="btnTable" title="插入表格">▦</button>' +
+                        '<button class="toolbar-btn" id="btnTable" title="插入表格" style="font-weight:bold;">▦</button>' +
                     '</div>' +
+                    // 7. 颜色与清除
                     '<div class="toolbar-group">' +
                         '<div class="color-picker-wrapper" title="字体颜色">' +
                             '<input type="color" id="fontColor" value="#333333">' +
                         '</div>' +
                         '<button class="toolbar-btn" id="btnClear" title="清除格式">🧹</button>' +
                     '</div>' +
+                    // 8. 插入
                     '<div class="toolbar-group">' +
                         '<button class="toolbar-btn" id="btnLink" title="链接">🔗</button>' +
                         '<input type="file" id="imageUpload" accept="image/*" style="display:none">' +
@@ -1224,23 +1179,28 @@
                 loadNotes(notebookId);
             });
 
+            // 字体与字号
             document.getElementById('fontFamily').addEventListener('change', function() {
                 execCmd('fontName', this.value);
             });
             document.getElementById('fontSize').addEventListener('change', function() {
                 execCmd('fontSize', this.value);
-                this.value = '3';
+                // 不重置，方便连续调整，或者根据需要重置
+                // this.value = '3'; 
             });
 
+            // 基础样式
             document.getElementById('btnBold').addEventListener('click', function() { execCmd('bold'); });
             document.getElementById('btnItalic').addEventListener('click', function() { execCmd('italic'); });
             document.getElementById('btnUnderline').addEventListener('click', function() { execCmd('underline'); });
             document.getElementById('btnStrike').addEventListener('click', function() { execCmd('strikeThrough'); });
             
+            // 对齐
             document.getElementById('btnLeft').addEventListener('click', function() { execCmd('justifyLeft'); });
             document.getElementById('btnCenter').addEventListener('click', function() { execCmd('justifyCenter'); });
             document.getElementById('btnRight').addEventListener('click', function() { execCmd('justifyRight'); });
             
+            // 列表与块
             document.getElementById('btnUL').addEventListener('click', function() { execCmd('insertUnorderedList'); });
             document.getElementById('btnOL').addEventListener('click', function() { execCmd('insertOrderedList'); });
             document.getElementById('btnQuote').addEventListener('click', function() { execCmd('formatBlock', 'blockquote'); });
@@ -1255,50 +1215,13 @@
                 }
             });
 
+            // 表格功能 (新增)
             document.getElementById('btnTable').addEventListener('click', function() {
-                var rows = prompt("请输入行数 (默认 3):", "3");
-                var cols = prompt("请输入列数 (默认 3):", "3");
-                
-                rows = parseInt(rows) || 3;
-                cols = parseInt(cols) || 3;
-                
-                if (rows < 1 || cols < 1) {
-                    showToast("行列数必须大于 0", "error");
-                    return;
-                }
-
-                var table = document.createElement('table');
-                var tbody = document.createElement('tbody');
-                
-                for (var i = 0; i < rows; i++) {
-                    var tr = document.createElement('tr');
-                    for (var j = 0; j < cols; j++) {
-                        var td = document.createElement(i === 0 ? 'th' : 'td');
-                        td.contentEditable = "true";
-                        td.innerHTML = i === 0 && j === 0 ? "表头" : (i === 0 ? "标题" : "内容");
-                        tr.appendChild(td);
-                    }
-                    tbody.appendChild(tr);
-                }
-                table.appendChild(tbody);
-                
-                var content = document.getElementById('noteContent');
-                content.focus();
-                var selection = window.getSelection();
-                if (selection.rangeCount > 0) {
-                    var range = selection.getRangeAt(0);
-                    range.deleteContents();
-                    range.insertNode(table);
-                    var newRange = document.createRange();
-                    newRange.setStartAfter(table);
-                    newRange.collapse(true);
-                    selection.removeAllRanges();
-                    selection.addRange(newRange);
-                } else {
-                    content.appendChild(table);
-                }
+                var tableHtml = '<table><tr><th>标题 1</th><th>标题 2</th><th>标题 3</th></tr><tr><td>内容 1</td><td>内容 2</td><td>内容 3</td></tr><tr><td>内容 4</td><td>内容 5</td><td>内容 6</td></tr></table><p><br/></p>';
+                execCmd('insertHTML', tableHtml);
             });
 
+            // 颜色与清除
             document.getElementById('fontColor').addEventListener('change', function() {
                 execCmd('foreColor', this.value);
             });
@@ -1306,11 +1229,13 @@
                 execCmd('removeFormat');
             });
 
+            // 链接
             document.getElementById('btnLink').addEventListener('click', function() {
                 var url = prompt('请输入链接地址:', 'https://');
                 if (url) execCmd('createLink', url);
             });
 
+            // 图片
             document.getElementById('btnImage').addEventListener('click', function() {
                 document.getElementById('imageUpload').click();
             });
@@ -1392,12 +1317,12 @@
                 showToast('保存失败：' + getFriendlyError(err.message), 'error');
             }).finally(function() {
                 btn.disabled = false;
-                btn.textContent = '保存墨宝';
+                btn.textContent = '保存';
             });
         }
 
         function deleteNote(noteId) {
-            if (!confirm('确定删除此笔记？此操作不可恢复。')) return;
+            if (!confirm('确定删除此笔记？')) return;
             if (!appState.supabase) return;
             appState.supabase
                 .from('notes')
