@@ -50,6 +50,35 @@
             background: linear-gradient(90deg, #8B4513, #c85a5a, #8B4513);
             opacity: 0.8;
         }
+/* 古风装饰元素 */
+        header::before {
+            content: "✎"; /* 毛笔笔触符号 */
+            font-size: 3rem;
+            color: #c85a5a;
+            opacity: 0.3;
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        header::after {
+            content: "墨"; /* 印章文字 */
+            font-size: 1.5rem;
+            color: #fff;
+            background-color: #c85a5a;
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 2px 2px 0 #8B4513;
+        }
+
         header h1 { 
             font-family: "STKaiti", "KaiTi", serif; 
             font-size: 2.5rem; 
@@ -156,16 +185,18 @@
         
         /* 侧边栏 */
         .sidebar {
-            width: 290px;
-            background: #fff8e8;
-            border: 2px solid #d2b48c;
-            border-radius: 10px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            /*新加的*/transition: all 0.3s ease;
-        }
+    width: 290px;
+    background: #fff8e8;
+    border: 2px solid #d2b48c;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    /* ✅ 新增：允许侧边栏随内容增高，不限制最大高度 */
+    max-height: none; 
+    height: auto;
+}
         .sidebar h3 {
             font-family: "STKaiti", "KaiTi", serif;
             color: #8B4513;
@@ -183,9 +214,8 @@
         .notebook-list { list-style: none; }
         .notebook-list-container {
             flex: 1;
-            overflow-y: auto;
-            max-height: 500px;
             padding-right: 5px;
+            min-height: 0; 
         }
         /* 自定义滚动条 */
         .notebook-list-container::-webkit-scrollbar { width: 6px; }
@@ -267,7 +297,7 @@
             padding-bottom: 10px;
             border-bottom: 1px solid #d2b48c;
         }
-        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; font-size: 1.5rem; }
+        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; font-size: 1.3rem; }
         .note-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -344,6 +374,43 @@
             display: none;
         }
         /*原有的  .editor-toolbar::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 2px; } */
+
+         /* 通用按钮样式 - 古风设计 */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: "STKaiti", "KaiTi", serif;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        .btn:hover::before {
+            transform: translateX(100%);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
 
         .toolbar-group {
             display: flex;
@@ -548,7 +615,7 @@
 
         @media (max-width: 768px) {
             .main { flex-direction: column; }
-            .sidebar { width: 100%; /*height: 250px;*/ }
+            .sidebar { width: 100%; height: 250px; }
             header { flex-direction: column; gap: 15px; text-align: center; padding: 20px; }
             .user-actions { justify-content: center; width: 100%; }
             .editor-toolbar { flex-wrap: wrap; } /* 移动端允许换行 */
