@@ -838,27 +838,34 @@
         }
 
         function loadNotes(notebookId) {
-            if (!appState.supabase) return;
+    if (!appState.supabase) return;
 
-            var content = document.getElementById('contentArea');
-            content.innerHTML = '<div class="loading"></div>';
+    var content = document.getElementById('contentArea');
+    content.innerHTML = '<div class="loading"></div>';
 
-            appState.supabase
-                .from('notebooks')
-                .select('name')
-                .eq('id', notebookId)
-                .single()
-                .then(function(result) {
-                    if (result.error) throw result.error;
-                    return appState.supabase
-                        .from('notes')
-                        .select('*')
-                        .eq('notebook_id', notebookId)
-                        .order('updated_at', { ascending: false });
-                }).then(function(result) {
-                    if (result.error) throw result.error;
-                    var notes = result.data || [];
+    debug('加载笔记，用户 ID:' + appState.currentUser.id);
 
+    // 先获取笔记集名称
+    appState.supabase
+        .from('notebooks')
+        .select('name')
+        .eq('id', notebookId)
+        .single()
+        .then(function(result) {
+            if (result.error) throw result.error;
+            var notebook = result.data; // ✅ 保存 notebook 对象
+
+            // 再获取该笔记集下的所有笔记
+            return appState.supabase
+                .from('notes')
+                .select('*')
+                .eq('notebook_id', notebookId)
+                .order('updated_at', { ascending: false })
+                .then(function(notesResult) {
+                    if (notesResult.error) throw notesResult.error;
+                    var notes = notesResult.data || [];
+
+                    // ✅ 现在可以安全使用 notebook.name
                     var notesHtml = '';
                     if (notes.length === 0) {
                         notesHtml = '<div class="empty-state" style="grid-column:1/-1">暂无笔记</div>';
@@ -879,17 +886,19 @@
 
                     content.innerHTML = 
                         '<div class="note-header">' +
-                        '<h3>' + escapeHtml(notebook.name) + '</h3>' +
+                        '<h3>' + escapeHtml(notebook.name) + '</h3>' +  // ✅ 正确引用
                         '<button class="btn btn-primary" id="createNoteBtn">+ 新建笔记</button>' +
                         '</div>' +
                         '<div class="note-list">' + notesHtml + '</div>';
 
                     bindNoteEvents();
-                }).catch(function(err) {
-                    debug('加载笔记失败:' + err.message);
-                    content.innerHTML = '<div class="empty-state" style="color:red">加载失败：' + getFriendlyError(err.message) + '</div>';
                 });
-        }
+        })
+        .catch(function(err) {
+            debug('加载笔记失败:' + err.message);
+            content.innerHTML = '<div class="empty-state" style="color:red">加载失败：' + getFriendlyError(err.message) + '</div>';
+        });
+}
 
         function bindNoteEvents() {
             var content = document.getElementById('contentArea');
