@@ -307,6 +307,24 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* 调试面板 */
+        .debug-panel {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: #222;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 99999;
+            display: none;
+        }
+        .debug-panel.show { display: block; }
+
         @media (max-width: 768px) {
             .main { flex-direction: column; }
             .sidebar { width: 100%; }
@@ -350,6 +368,7 @@
     </div>
 
     <div class="toast" id="toast"></div>
+    <div class="debug-panel" id="debugPanel"></div>
 
     <div class="modal-overlay" id="loginModal">
         <div class="modal">
@@ -422,6 +441,15 @@
             currentNoteId: null
         };
 
+        // ========== 调试日志 ==========
+        function debug(msg) {
+            var panel = document.getElementById('debugPanel');
+            var time = new Date().toLocaleTimeString();
+            panel.innerHTML += '[' + time + '] ' + msg + '<br>';
+            panel.scrollTop = panel.scrollHeight;
+            console.log('[DEBUG]', msg);
+        }
+
         // ========== 工具函数 ==========
         function showToast(message, type) {
             type = type || 'success';
@@ -459,9 +487,10 @@
             if (message.includes('Password')) return '密码强度不足';
             if (message.includes('Network')) return '网络连接失败';
             if (message.includes('already')) return '该邮箱已注册';
-            if (message.includes('relation')) return '数据库表未配置，请联系管理员';
-            if (message.includes('permission')) return '权限不足，请检查数据库配置';
-            if (message.includes('user_id')) return '用户信息不完整，请重新登录';
+            if (message.includes('relation')) return '数据库表未配置';
+            if (message.includes('permission') || message.includes('RLS')) return '权限不足，请检查 RLS 策略';
+            if (message.includes('user_id')) return '用户信息不完整';
+            if (message.includes('JWT')) return '登录已过期，请重新登录';
             return message;
         }
 
@@ -491,11 +520,21 @@
 
         // ========== 认证相关 ==========
         function checkAuth() {
-            if (!appState.supabase) return;
+            debug('检查登录状态...');
+            if (!appState.supabase) {
+                debug('Supabase 未初始化');
+                updateUIForLoggedOut();
+                return;
+            }
             
             appState.supabase.auth.getSession().then(function(result) {
+                debug('getSession 结果:' + JSON.stringify({
+                    hasError: !!result.error,
+                    hasSession: !!result.data.session
+                }));
+                
                 if (result.error) {
-                    console.error('获取会话失败:', result.error);
+                    debug('获取会话错误:' + result.error.message);
                     updateUIForLoggedOut();
                     return;
                 }
@@ -503,15 +542,15 @@
                 var session = result.data.session;
                 if (session) {
                     appState.currentUser = session.user;
-                    console.log('用户已登录:', appState.currentUser.id);
+                    debug('用户已登录，ID:' + appState.currentUser.id);
                     updateUIForLoggedIn();
                     loadNotebooks();
                 } else {
-                    console.log('用户未登录');
+                    debug('用户未登录');
                     updateUIForLoggedOut();
                 }
             }).catch(function(err) {
-                console.error('检查登录状态失败:', err);
+                debug('检查登录状态异常:' + err.message);
                 updateUIForLoggedOut();
             });
         }
@@ -528,11 +567,17 @@
 
             btn.disabled = true;
             btn.textContent = '登录中...';
+            debug('尝试登录，邮箱:' + email);
 
             appState.supabase.auth.signInWithPassword({
                 email: email,
                 password: password
             }).then(function(result) {
+                debug('登录结果:' + JSON.stringify({
+                    hasError: !!result.error,
+                    hasUser: !!result.data.user
+                }));
+                
                 if (result.error) throw result.error;
                 
                 appState.currentUser = result.data.user;
@@ -544,7 +589,7 @@
                 document.getElementById('loginEmail').value = '';
                 document.getElementById('loginPassword').value = '';
             }).catch(function(err) {
-                console.error('登录错误:', err);
+                debug('登录错误:' + err.message);
                 showToast('登录失败：' + getFriendlyError(err.message), 'error');
             }).finally(function() {
                 btn.disabled = false;
@@ -578,6 +623,7 @@
 
             btn.disabled = true;
             btn.textContent = '注册中...';
+            debug('尝试注册，邮箱:' + email);
 
             appState.supabase.auth.signUp({
                 email: email,
@@ -586,6 +632,11 @@
                     data: { username: username }
                 }
             }).then(function(result) {
+                debug('注册结果:' + JSON.stringify({
+                    hasError: !!result.error,
+                    hasUser: !!result.data.user
+                }));
+                
                 if (result.error) throw result.error;
 
                 if (result.data.user) {
@@ -598,7 +649,7 @@
                     document.getElementById('registerConfirmPassword').value = '';
                 }
             }).catch(function(err) {
-                console.error('注册错误:', err);
+                debug('注册错误:' + err.message);
                 showToast('注册失败：' + getFriendlyError(err.message), 'error');
             }).finally(function() {
                 btn.disabled = false;
@@ -616,6 +667,7 @@
                 showToast('已退出登录', 'info');
                 updateUIForLoggedOut();
                 clearContent();
+                debug('已退出登录');
             }).catch(function(err) {
                 showToast('退出失败', 'error');
             });
@@ -633,6 +685,7 @@
             document.getElementById('createNotebookBtn').disabled = false;
             
             document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            debug('UI 更新为已登录状态');
         }
 
         function updateUIForLoggedOut() {
@@ -649,19 +702,20 @@
             document.getElementById('registerBtn2').addEventListener('click', function() {
                 showModal('register');
             });
+            debug('UI 更新为未登录状态');
         }
 
         // ========== 笔记集相关 ==========
         function loadNotebooks() {
             if (!appState.currentUser || !appState.supabase) {
-                console.log('加载笔记集：用户未登录或 Supabase 未初始化');
+                debug('加载笔记集：用户未登录或 Supabase 未初始化');
                 return;
             }
 
             var list = document.getElementById('notebookList');
             list.innerHTML = '<div class="loading"></div>';
 
-            console.log('加载笔记集，用户 ID:', appState.currentUser.id);
+            debug('加载笔记集，用户 ID:' + appState.currentUser.id);
 
             appState.supabase
                 .from('notebooks')
@@ -669,12 +723,13 @@
                 .eq('user_id', appState.currentUser.id)
                 .order('created_at', { ascending: false })
                 .then(function(result) {
-                    console.log('笔记集查询结果:', result);
+                    debug('笔记集查询结果:' + JSON.stringify({
+                        hasError: !!result.error,
+                        dataLength: result.data ? result.data.length : 0,
+                        error: result.error ? result.error.message : 'none'
+                    }));
                     
-                    if (result.error) {
-                        console.error('查询笔记集错误:', result.error);
-                        throw result.error;
-                    }
+                    if (result.error) throw result.error;
 
                     var data = result.data || [];
                     if (data.length === 0) {
@@ -692,11 +747,10 @@
                                 '</div></li>';
                         }
                         list.innerHTML = html;
-                        
                         bindNotebookEvents();
                     }
                 }).catch(function(err) {
-                    console.error('加载笔记集失败:', err);
+                    debug('加载笔记集失败:' + err.message);
                     list.innerHTML = '<li class="empty-state" style="color:red">加载失败：' + getFriendlyError(err.message) + '</li>';
                 });
         }
@@ -742,7 +796,7 @@
             btn.disabled = true;
             btn.textContent = '创建中...';
 
-            console.log('创建笔记集:', name, '用户 ID:', appState.currentUser.id);
+            debug('创建笔记集，名称:' + name + ', 用户 ID:' + appState.currentUser.id);
 
             appState.supabase
                 .from('notebooks')
@@ -751,18 +805,19 @@
                     user_id: appState.currentUser.id
                 }])
                 .then(function(result) {
-                    console.log('创建笔记集结果:', result);
+                    debug('创建笔记集结果:' + JSON.stringify({
+                        hasError: !!result.error,
+                        error: result.error ? result.error.message : 'none',
+                        status: result.status
+                    }));
                     
-                    if (result.error) {
-                        console.error('创建笔记集错误:', result.error);
-                        throw result.error;
-                    }
+                    if (result.error) throw result.error;
                     
                     input.value = '';
                     showToast('创建成功', 'success');
                     loadNotebooks();
                 }).catch(function(err) {
-                    console.error('创建笔记集失败:', err);
+                    debug('创建笔记集失败:' + err.message);
                     showToast('创建失败：' + getFriendlyError(err.message), 'error');
                 }).finally(function() {
                     btn.disabled = false;
@@ -776,11 +831,7 @@
             
             document.querySelectorAll('.notebook-item').forEach(function(item) {
                 var isActive = item.getAttribute('data-id') === notebookId;
-                if (isActive) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
+                item.classList.toggle('active', isActive);
             });
 
             loadNotes(notebookId);
@@ -799,8 +850,6 @@
                 .single()
                 .then(function(result) {
                     if (result.error) throw result.error;
-                    var notebook = result.data;
-
                     return appState.supabase
                         .from('notes')
                         .select('*')
@@ -837,7 +886,7 @@
 
                     bindNoteEvents();
                 }).catch(function(err) {
-                    console.error('加载笔记失败:', err);
+                    debug('加载笔记失败:' + err.message);
                     content.innerHTML = '<div class="empty-state" style="color:red">加载失败：' + getFriendlyError(err.message) + '</div>';
                 });
         }
@@ -847,15 +896,12 @@
             var notebookId = appState.currentNotebookId;
             
             var createBtn = document.getElementById('createNoteBtn');
-            if (createBtn) {
-                createBtn.addEventListener('click', createNote);
-            }
+            if (createBtn) createBtn.addEventListener('click', createNote);
             
             content.querySelectorAll('.note-card').forEach(function(card) {
                 card.addEventListener('click', function(e) {
                     if (!e.target.classList.contains('btn')) {
-                        var id = this.getAttribute('data-id');
-                        editNote(id);
+                        editNote(this.getAttribute('data-id'));
                     }
                 });
             });
@@ -863,21 +909,18 @@
             content.querySelectorAll('.btn-note-edit').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    var id = this.getAttribute('data-id');
-                    editNote(id);
+                    editNote(this.getAttribute('data-id'));
                 });
             });
             
             content.querySelectorAll('.btn-note-delete').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    var id = this.getAttribute('data-id');
-                    deleteNote(id);
+                    deleteNote(this.getAttribute('data-id'));
                 });
             });
         }
 
-        // ========== 笔记编辑相关 ==========
         function createNote() {
             appState.currentNoteId = null;
             showEditor('', '');
@@ -885,7 +928,6 @@
 
         function editNote(noteId) {
             if (!appState.supabase) return;
-
             appState.supabase
                 .from('notes')
                 .select('title, content')
@@ -893,9 +935,8 @@
                 .single()
                 .then(function(result) {
                     if (result.error) throw result.error;
-                    var data = result.data;
                     appState.currentNoteId = noteId;
-                    showEditor(data.title || '', data.content || '');
+                    showEditor(result.data.title || '', result.data.content || '');
                 }).catch(function(err) {
                     showToast('加载笔记失败', 'error');
                 });
@@ -960,20 +1001,16 @@
         function insertImage(input) {
             var file = input.files[0];
             if (!file) return;
-
             var reader = new FileReader();
             reader.onload = function(e) {
                 var img = document.createElement('img');
                 img.src = e.target.result;
                 img.style.maxWidth = '100%';
-                
                 var content = document.getElementById('noteContent');
                 content.focus();
-                
                 var selection = window.getSelection();
                 if (selection.rangeCount > 0) {
-                    var range = selection.getRangeAt(0);
-                    range.insertNode(img);
+                    selection.getRangeAt(0).insertNode(img);
                 } else {
                     content.appendChild(img);
                 }
@@ -984,7 +1021,6 @@
 
         function saveNote() {
             if (!appState.supabase) return;
-
             var title = document.getElementById('noteTitle').value.trim() || '无标题';
             var content = document.getElementById('noteContent').innerHTML;
             var btn = document.getElementById('saveNoteBtn');
@@ -996,16 +1032,13 @@
 
             btn.disabled = true;
             btn.textContent = '保存中...';
+            debug('保存笔记，标题:' + title);
 
             var promise;
             if (appState.currentNoteId) {
                 promise = appState.supabase
                     .from('notes')
-                    .update({
-                        title: title,
-                        content: content,
-                        updated_at: new Date().toISOString()
-                    })
+                    .update({ title: title, content: content, updated_at: new Date().toISOString() })
                     .eq('id', appState.currentNoteId)
                     .eq('user_id', appState.currentUser.id);
             } else {
@@ -1020,10 +1053,15 @@
             }
 
             promise.then(function(result) {
+                debug('保存结果:' + JSON.stringify({
+                    hasError: !!result.error,
+                    error: result.error ? result.error.message : 'none'
+                }));
                 if (result.error) throw result.error;
                 showToast(appState.currentNoteId ? '更新成功' : '创建成功', 'success');
                 loadNotes(appState.currentNotebookId);
             }).catch(function(err) {
+                debug('保存失败:' + err.message);
                 showToast('保存失败：' + getFriendlyError(err.message), 'error');
             }).finally(function() {
                 btn.disabled = false;
@@ -1034,7 +1072,6 @@
         function deleteNote(noteId) {
             if (!confirm('确定删除此笔记？')) return;
             if (!appState.supabase) return;
-
             appState.supabase
                 .from('notes')
                 .delete()
@@ -1052,7 +1089,6 @@
         function editNotebook(notebookId, oldName) {
             var newName = prompt('修改笔记集名称:', oldName);
             if (!newName || newName === oldName) return;
-
             appState.supabase
                 .from('notebooks')
                 .update({ name: newName, updated_at: new Date().toISOString() })
@@ -1070,7 +1106,6 @@
         function deleteNotebook(notebookId) {
             if (!confirm('确定删除？此操作将删除该笔记集下所有笔记！')) return;
             if (!appState.supabase) return;
-
             appState.supabase
                 .from('notes')
                 .delete()
@@ -1084,7 +1119,6 @@
                         .eq('user_id', appState.currentUser.id);
                 }).then(function(result) {
                     if (result.error) throw result.error;
-
                     if (appState.currentNotebookId === notebookId) {
                         appState.currentNotebookId = null;
                         clearContent();
@@ -1106,51 +1140,26 @@
 
         // ========== 事件绑定 ==========
         function bindEvents() {
-            document.getElementById('loginBtn').addEventListener('click', function() {
-                showModal('login');
-            });
-            
-            document.getElementById('registerBtn').addEventListener('click', function() {
-                showModal('register');
-            });
-
+            document.getElementById('loginBtn').addEventListener('click', function() { showModal('login'); });
+            document.getElementById('registerBtn').addEventListener('click', function() { showModal('register'); });
             document.getElementById('createNotebookBtn').addEventListener('click', createNotebook);
-            
             document.getElementById('newNotebookName').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') createNotebook();
             });
-
             document.getElementById('loginPassword').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') handleLogin();
             });
-
             document.getElementById('registerConfirmPassword').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') handleRegister();
             });
-
-            document.getElementById('closeLoginBtn').addEventListener('click', function() {
-                hideModal('login');
-            });
-            document.getElementById('closeRegisterBtn').addEventListener('click', function() {
-                hideModal('register');
-            });
-            document.getElementById('cancelLoginBtn').addEventListener('click', function() {
-                hideModal('login');
-            });
-            document.getElementById('cancelRegisterBtn').addEventListener('click', function() {
-                hideModal('register');
-            });
-
-            document.getElementById('toRegisterLink').addEventListener('click', function() {
-                switchModal('login', 'register');
-            });
-            document.getElementById('toLoginLink').addEventListener('click', function() {
-                switchModal('register', 'login');
-            });
-
+            document.getElementById('closeLoginBtn').addEventListener('click', function() { hideModal('login'); });
+            document.getElementById('closeRegisterBtn').addEventListener('click', function() { hideModal('register'); });
+            document.getElementById('cancelLoginBtn').addEventListener('click', function() { hideModal('login'); });
+            document.getElementById('cancelRegisterBtn').addEventListener('click', function() { hideModal('register'); });
+            document.getElementById('toRegisterLink').addEventListener('click', function() { switchModal('login', 'register'); });
+            document.getElementById('toLoginLink').addEventListener('click', function() { switchModal('register', 'login'); });
             document.getElementById('doLoginBtn').addEventListener('click', handleLogin);
             document.getElementById('doRegisterBtn').addEventListener('click', handleRegister);
-
             document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
                 overlay.addEventListener('click', function(e) {
                     if (e.target === overlay) {
@@ -1163,21 +1172,21 @@
 
         // ========== 初始化 ==========
         function init() {
-            console.log('=== 应用初始化开始 ===');
+            debug('=== 应用初始化开始 ===');
             
             if (typeof window.supabase === 'undefined') {
-                console.error('Supabase SDK 未加载');
+                debug('Supabase SDK 未加载');
                 showToast('系统加载失败，请刷新页面', 'error');
                 return;
             }
             
             appState.supabase = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
-            console.log('Supabase 客户端初始化成功');
+            debug('Supabase 客户端初始化成功');
             
             bindEvents();
             checkAuth();
             
-            console.log('=== 应用初始化完成 ===');
+            debug('=== 应用初始化完成 ===');
         }
 
         if (document.readyState === 'loading') {
