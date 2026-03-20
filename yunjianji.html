@@ -187,6 +187,8 @@
             border: 1px solid #d2b48c;
             border-radius: 6px;
             font-family: "STKaiti", "KaiTi", serif;
+            height: 45px;
+            font-size: 16px;
         }
         .notebook-list { list-style: none; }
         .notebook-list-container {
@@ -1312,10 +1314,55 @@
             });
 
             // 表格功能 (新增)
+            // document.getElementById('btnTable').addEventListener('click', function() {
+            //     var tableHtml = '<table><tr><th>标题 1</th><th>标题 2</th><th>标题 3</th></tr><tr><td>内容 1</td><td>内容 2</td><td>内容 3</td></tr><tr><td>内容 4</td><td>内容 5</td><td>内容 6</td></tr></table><p><br/></p>';
+            //     execCmd('insertHTML', tableHtml);
+            // });
             document.getElementById('btnTable').addEventListener('click', function() {
-                var tableHtml = '<table><tr><th>标题 1</th><th>标题 2</th><th>标题 3</th></tr><tr><td>内容 1</td><td>内容 2</td><td>内容 3</td></tr><tr><td>内容 4</td><td>内容 5</td><td>内容 6</td></tr></table><p><br/></p>';
-                execCmd('insertHTML', tableHtml);
+                var rows = prompt("请输入行数 (默认 3):", "3");
+                var cols = prompt("请输入列数 (默认 3):", "3");
+                
+                rows = parseInt(rows) || 3;
+                cols = parseInt(cols) || 3;
+                
+                if (rows < 1 || cols < 1) {
+                    showToast("行列数必须大于 0", "error");
+                    return;
+                }
+
+                var table = document.createElement('table');
+                var tbody = document.createElement('tbody');
+                
+                for (var i = 0; i < rows; i++) {
+                    var tr = document.createElement('tr');
+                    for (var j = 0; j < cols; j++) {
+                        var td = document.createElement(i === 0 ? 'th' : 'td');
+                        td.contentEditable = "true";
+                        td.innerHTML = i === 0 && j === 0 ? "表头" : (i === 0 ? "标题" : "内容");
+                        tr.appendChild(td);
+                    }
+                    tbody.appendChild(tr);
+                }
+                table.appendChild(tbody);
+                
+                var content = document.getElementById('noteContent');
+                content.focus();
+                var selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    var range = selection.getRangeAt(0);
+                    range.deleteContents();
+                    range.insertNode(table);
+                    // 光标移到表格后
+                    var newRange = document.createRange();
+                    newRange.setStartAfter(table);
+                    newRange.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
+                } else {
+                    content.appendChild(table);
+                }
             });
+
 
             // 颜色与清除
             document.getElementById('fontColor').addEventListener('change', function() {
