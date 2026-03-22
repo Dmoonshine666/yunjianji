@@ -3,100 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>云笺记 - 古风云端笔记</title>
+    <title>云笺记 - 细节优化版</title>
+    <!-- 引入 html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* ========== 基础重置与背景 ========== */
+        /* ========== 全局与基础 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: "Microsoft YaHei", "SimSun", sans-serif;
-            background-color: #f5f0e6; /* 宣纸底色 */
+            background-color: #f5f0e6;
             color: #333;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,100 M100,0 L0,100" stroke="#e6d8c7" stroke-width="0.5" fill="none"/></svg>');
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,100 M100,0 L0,100" stroke="%23e6d8c7" stroke-width="0.5" fill="none"/></svg>');
             background-size: 100px;
+            min-height: 100vh;
         }
         .container { max-width: 1280px; margin: 0 auto; padding: 20px; }
 
-        /* ========== 头部样式优化 (重点美化) ========== */
+        /* ========== 头部美化 ========== */
         header {
-            /* 使用更丰富的古风渐变背景 */
-            background: linear-gradient(135deg, #fff8e8 0%, #fdf6e3 50%, #f5ebd5 100%);
-            /* 增加纹理叠加 */
+            position: relative;
+            background-color: #fff8e8;
             background-image: 
-                linear-gradient(135deg, rgba(255,248,232,0.9) 0%, rgba(245,235,213,0.9) 100%),
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="20" fill="none" stroke="%23d4c5a9" stroke-width="1" opacity="0.3"/><path d="M10,50 Q30,30 50,50" fill="none" stroke="%23d4c5a9" stroke-width="1" opacity="0.2"/></svg>');
-            background-size: 100% 100%, 60px;
-            
+                linear-gradient(rgba(255, 248, 232, 0.9), rgba(255, 248, 232, 0.9)),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><path d="M0,150 Q200,100 400,150 T800,150 L800,200 L0,200 Z" fill="%23e6d8c7" opacity="0.4"/><path d="M0,170 Q200,120 400,170 T800,170 L800,200 L0,200 Z" fill="%23d2b48c" opacity="0.3"/></svg>');
+            background-size: cover, 100% 100%;
+            background-repeat: no-repeat;
             color: #8B4513;
-            padding: 25px 40px;
+            padding: 30px 40px;
             border-radius: 12px;
-            /* 双层边框效果，更有层次感 */
-            box-shadow: 0 6px 12px rgba(139, 69, 19, 0.15), inset 0 0 0 1px #e6d8c7;
-            margin-bottom: 20px;
-            border: 2px solid #c37e7ed1; /* 保持原有的红褐色边框 */
+            box-shadow: 0 6px 16px rgba(139, 69, 19, 0.15);
+            margin-bottom: 25px;
+            border: 2px solid #c37e7ed1;
+            border-top: 4px solid #8B4513;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: relative;
             overflow: hidden;
-            background-image: url(data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCA4MDAgMTIwIj48cGF0aCBkPSJNMCw2MCBDMTUwLDEwMCAyNTAsMjAgNDAwLDYwIEM1NTAsMTAwIDY1MCwyMCA4MDAsNjAgTDgwMCwxMjAgTDAsMTIwIFoiIGZpbGw9IiNmNWU4ZDUiIG9wYWNpdHk9IjAuNSIvPjwvc3ZnPg==);
         }
-        /* 顶部装饰线 */
-        header::before {
-            content: "✎"; /* 毛笔笔触符号 */
-            font-size: 3rem;
-            color: #c85a5a;
-            opacity: 0.3;
+        header::before, header::after {
+            content: '✦';
             position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+            top: 10px;
+            font-size: 20px;
+            color: #c85a5a;
+            opacity: 0.6;
         }
-
+        header::before { left: 15px; }
+        header::after { right: 15px; }
 
         header h1 { 
             font-family: "STKaiti", "KaiTi", serif; 
-            font-size: 2.5rem; 
-            letter-spacing: 4px; 
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
-            position: relative;
+            font-size: 2.8rem; 
+            letter-spacing: 6px; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
             z-index: 1;
-            padding-left: 45px;
         }
         header p { 
             font-family: "STKaiti", "KaiTi", serif; 
             opacity: 0.8; 
             font-size: 1.1rem;
-            position: relative;
+            margin-top: 5px;
             z-index: 1;
-            padding-left: 45px;
-            padding-top: 5px;
         }
-        .user-actions { display: flex; gap: 10px; position: relative; z-index: 1; }
-        
-        /* ========== 通用组件样式 ========== */
+        .user-actions { display: flex; gap: 12px; z-index: 1; }
+
+        /* ========== 提示与模态框 ========== */
         .toast {
-            position: fixed; top: 60px; left: 50%;
+            position: fixed; top: 80px; left: 50%;
             transform: translateX(-50%);
-            padding: 12px 20px;
-            background-color: rgba(51, 51, 51, 0.9);
+            padding: 12px 24px;
+            background-color: rgba(51, 51, 51, 0.95);
             color: #fff;
-            border-radius: 6px;
+            border-radius: 8px;
             z-index: 9999;
             opacity: 0;
             transition: opacity 0.3s;
-            max-width: 80%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            font-family: "STKaiti", serif;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         .toast.show { opacity: 1; }
-        .toast.error { background-color: rgba(178, 34, 34, 0.9); }
-        .toast.info { background-color: rgba(51, 102, 153, 0.9); }
-        .toast.success { background-color: rgba(34, 139, 34, 0.9); }
+        .toast.error { background-color: rgba(178, 34, 34, 0.95); }
+        .toast.info { background-color: rgba(51, 102, 153, 0.95); }
+        .toast.success { background-color: rgba(34, 139, 34, 0.95); }
+        .toast.loading { background-color: rgba(255, 165, 0, 0.95); }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(60, 40, 20, 0.6);
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(3px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -107,19 +103,19 @@
         }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal {
-            background: #fff8e8;
+            background: #fffdf5;
             border: 2px solid #c85a5a;
-            border-radius: 10px;
-            padding: 25px;
-            width: 100%;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
             max-width: 450px;
             position: relative;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .modal-close {
-            position: absolute; top: 15px; right: 15px;
+            position: absolute; top: 15px; right: 20px;
             background: none; border: none;
-            font-size: 1.5rem; color: #8B4513;
+            font-size: 1.8rem; color: #8B4513;
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -127,84 +123,97 @@
         .modal-title {
             font-family: "STKaiti", "KaiTi", serif;
             color: #8B4513;
-            font-size: 1.8rem;
+            font-size: 2rem;
             text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #d2b48c;
-            padding-bottom: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px dashed #d2b48c;
+            padding-bottom: 15px;
         }
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 18px; }
         .form-label {
-            display: block; margin-bottom: 5px;
+            display: block; margin-bottom: 8px;
             color: #8B4513; font-family: "STKaiti", "KaiTi", serif;
+            font-weight: bold;
         }
-        .form-input {
-            width: 100%; padding: 10px 12px;
+        .form-input, .form-textarea {
+            width: 100%; padding: 12px 15px;
             border: 1px solid #d2b48c;
             border-radius: 8px;
             background: #fff;
             font-family: inherit;
+            transition: all 0.3s;
         }
-        .form-input:focus {
+        .form-textarea { resize: vertical; min-height: 80px; }
+        .form-input:focus, .form-textarea:focus {
             outline: none;
             border-color: #c85a5a;
-            box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.2);
+            box-shadow: 0 0 0 3px rgba(200, 90, 90, 0.15);
         }
-        .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+        
+        .form-actions { 
+            display: flex; 
+            gap: 12px; 
+            margin-top: 25px; 
+            justify-content: space-between;
+        }
+        .form-actions-left { display: flex; gap: 12px; flex: 1; }
+        .form-actions-right { display: flex; gap: 12px; }
+
         .form-switch {
-            text-align: center; margin-top: 15px;
+            text-align: center; margin-top: 20px;
             color: #8B4513; font-family: "STKaiti", "KaiTi", serif;
         }
-        .form-switch a { color: #c85a5a; text-decoration: none; cursor: pointer; }
+        .form-switch a { color: #c85a5a; text-decoration: none; font-weight: bold; }
         .form-switch a:hover { text-decoration: underline; }
 
-        .main { display: flex; gap: 20px; min-height: calc(100vh - 180px); }
+        /* ========== 主布局 ========== */
+        .main { display: flex; gap: 25px; min-height: calc(100vh - 200px); }
         
-        /* 侧边栏 */
         .sidebar {
-    width: 290px;
-    background: #fff8e8;
-    border: 2px solid #d2b48c;
-    border-radius: 10px;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    /* ✅ 新增：允许侧边栏随内容增高，不限制最大高度 */
-    max-height: none; 
-    height: auto;
-}
+            width: 320px;
+            background: #fffdf5;
+            border: 2px solid #d2b48c;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.08);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
         .sidebar h3 {
             font-family: "STKaiti", "KaiTi", serif;
             color: #8B4513;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #d2b48c;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #d2b48c;
+            font-size: 1.5rem;
         }
-        .create-notebook { display: flex; gap: 10px; margin-bottom: 20px; }
+        .create-notebook { display: flex; gap: 10px; margin-bottom: 20px; height: 52px;}
         .create-notebook input {
-            flex: 1; padding: 8px 12px;
+            flex: 1; padding: 14px 12px;
             border: 1px solid #d2b48c;
-            border-radius: 6px;
+            border-radius: 8px;
             font-family: "STKaiti", "KaiTi", serif;
-            height: 45px;
-            font-size: 16px;
+            background: #fff;
+            font-size: 18px;
+            max-width: 180px;
         }
         .notebook-list { list-style: none; }
         .notebook-list-container {
             flex: 1;
+            overflow-y: auto;
             padding-right: 5px;
-            min-height: 0; 
         }
-        /* 自定义滚动条 */
         .notebook-list-container::-webkit-scrollbar { width: 6px; }
         .notebook-list-container::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 3px; }
         
         .notebook-item {
-            padding: 10px 12px;
-            margin-bottom: 8px;
+            padding: 12px 15px;
+            min-height: 50px;
+            margin-bottom: 12px;
             background: #fff;
-            border: 2px solid #e6d8c7;
+            border: 1px solid #e6d8c7;
+            border-left: 4px solid transparent;
             border-radius: 8px;
             cursor: pointer;
             display: flex;
@@ -212,275 +221,239 @@
             align-items: center;
             font-family: "STKaiti", "KaiTi", serif;
             transition: all 0.2s;
+            font-size: 1.15rem;
         }
-        .notebook-item:hover { background: #f9f3e6; transform: translateX(3px); }
+        .notebook-item:hover { 
+            background: #fcf8f0; 
+            transform: translateX(5px);
+            border-left-color: #d2b48c;
+        }
         .notebook-item.active {
             background: #f5e8d5;
+            border-left-color: #c85a5a;
             border-color: #c85a5a;
-            box-shadow: 0 2px 5px rgba(200, 90, 90, 0.1);
+            box-shadow: 0 2px 8px rgba(200, 90, 90, 0.1);
         }
         .notebook-name {
-            max-width: 160px;
+            flex: 1;
+            margin-right: 15px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            font-weight: bold;
+            color: #5d4037;
         }
-        .notebook-actions { display: flex; gap: 5px; }
+        .notebook-actions { display: flex; gap: 8px; opacity: 1; flex-shrink: 0; }
 
-        /* 按钮通用 */
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: "STKaiti", "KaiTi", serif;
-            font-size: 14px;
-            transition: all 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        button#saveNoteBtn{
+            margin: 10px;
         }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .btn-primary {
-            background: linear-gradient(135deg, #c85a5a, #a04040);
-            color: #fff;
+        button#shareNoteBtn{
+            margin-left: 10px;
         }
-        .btn-danger {
-            background: linear-gradient(135deg, #cd3b3b, #c22e2e);
-            color: #fff;
-        }
-        .btn-edit {
-            background: linear-gradient(135deg, #d6b257, #e2b951);
-            color: #fff;
-        }
-        .btn-secondary {
-            background: linear-gradient(135deg, #f5f0e6, #e6d8c7);
-            color: #8B4513;
-            border: 1px solid #d2b48c;
-        }
-
-        /* 内容区 */
         .content {
             flex: 1;
-            background: #fff8e8;
+            background: #fffdf5;
             border: 2px solid #d2b48c;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.08);
             position: relative;
         }
+        
         .note-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #d2b48c;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #d2b48c;
         }
-        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; font-size: 1.3rem; }
+        .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; font-size: 1.5rem; }
         .note-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
         }
+
         .note-card {
             background: #fff;
             border: 1px solid #e6d8c7;
-            border-radius: 8px;
-            padding: 15px;
+            border-radius: 10px;
+            padding: 0;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             height: 180px;
+            width: 240px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .note-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: #d2b48c;
+            transition: width 0.3s;
         }
         .note-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transform: translateY(-3px);
-            border-color: #c85a5a;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
         }
+        .note-card:hover::before { width: 8px; background: #c85a5a; }
+        
+        .note-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .note-card h4 {
             font-family: "STKaiti", "KaiTi", serif;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
             color: #8B4513;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
         .note-card p {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #666;
+            line-height: 2.6;
             display: -webkit-box;
-            -webkit-line-clamp: 4;
+            -webkit-line-clamp: 1;
             -webkit-box-orient: vertical;
             overflow: hidden;
             flex: 1;
-            line-height: 1.5;
-        }
-        .note-time { font-size: 0.8rem; color: #999; margin: 10px 0 0; text-align: right; font-style: italic; }
-        .note-actions { display: flex; gap: 5px; margin-top: 10px; justify-content: flex-end; }
-
-        /* ========== 编辑器样式 (单行工具栏优化) ========== */
-        .editor-title {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #d2b48c;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
-            font-family: "STKaiti", "KaiTi", serif;
-            background: #fff;
         }
         
-        /* 单行工具栏核心样式 */
+        .note-card-footer {
+            padding: 12px 20px;
+            background: #faf7f0;
+            border-top: 1px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .note-time { font-size: 0.85rem; color: #999; font-style: italic; }
+        .note-actions { display: flex; gap: 8px; opacity: 1; }
+
+        /* ========== 编辑器样式 (核心修改区) ========== */
+        
+        .editor-wrapper {
+            position: relative;
+        }
+
+        /* 【核心修改】Sticky 容器优化 */
+        .editor-sticky-container {
+            position: sticky;
+            top: -5px; /* 距离顶部更近，减少空白 */
+            z-index: 100;
+            background: #fffdf5;
+            padding: 15px; /* 增加内边距，让内容不贴边 */
+             /* 始终显示边框 */
+            /* border: 2px solid #d2b48c; */
+            /* border-radius: 8px; */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        /* 当固定时，增强阴影，提升层次感 */
+        .editor-sticky-container.is-sticky {
+            box-shadow: 0 8px 20px rgba(139, 69, 19, 0.15);
+            border-color: #c85a5a;
+        }
+
+        .editor-title {
+            width: 100%;
+            padding: 11px;
+            border: 2px solid #d2b48c;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            font-family: "STKaiti", "KaiTi", serif;
+            color: #8B4513;
+            background: #fff;
+        }
+        .editor-title:focus { outline: none; border-color: #c85a5a; background: #fffbf0; }
+
         .editor-toolbar {
             display: flex;
-            flex-wrap: nowrap; /* 强制不换行 */
-            gap: 6px;
-            padding: 9px 10px;
-            background: #f9f3e6;
-            border: 1px solid #d2b48c;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px;
+            background: #f9f5eb;
+            border: 2px solid #d2b48c;
             border-radius: 8px;
-            margin-bottom: 10px;
-            overflow-x: auto; /* 如果屏幕极窄允许横向滚动 */
-            align-items: center;
-            /* 以下是自己加 */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            min-width: 100%;
-            -ms-overflow-style: none;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
+            justify-content: center;
+            align-content: center;
         }
-        .editor-toolbar::-webkit-scrollbar { 
-           /*原有的，下面是加的  height: 4px;  */
-            display: none;
-        }
-        /*原有的  .editor-toolbar::-webkit-scrollbar-thumb { background: #d2b48c; border-radius: 2px; } */
-
-         /* 通用按钮样式 - 古风设计 */
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: "STKaiti", "KaiTi", serif;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .btn::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
-            transform: translateX(-100%);
-            transition: transform 0.6s ease;
-        }
-        .btn:hover::before {
-            transform: translateX(100%);
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        .btn:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
+        
         .toolbar-group {
             display: flex;
-            gap: 4px;
+            gap: 8px;
             padding-right: 8px;
             margin-right: 8px;
-            border-right: 1px solid #d2b48c;
+            border-right: 1px solid #e0d0b0;
             align-items: center;
-            flex-shrink: 0; /* 防止被压缩 */
-            /* 下面是加的 */
             flex-wrap: nowrap;
-            white-space: nowrap;
         }
         .toolbar-group:last-child { border-right: none; padding-right: 0; margin-right: 0; }
         
         .toolbar-btn {
-             /* 原有的width: 30px; height: 30px; /* 稍微缩小按钮以适应单行 */
-            /*border: 1px solid #d2b48c;
-            border-radius: 4px;
+            width: 38px; height: 38px;
+            border: 1px solid #d2b48c;
+            border-radius: 6px;
             background: #fff;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 18px;
+            color: #8B4513;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
-            color: #555;*/
-            width: 30px;
-            height: 30px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            border: 1px solid #d2b48c;
-            background: linear-gradient(135deg, #fff 0%, #f9f3e6 100%);
-            cursor: pointer;
-            font-size: 14px;
             transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             position: relative;
             overflow: hidden;
-        }
-         /*.原有的toolbar-btn:hover { background: #f5e8d5; border-color: #c85a5a; color: #c85a5a; }
-        .toolbar-btn.active { background: #e6d8c7; border-color: #8B4513; color: #8B4513; }*/
-        
-        .toolbar-select {
-            height: 28px;
-            border: 1px solid #d2b48c;
-            border-radius: 4px;
-            background: #fff;
-            color: #8B4513;
-            font-family: "STKaiti", "KaiTi", serif;
-            font-size: 15px;
-            padding: 0 4px;
-            cursor: pointer;
-            outline: none;
             flex-shrink: 0;
         }
-        .toolbar-select:focus { border-color: #c85a5a; }
-        .toolbar-btn::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, rgba(200,90,90,0.05) 0%, rgba(200,90,90,0.15) 50%, rgba(200,90,90,0.05) 100%);
-            transform: translateX(-100%);
-            transition: transform 0.4s ease;
-        }
-        .toolbar-btn:hover::before {
-            transform: translateX(100%);
-        }
-        .toolbar-btn:hover {
+        .toolbar-btn:hover { 
+            /* background: linear-gradient(135deg, #f5e8d5 0%, #f9f3e6 100%);
+            border-color: #edb175c5;
+            transform: translateY(-1px); */
             background: linear-gradient(135deg, #f5e8d5 0%, #f9f3e6 100%);
             border-color: #edb175c5;
             transform: translateY(-1px);
             box-shadow: 0 2px 3px rgba(0,0,0,0.05);
         }
-        .toolbar-btn.active {
-            background: linear-gradient(135deg, #e6d8c7 0%, #f5e8d5 100%);
-            border-color: #8B4513;
-            font-weight: bold;
-        }   /* 到这为止 */
+        /* .toolbar-btn.active { 
+            background: #8B4513; 
+            color: #fff; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        } */
+        
+        .toolbar-select {
+            height: 38px;
+            border: 1px solid #d2b48c;
+            border-radius: 6px;
+            background: #fff;
+            color: #8B4513;
+            font-family: "STKaiti", "KaiTi", serif;
+            padding: 0 8px;
+            cursor: pointer;
+            outline: none;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .toolbar-select:focus { border-color: #c85a5a; }
 
         .color-picker-wrapper {
             position: relative;
-            width: 28px; height: 28px;
+            width: 38px; height: 38px;
             overflow: hidden;
-            border-radius: 4px;
+            border-radius: 6px;
             border: 1px solid #d2b48c;
             cursor: pointer;
             background: #fff;
@@ -499,105 +472,239 @@
         .editor-content {
             width: 100%;
             min-height: 400px;
-            padding: 15px;
-            border: 1px solid #d2b48c;
+            padding: 20px;
+            border: 2px solid #e6d8c7;
             border-radius: 8px;
             background: #fff;
-            font-size: 1rem;
+            font-size: 1.1rem;
             line-height: 1.8;
+            color: #333;
             outline: none;
+            margin-top: 15px;
         }
-        .editor-content:focus { border-color: #c85a5a; box-shadow: 0 0 0 2px rgba(200, 90, 90, 0.1); }
+        .editor-content:focus { border-color: #c85a5a; background: #fffbf0; }
         
-        /* 编辑器内容特殊样式 */
         .editor-content blockquote {
             border-left: 4px solid #c85a5a;
-            margin: 10px 0;
-            padding: 5px 15px;
+            margin: 15px 0;
+            padding: 10px 20px;
             background: #fff8f8;
             color: #666;
             font-style: italic;
+            font-family: "KaiTi", serif;
         }
+                /* 新增：注释框样式 */
+        .editor-content .comment-box {
+            color: #14a51b; /* 绿色文字 */
+            font-weight: bold;
+            /* background-color: rgba(46, 125, 50, 0.08);  */
+            padding: 2px 6px;
+            /* border-radius: 4px; */
+            /* border: 1px dashed #2e7d32; */
+            display: inline-block;
+            font-family: monospace;
+            margin: 0 4px;
+        }
+
+        /* 【核心修改】代码块样式优化 - 确保自动换行 */
         .editor-content pre {
-            background: #f4f4f4;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-            font-family: Consolas, monospace;
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
             border: 1px solid #ddd;
-            color: #333;
+            
+            /* 关键：强制换行，防止撑大页面 */
+            white-space: pre-wrap;       /* CSS3 */
+            white-space: -moz-pre-wrap;  /* Mozilla */
+            white-space: -pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;       /* IE */
+            overflow-x: hidden;          /* 隐藏横向滚动 */
+            max-width: 100%;             /* 限制最大宽度 */
+            
+            font-family: Consolas, Monaco, "Courier New", monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
         }
-        .editor-content ul, .editor-content ol { padding-left: 25px; margin: 10px 0; }
-        .editor-content img { max-width: 100%; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .editor-content code {
+            font-family: Consolas, Monaco, "Courier New", monospace;
+            background: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #c7254e;
+        }
+        .editor-content pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .editor-content ul, .editor-content ol { padding-left: 25px; margin: 15px 0; }
         
-        /* 表格样式 */
+        .editor-content img { 
+            max-width: 100%; 
+            border-radius: 4px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+            margin: 10px 0; 
+            display: block; 
+            cursor: pointer;
+        }
+        
+        .editor-content video.selected, .editor-content audio.selected {
+            outline: 3px solid #c85a5a;
+            outline-offset: 4px;
+            box-shadow: 0 0 15px rgba(200, 90, 90, 0.3);
+            border-radius: 6px;
+        }
+        .editor-content video, .editor-content audio { 
+            max-width: 100%; 
+            border-radius: 25px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+            margin: 10px 0; 
+            display: block;
+            background: #f5be4f;
+            cursor: pointer;
+        }
+        
         .editor-content table {
             width: 100%;
             border-collapse: collapse;
-            margin: 10px 0;
-            font-size: 0.95rem;
+            margin: 15px 0;
+            font-size: 1rem;
         }
-        .editor-content td, .editor-content th {
+        .editor-content th, .editor-content td {
             border: 1px solid #d2b48c;
             padding: 8px 12px;
             text-align: left;
         }
         .editor-content th {
             background-color: #f5e8d5;
-            font-weight: bold;
             color: #8B4513;
+            font-weight: bold;
+            font-family: "STKaiti", serif;
         }
-        .editor-content tr:nth-child(even) { background-color: #fcfcfc; }
-        .editor-content tr:hover { background-color: #f9f3e6; }
+        .editor-content tr:nth-child(even) { background-color: #fffbf0; }
+        .editor-content tr:hover { background-color: #fcefe6; }
 
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-            font-family: "STKaiti", "KaiTi", serif;
+        .editor-content a {
+            color: #4b6cb7;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-bottom: 1px dashed transparent;
         }
-        .empty-state h3 { font-size: 1.5rem; margin-bottom: 10px; color: #8B4513; }
+        .editor-content a:hover {
+            color: #182848;
+            border-bottom: 1px solid #4b6cb7;
+            background-color: rgba(75, 108, 183, 0.1);
+        }
 
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
+        .file-card {
+            display: block;
+            width: 100%;
+            max-width: 600px;
+            margin: 15px 0;
+            border: 2px dashed #c85a5a;
+            background: #fff8f8;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            user-select: none;
         }
+        .file-card:hover {
+            background: #fcefe6;
+            border-style: solid;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(200, 90, 90, 0.15);
+        }
+        .file-card-inner { display: flex; align-items: center; pointer-events: none; }
+        .file-icon { font-size: 32px; margin-right: 15px; flex-shrink: 0; }
+        .file-info { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+        .file-name { font-weight: bold; font-size: 16px; color: #8B4513; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-remark { font-size: 13px; color: #999; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-hint {
+            font-size: 12px; color: #c85a5a; background: rgba(200, 90, 90, 0.1);
+            padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-top: 8px;
+        }
+
+        .empty-state { text-align: center; padding: 80px 20px; color: #aaa; font-family: "STKaiti", "KaiTi", serif; }
+        .empty-state h3 { font-size: 1.6rem; margin-bottom: 10px; color: #8B4513; }
+
+        .btn {
+            padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer;
+            font-family: "STKaiti", "KaiTi", serif; font-size: 16px; font-weight: bold;
+            transition: all 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); white-space: nowrap;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-primary { background: linear-gradient(135deg, #c85a5a, #a04040); color: #fff; }
+        .btn-danger { background: linear-gradient(135deg, #cd3b3b, #c22e2e); color: #fff; }
+        .btn-edit { background: linear-gradient(135deg, #d6b257, #e2b951); color: #fff; }
+        .btn-secondary { background: linear-gradient(135deg, #f5f0e6, #e6d8c7); color: #8B4513; border: 1px solid #d2b48c; }
+        .btn-open { background: linear-gradient(135deg, #4CAF50, #45a049); color: #fff; }
+
+        .btn-notebook-edit, .btn-notebook-delete, .btn-note-edit, .btn-note-delete {
+            padding: 6px 10px; font-size: 16px; border-radius: 6px; min-width: 40px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-note-edit, .btn-note-delete { background: linear-gradient(135deg, #ffe8c7, #ffffff); color: #fff; }
+
+        .loading { display: flex; align-items: center; justify-content: center; padding: 40px; }
         .loading::after {
-            content: "";
-            width: 30px; height: 30px;
-            border: 3px solid #d2b48c;
-            border-top-color: #c85a5a;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            content: ""; width: 30px; height: 30px;
+            border: 3px solid #d2b48c; border-top-color: #c85a5a;
+            border-radius: 50%; animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .debug-panel {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: #222;
-            color: #0f0;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            max-width: 300px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 99999;
-            display: none;
-            font-family: monospace;
+            position: fixed; bottom: 10px; right: 10px;
+            background: #222; color: #0f0; padding: 10px; border-radius: 5px;
+            font-size: 12px; max-width: 300px; max-height: 200px;
+            overflow-y: auto; z-index: 99999; display: none; font-family: monospace;
         }
         .debug-panel.show { display: block; }
 
+        .popup-panel {
+            position: fixed;
+            background: #fff;
+            border: 1px solid #d2b48c;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            display: grid;
+            gap: 5px;
+            max-width: 320px;
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .emoji-panel { grid-template-columns: repeat(8, 1fr); }
+        .kaomoji-panel { grid-template-columns: repeat(4, 1fr); }
+        .shape-panel { grid-template-columns: repeat(4, 1fr); }
+        
+        .panel-btn {
+            width: 32px; height: 32px; border: none; background: none;
+            font-size: 18px; cursor: pointer; border-radius: 4px; transition: background 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .kaomoji-btn { width: auto; min-width: 60px; font-size: 14px; font-family: monospace; }
+        .panel-btn:hover, .kaomoji-btn:hover { background: #f5e8d5; }
+
         @media (max-width: 768px) {
             .main { flex-direction: column; }
-            .sidebar { width: 100%; height: 250px; }
+            .sidebar { width: 100%; height: auto; max-height: 300px; }
             header { flex-direction: column; gap: 15px; text-align: center; padding: 20px; }
-            .user-actions { justify-content: center; width: 100%; }
-            .editor-toolbar { flex-wrap: wrap; } /* 移动端允许换行 */
+            header::before, header::after { display: none; }
+            .user-actions { justify-content: center; }
+            .note-list { grid-template-columns: 1fr; }
+            .editor-toolbar { justify-content: center; }
+            .toolbar-group { border-right: none; margin-right: 0; padding-right: 0; }
+            .form-actions { flex-direction: column; }
+            .form-actions-left, .form-actions-right { width: 100%; }
         }
     </style>
 </head>
@@ -638,7 +745,7 @@
     <div class="toast" id="toast"></div>
     <div class="debug-panel" id="debugPanel"></div>
 
-    <!-- 登录模态框 -->
+    <!-- Login Modal -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal">
             <button class="modal-close" id="closeLoginBtn">×</button>
@@ -661,7 +768,7 @@
         </div>
     </div>
 
-    <!-- 注册模态框 -->
+    <!-- Register Modal -->
     <div class="modal-overlay" id="registerModal">
         <div class="modal">
             <button class="modal-close" id="closeRegisterBtn">×</button>
@@ -692,31 +799,51 @@
         </div>
     </div>
 
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
-     <!-- <script src="https://cdn.staticfile.org/@supabase/supabase-js/2.45.0/umd/index.min.js"></script> -->
-      <!-- 引入Supabase SDK -->
+    <!-- 文件编辑模态框 -->
+    <div class="modal-overlay" id="fileEditModal">
+        <div class="modal">
+            <button class="modal-close" id="closeFileEditBtn">×</button>
+            <h2 class="modal-title">文件备注</h2>
+            <div class="form-group">
+                <label class="form-label">显示名称</label>
+                <input type="text" class="form-input" id="fileEditName" placeholder="输入文件显示名称">
+            </div>
+            <div class="form-group">
+                <label class="form-label">备注说明</label>
+                <textarea class="form-textarea" id="fileEditRemark" placeholder="输入备注信息（可选）"></textarea>
+            </div>
+            <div class="form-actions">
+                <div class="form-actions-left">
+                    <button class="btn btn-open" id="openFileBtn" style="flex:1">📂 打开文件</button>
+                </div>
+                <div class="form-actions-right">
+                    <button class="btn btn-primary" id="saveFileEditBtn" style="flex:1">保存修改</button>
+                    <button class="btn btn-secondary" id="cancelFileEditBtn">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- 引入axios（可选，简化请求） -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
     (function() {
         'use strict';
         
-        // ========== 配置 ==========
         var CONFIG = {
             supabaseUrl: 'https://zeiwdwplhgcpedhoxxqd.supabase.co',
             supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplaXdkd3BsaGdjcGVkaG94eHFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTk5NjIsImV4cCI6MjA4OTA5NTk2Mn0.R4sBgsv--4WS9Pp230Y3Qhm3efHw2itzRaHgaw856VA'
         };
 
-        // ========== 全局状态 ==========
         var appState = {
             supabase: null,
             currentUser: null,
             currentNotebookId: null,
-            currentNoteId: null
+            currentNoteId: null,
+            editingFileCard: null
         };
 
-        // ========== 调试日志 ==========
+        var hiddenInputs = {};
+
         function debug(msg) {
             var panel = document.getElementById('debugPanel');
             var time = new Date().toLocaleTimeString();
@@ -725,7 +852,6 @@
             console.log('[DEBUG]', msg);
         }
 
-        // ========== 工具函数 ==========
         function showToast(message, type) {
             type = type || 'success';
             var toast = document.getElementById('toast');
@@ -769,7 +895,6 @@
             return message;
         }
 
-        // ========== 模态框函数 ==========
         function showModal(type) {
             var modal = document.getElementById(type + 'Modal');
             if (modal) {
@@ -793,7 +918,6 @@
             }, 300);
         }
 
-        // ========== 认证相关 ==========
         function checkAuth() {
             debug('检查登录状态...');
             if (!appState.supabase) {
@@ -945,8 +1069,8 @@
             var username = appState.currentUser.user_metadata?.username || 
                           appState.currentUser.email?.split('@')[0] || '用户';
             document.getElementById('userActions').innerHTML = 
-                '<span style="color:#8B4513;font-family:\'STKaiti\';margin-right:10px;">欢迎，' + 
-                escapeHtml(username) + '</span>' +
+                '<span style="color:#8B4513;font-family:\'STKaiti\';margin-right:10px; font-size: 20px;">欢迎，' + 
+                escapeHtml(username) + '📜' +'</span>'+
                 '<button class="btn btn-danger" id="logoutBtn">退出</button>';
             
             document.getElementById('newNotebookName').disabled = false;
@@ -970,7 +1094,6 @@
             debug('UI 更新为未登录状态');
         }
 
-        // ========== 笔记集相关 ==========
         function loadNotebooks() {
             if (!appState.currentUser || !appState.supabase) return;
 
@@ -987,7 +1110,7 @@
 
                     var data = result.data || [];
                     if (data.length === 0) {
-                        list.innerHTML = '<li class="empty-state">暂无笔记集，请创建</li>';
+                        list.innerHTML = '<li class="empty-state" style="padding:20px;text-align:center;color:#999;">暂无笔记集，请创建</li>';
                     } else {
                         var html = '';
                         for (var i = 0; i < data.length; i++) {
@@ -1047,6 +1170,15 @@
                 return;
             }
 
+            var notebooks = document.querySelectorAll('.notebook-item');
+            for(var i = 0; i < notebooks.length; i++) {
+                var existingName = notebooks[i].querySelector('.notebook-name').textContent;
+                if(existingName === name) {
+                    showToast('笔记集名称已存在，请选择其他名称', 'error');
+                    return;
+                }
+            }
+
             btn.disabled = true;
             btn.textContent = '创建...';
 
@@ -1104,19 +1236,24 @@
 
                             var notesHtml = '';
                             if (notes.length === 0) {
-                                notesHtml = '<div class="empty-state" style="grid-column:1/-1">暂无笔记</div>';
+                                notesHtml = '<div class="empty-state" style="grid-column:1/-1">暂无笔记，快去写一篇吧</div>';
                             } else {
                                 for (var i = 0; i < notes.length; i++) {
                                     var note = notes[i];
                                     var contentText = (note.content || '').replace(/<[^>]*>/g, '').substring(0, 100);
                                     notesHtml += '<div class="note-card" data-id="' + note.id + '">' +
-                                        '<h4>' + escapeHtml(note.title || '无标题') + '</h4>' +
-                                        '<p>' + escapeHtml(contentText) + '</p>' +
-                                        '<div class="note-time">' + formatDate(note.updated_at) + '</div>' +
-                                        '<div class="note-actions">' +
-                                        '<button class="btn btn-edit btn-note-edit" data-id="' + note.id + '">编辑</button>' +
-                                        '<button class="btn btn-danger btn-note-delete" data-id="' + note.id + '">删除</button>' +
-                                        '</div></div>';
+                                        '<div class="note-card-body">' +
+                                            '<h4>' + escapeHtml(note.title || '无标题') + '</h4>' +
+                                            '<p>' + escapeHtml(contentText) + '</p>' +
+                                        '</div>' +
+                                        '<div class="note-card-footer">' +
+                                            '<span class="note-time">' + formatDate(note.updated_at) + '</span>' +
+                                            '<div class="note-actions">' +
+                                                '<button class="btn btn-edit btn-note-edit">✏️</button>' +
+                                                '<button class="btn btn-danger btn-note-delete">🗑️</button>' +
+                                            '</div>' +
+                                        '</div>' +
+                                    '</div>';
                                 }
                             }
 
@@ -1154,14 +1291,14 @@
             content.querySelectorAll('.btn-note-edit').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    editNote(this.getAttribute('data-id'));
+                    editNote(this.closest('.note-card').getAttribute('data-id'));
                 });
             });
             
             content.querySelectorAll('.btn-note-delete').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    deleteNote(this.getAttribute('data-id'));
+                    deleteNote(this.closest('.note-card').getAttribute('data-id'));
                 });
             });
         }
@@ -1187,88 +1324,132 @@
                 });
         }
 
-        // ✅ 最终优化版：单行工具栏 + 专业字号 + 表格功能
         function showEditor(title, content) {
             var contentArea = document.getElementById('contentArea');
             var isEdit = appState.currentNoteId ? '编辑笔记' : '新建笔记';
             var notebookId = appState.currentNotebookId;
             
+            createHiddenInput('imageInput', 'image/*', handleFileSelect);
+            createHiddenInput('videoInput', 'video/*', handleFileSelect);
+            createHiddenInput('audioInput', 'audio/*', handleFileSelect);
+            createHiddenInput('fileInput', '*', handleFileSelect);
+
             contentArea.innerHTML = 
                 '<div class="note-header">' +
                 '<h3>' + isEdit + '</h3>' +
                 '<div>' +
-                '<button class="btn btn-primary" id="saveNoteBtn">保存</button>' +
+                '<button class="btn btn-primary" id="saveNoteBtn">保存墨宝</button>' +
                 '<button class="btn btn-secondary" id="cancelNoteBtn">取消</button>' +
+                '<button class="btn btn-secondary" id="shareNoteBtn">下载分享 (PDF)</button>' +
                 '</div></div>' +
-                '<input type="text" class="editor-title" id="noteTitle" placeholder="标题" value="' + escapeHtml(title) + '">' +
                 
-                '<div class="editor-toolbar">' +
-                    // 1. 字体家族
-                    '<div class="toolbar-group">' +
-                        '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 90px;">' +
-                            '<option value="SimSun">宋体</option>' +
-                            '<option value="KaiTi">楷体</option>' +
-                            '<option value="STKaiti">华文楷体</option>' +
-                            '<option value="Microsoft YaHei">微软雅黑</option>' +
-                            '<option value="SimHei">黑体</option>' +
-                            '<option value="FangSong">仿宋</option>' +
-                            '<option value="Arial">Arial</option>' +
-                        '</select>' +
-                    '</div>' +
-                    // 2. 专业字号 (中文排版标准)
-                    '<div class="toolbar-group">' +
-                        '<select class="toolbar-select" id="fontSize" title="字号" style="width: 70px;">' +
-                            '<option value="3">小五</option>' +
-                            '<option value="3">五号</option>' +
-                            '<option value="4">小四</option>' +
-                            '<option value="5" selected>四号</option>' +
-                            '<option value="6">小三</option>' +
-                            '<option value="6">三号</option>' +
-                            '<option value="7">小二</option>' +
-                            '<option value="7">二号</option>' +
-                        '</select>' +
-                    '</div>' +
-                    // 3. 基础样式
-                    '<div class="toolbar-group">' +
-                        '<button class="toolbar-btn" id="btnBold" title="加粗"><b>B</b></button>' +
-                        '<button class="toolbar-btn" id="btnItalic" title="斜体"><i>I</i></button>' +
-                        '<button class="toolbar-btn" id="btnUnderline" title="下划线"><u>U</u></button>' +
-                        '<button class="toolbar-btn" id="btnStrike" title="删除线"><s>S</s></button>' +
-                    '</div>' +
-                    // 4. 对齐
-                    '<div class="toolbar-group">' +
-                        '<button class="toolbar-btn" id="btnLeft" title="左对齐">L</button>' +
-                        '<button class="toolbar-btn" id="btnCenter" title="居中">C</button>' +
-                        '<button class="toolbar-btn" id="btnRight" title="右对齐">R</button>' +
-                    '</div>' +
-                    // 5. 列表与块
-                    '<div class="toolbar-group">' +
-                        '<button class="toolbar-btn" id="btnUL" title="无序列表">•</button>' +
-                        '<button class="toolbar-btn" id="btnOL" title="有序列表">1.</button>' +
-                        '<button class="toolbar-btn" id="btnQuote" title="引用">“”</button>' +
-                        '<button class="toolbar-btn" id="btnCode" title="代码">&lt;/&gt;</button>' +
-                    '</div>' +
-                    // 6. 表格 (新增)
-                    '<div class="toolbar-group">' +
-                        '<button class="toolbar-btn" id="btnTable" title="插入表格" style="font-weight:bold;">▦</button>' +
-                    '</div>' +
-                    // 7. 颜色与清除
-                    '<div class="toolbar-group">' +
-                        '<div class="color-picker-wrapper" title="字体颜色">' +
-                            '<input type="color" id="fontColor" value="#333333">' +
+                '<div class="editor-wrapper">' +
+                    '<div class="editor-sticky-container" id="stickyContainer">' +
+                        '<input type="text" class="editor-title" id="noteTitle" placeholder="在此输入标题..." value="' + escapeHtml(title) + '">' +
+                        
+                        '<div class="editor-toolbar">' +
+                            '<div class="toolbar-group">' +
+                                '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 110px;">' +
+                                    '<option value="SimSun">宋体</option>' +
+                                    '<option value="KaiTi">楷体</option>' +
+                                    '<option value="STKaiti">华文楷体</option>' +
+                                    '<option value="Microsoft YaHei">微软雅黑</option>' +
+                                    '<option value="SimHei">黑体</option>' +
+                                    '<option value="FangSong">仿宋</option>' +
+                                    '<option value="Arial">Arial</option>' +
+                            // '<option value="Times New Roman">Times New Roman</option>' +
+                                '</select>' +
+                                '<select class="toolbar-select" id="fontSize" title="字号" style="width: 70px;">' +
+                                    '<option value="1">八号</option>' +
+                                    '<option value="2">九号</option>' +
+                                    '<option value="3">小四</option>' +
+                                    '<option value="4" selected>四号</option>' +
+                                    '<option value="5">小三</option>' +
+                                    '<option value="6">三号</option>' +
+                                    '<option value="7">二号</option>' +
+                                '</select>' +
+                            '</div>' +
+                            '<div class="toolbar-group">' +
+                                '<button class="toolbar-btn" id="btnBold" title="加粗"><b>B</b></button>' +
+                                '<button class="toolbar-btn" id="btnItalic" title="斜体"><i>I</i></button>' +
+                                '<button class="toolbar-btn" id="btnUnderline" title="下划线"><u>U</u></button>' +
+                                '<button class="toolbar-btn" id="btnStrike" title="删除线"><s>S</s></button>' +
+                            '</div>' +
+                            '<div class="toolbar-group">' +
+                                '<button class="toolbar-btn" id="btnLeft" title="左对齐">L</button>' +
+                                '<button class="toolbar-btn" id="btnCenter" title="居中">C</button>' +
+                                '<button class="toolbar-btn" id="btnRight" title="右对齐">R</button>' +
+                            '</div>' +
+                            '<div class="toolbar-group">' +
+                                '<button class="toolbar-btn" id="btnUL" title="无序列表">•</button>' +
+                                '<button class="toolbar-btn" id="btnOL" title="有序列表">1.</button>' +
+                            '</div>' +
+                            '<div class="toolbar-group">' +
+                                '<div class="color-picker-wrapper" title="字体颜色">' +
+                                    '<input type="color" id="fontColor" value="#333333">' +
+                                '</div>' +
+                                '<button class="toolbar-btn" id="btnClear" title="清除格式">🧹</button>' +
+                            '</div>' +
+                            '<div class="toolbar-group">' +
+                                '<button class="toolbar-btn" id="btnLetterSpacing" title="字距">↔</button>' +
+                                '<button class="toolbar-btn" id="btnLineHeight" title="行距">↕</button>' +
+                                '<button class="toolbar-btn" id="btnIndent" title="首行缩进">🡆</button>' +
+                                '<button class="toolbar-btn" id="btnQuote" title="引用">❝</button>' +
+                                '<button class="toolbar-btn" id="btnComment" title="注释">💬</button>' +
+                                '<button class="toolbar-btn" id="btnCode" title="代码">&lt;/&gt;</button>' +
+                                '<button class="toolbar-btn" id="btnTable" title="插入表格">⊞</button>' +
+                                '<button class="toolbar-btn" id="btnLink" title="链接">🔗</button>' +
+                            '</div>' +
+                            '<div class="toolbar-group">' +
+                                '<button class="toolbar-btn" id="btnImage" title="图片">🖼️</button>' +
+                                '<button class="toolbar-btn" id="btnVideo" title="视频">🎬</button>' +
+                                '<button class="toolbar-btn" id="btnAudio" title="语音">🎙️</button>' +
+                                '<button class="toolbar-btn" id="btnFile" title="文件">📎</button>' +
+                            '</div>' +
+                            '<div class="toolbar-group">' +
+                                '<button class="toolbar-btn" id="btnEmoji" title="表情符号">😊</button>' +
+                                '<button class="toolbar-btn" id="btnKaomoji" title="颜文字">°▽°</button>' +
+                                '<button class="toolbar-btn" id="btnShape" title="插入形状">⬜</button>' +
+                            '</div>' +
                         '</div>' +
-                        '<button class="toolbar-btn" id="btnClear" title="清除格式">🧹</button>' +
                     '</div>' +
-                    // 8. 插入
-                    '<div class="toolbar-group">' +
-                        '<button class="toolbar-btn" id="btnLink" title="链接">🔗</button>' +
-                        '<input type="file" id="imageUpload" accept="image/*" style="display:none">' +
-                        '<button class="toolbar-btn" id="btnImage" title="图片">🖼️</button>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="editor-content" id="noteContent" contenteditable="true">' + content + '</div>';
+                    
+                    '<div class="editor-content" id="noteContent" contenteditable="true">' + content + '</div>' +
+                '</div>';
 
             bindEditorEvents(notebookId);
+            initStickyObserver();
+        }
+
+        function initStickyObserver() {
+            var container = document.getElementById('stickyContainer');
+            if (!container) return;
+
+            var observer = new IntersectionObserver(
+                function(entries) {
+                    entries.forEach(function(entry) {
+                        if (!entry.isIntersecting) {
+                            container.classList.add('is-sticky');
+                        } else {
+                            container.classList.remove('is-sticky');
+                        }
+                    });
+                },
+                { threshold: [1.0] }
+            );
+
+            observer.observe(container);
+        }
+
+        function createHiddenInput(id, accept, changeHandler) {
+            var input = document.createElement('input');
+            input.type = 'file';
+            input.id = id;
+            input.accept = accept;
+            input.style.display = 'none';
+            input.addEventListener('change', changeHandler);
+            document.body.appendChild(input);
+            hiddenInputs[id.replace('Input', '')] = input;
         }
 
         function bindEditorEvents(notebookId) {
@@ -1276,63 +1457,49 @@
             document.getElementById('cancelNoteBtn').addEventListener('click', function() {
                 loadNotes(notebookId);
             });
+            document.getElementById('shareNoteBtn').addEventListener('click', shareNoteAsPDF);
 
-            // 字体与字号
             document.getElementById('fontFamily').addEventListener('change', function() {
                 execCmd('fontName', this.value);
             });
-            document.getElementById('fontSize').addEventListener('change', function() {
-                execCmd('fontSize', this.value);
-                // 不重置，方便连续调整，或者根据需要重置
-                // this.value = '3'; 
-            });
+            
+            // 2. 字号选择
+        document.getElementById('fontSize').addEventListener('change', (e) => {
+            noteContent.focus();
+            document.execCommand('fontSize', false, e.target.value);
+        });
 
-            // 基础样式
             document.getElementById('btnBold').addEventListener('click', function() { execCmd('bold'); });
             document.getElementById('btnItalic').addEventListener('click', function() { execCmd('italic'); });
             document.getElementById('btnUnderline').addEventListener('click', function() { execCmd('underline'); });
             document.getElementById('btnStrike').addEventListener('click', function() { execCmd('strikeThrough'); });
             
-            // 对齐
             document.getElementById('btnLeft').addEventListener('click', function() { execCmd('justifyLeft'); });
             document.getElementById('btnCenter').addEventListener('click', function() { execCmd('justifyCenter'); });
             document.getElementById('btnRight').addEventListener('click', function() { execCmd('justifyRight'); });
             
-            // 列表与块
             document.getElementById('btnUL').addEventListener('click', function() { execCmd('insertUnorderedList'); });
             document.getElementById('btnOL').addEventListener('click', function() { execCmd('insertOrderedList'); });
-            document.getElementById('btnQuote').addEventListener('click', function() { execCmd('formatBlock', 'blockquote'); });
-            document.getElementById('btnCode').addEventListener('click', function() { 
-                var selection = window.getSelection();
-                if(selection.rangeCount > 0) {
-                    var range = selection.getRangeAt(0);
-                    var pre = document.createElement('pre');
-                    pre.textContent = selection.toString() || '代码...';
-                    range.deleteContents();
-                    range.insertNode(pre);
-                }
+            
+            document.getElementById('btnQuote').addEventListener('click', function() {
+                toggleBlockquote();
+            });
+             document.getElementById('btnComment').addEventListener('click', function() {
+                insertCommentBox();
+            });
+            document.getElementById('btnCode').addEventListener('click', function() {
+                insertCodeBlock();
             });
 
-            // 表格功能 (新增)
-            // document.getElementById('btnTable').addEventListener('click', function() {
-            //     var tableHtml = '<table><tr><th>标题 1</th><th>标题 2</th><th>标题 3</th></tr><tr><td>内容 1</td><td>内容 2</td><td>内容 3</td></tr><tr><td>内容 4</td><td>内容 5</td><td>内容 6</td></tr></table><p><br/></p>';
-            //     execCmd('insertHTML', tableHtml);
-            // });
             document.getElementById('btnTable').addEventListener('click', function() {
                 var rows = prompt("请输入行数 (默认 3):", "3");
                 var cols = prompt("请输入列数 (默认 3):", "3");
-                
                 rows = parseInt(rows) || 3;
                 cols = parseInt(cols) || 3;
-                
-                if (rows < 1 || cols < 1) {
-                    showToast("行列数必须大于 0", "error");
-                    return;
-                }
+                if (rows < 1 || cols < 1) { showToast("行列数必须大于 0", "error"); return; }
 
                 var table = document.createElement('table');
                 var tbody = document.createElement('tbody');
-                
                 for (var i = 0; i < rows; i++) {
                     var tr = document.createElement('tr');
                     for (var j = 0; j < cols; j++) {
@@ -1344,27 +1511,9 @@
                     tbody.appendChild(tr);
                 }
                 table.appendChild(tbody);
-                
-                var content = document.getElementById('noteContent');
-                content.focus();
-                var selection = window.getSelection();
-                if (selection.rangeCount > 0) {
-                    var range = selection.getRangeAt(0);
-                    range.deleteContents();
-                    range.insertNode(table);
-                    // 光标移到表格后
-                    var newRange = document.createRange();
-                    newRange.setStartAfter(table);
-                    newRange.collapse(true);
-                    selection.removeAllRanges();
-                    selection.addRange(newRange);
-                } else {
-                    content.appendChild(table);
-                }
+                insertNodeAtCursor(table);
             });
 
-
-            // 颜色与清除
             document.getElementById('fontColor').addEventListener('change', function() {
                 execCmd('foreColor', this.value);
             });
@@ -1372,19 +1521,441 @@
                 execCmd('removeFormat');
             });
 
-            // 链接
+            // 【核心修改】链接插入逻辑修复
             document.getElementById('btnLink').addEventListener('click', function() {
-                var url = prompt('请输入链接地址:', 'https://');
-                if (url) execCmd('createLink', url);
+                insertStyledLink();
             });
 
-            // 图片
             document.getElementById('btnImage').addEventListener('click', function() {
-                document.getElementById('imageUpload').click();
+                hiddenInputs['image'].click();
             });
-            document.getElementById('imageUpload').addEventListener('change', function() {
-                insertImage(this);
+            document.getElementById('btnVideo').addEventListener('click', function() {
+                hiddenInputs['video'].click();
             });
+            document.getElementById('btnAudio').addEventListener('click', function() {
+                hiddenInputs['audio'].click();
+            });
+            document.getElementById('btnFile').addEventListener('click', function() {
+                hiddenInputs['file'].click();
+            });
+
+            document.getElementById('btnEmoji').addEventListener('click', function() {
+                togglePanel(this, 'emoji', [
+                    '😀', '😂', '😍', '🥰', '😎', '🤩', '🥳', '😭', 
+                    '😡', '🤯', '🥶', '😱', '🤠', '🥴', '😅', '🤮',
+                    '❤️', '💖', '✨', '⭐', '🌟', '💫', '🎉', '🎁',
+                    '🔥', '💥', '💯', '💢', '💤', '💦', '💨', '🕳️',
+                    '💣', '💬', '👁️', '👂', '👃', '👅', '👄', '🦷'
+                ]);
+            });
+
+            document.getElementById('btnKaomoji').addEventListener('click', function() {
+                togglePanel(this, 'kaomoji', [
+                    '(≧∇≦)', '(^_^)', '(T_T)', '(>_<)', '(¬_¬)', '(O_O)', 
+                    '(^o^)', '(+_+)', '(-_-)', '(*^ω^*)', '(´▽`ʃ♡ƪ)', 
+                    '(╯°□°）╯', '┗|｀O′|┛', '(* /ω＼*)', '(｡•̀ᴗ-)✧', 
+                    'o(￣▽￣)d', '(✿◡‿◡)', '₍ᐢ..ᐢ₎', 'ʕ •ᴥ•ʔ', '(づ｡◕‿‿◕｡) づ'
+                ], true);
+            });
+
+            document.getElementById('btnShape').addEventListener('click', function() {
+                togglePanel(this, 'shape', [
+                    { s: '▭', d: '矩形' }, { s: '○', d: '圆形' }, 
+                    { s: '△', d: '三角' }, { s: '◇', d: '菱形' },
+                    { s: '◆', d: '实菱' }, { s: '●', d: '实圆' },
+                    { s: '■', d: '实方' }, { s: '□', d: '空方' }
+                ], false, true);
+            });
+
+            // 【核心修改】字距和行距功能
+            document.getElementById('btnLetterSpacing').addEventListener('click', function() {
+                adjustLetterSpacing();
+            });
+            document.getElementById('btnLineHeight').addEventListener('click', function() {
+                adjustLineHeight();
+            });
+
+            document.getElementById('btnIndent').addEventListener('click', function() {
+                indentCurrentParagraphOnly();
+            });
+
+            var editor = document.getElementById('noteContent');
+            editor.addEventListener('click', function(e) {
+                var target = e.target;
+                var selectedMedia = editor.querySelectorAll('video.selected, audio.selected');
+                selectedMedia.forEach(function(el) {
+                    el.classList.remove('selected');
+                });
+
+                if (target.tagName === 'VIDEO' || target.tagName === 'AUDIO') {
+                    target.classList.add('selected');
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    var selectedMedia = document.querySelector('#noteContent video.selected, #noteContent audio.selected');
+                    if (selectedMedia) {
+                        e.preventDefault();
+                        selectedMedia.remove();
+                        selectedMedia.classList.remove('selected');
+                    }
+                }
+            });
+
+            var fileEditModal = document.getElementById('fileEditModal');
+            document.getElementById('closeFileEditBtn').addEventListener('click', function() { hideModal('fileEdit'); });
+            document.getElementById('cancelFileEditBtn').addEventListener('click', function() { hideModal('fileEdit'); });
+            fileEditModal.addEventListener('click', function(e) {
+                if (e.target === fileEditModal) hideModal('fileEdit');
+            });
+            document.getElementById('saveFileEditBtn').addEventListener('click', saveFileEdit);
+            document.getElementById('openFileBtn').addEventListener('click', openCurrentFile);
+        }
+
+        function toggleBlockquote() {
+            var btn = document.getElementById('btnQuote');
+            var selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            var node = selection.anchorNode;
+            while (node && node.nodeType !== Node.ELEMENT_NODE) {
+                node = node.parentNode;
+            }
+
+            var isInBlockquote = node && node.closest('blockquote');
+
+            if (isInBlockquote) {
+                document.execCommand('formatBlock', false, 'p');
+                btn.classList.remove('active');
+            } else {
+                document.execCommand('formatBlock', false, 'blockquote');
+                btn.classList.add('active');
+            }
+            
+            document.getElementById('noteContent').focus();
+        }
+
+                // 新增：插入注释框函数
+        function insertCommentBox() {
+            var content = document.getElementById('noteContent');
+            content.focus();
+            
+            var selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            var range = selection.getRangeAt(0);
+            range.deleteContents(); // 删除选中的内容（如果有）
+
+            // 创建包裹 span
+            var wrapper = document.createElement('span');
+            wrapper.className = 'comment-box';
+            wrapper.contentEditable = "true"; // 确保内部可编辑
+            
+            // 设置内部 HTML，包含标记和空格供光标停留
+            // 使用零宽空格 &#8203; 或者普通空格让光标有地方停
+            wrapper.innerHTML = '&lt;!*&nbsp;&nbsp;*-&gt;'; 
+
+            // 插入节点
+            range.insertNode(wrapper);
+
+            // 移动光标到 <!* 和 *-> 之间
+            var newRange = document.createRange();
+            var textNode = wrapper.firstChild;
+            
+            // 计算 <!* 的长度 (3个字符)，将光标定位在其后
+            // 注意：innerHTML 解析后，&lt;!* 是文本节点的一部分
+            // 这里我们简单地将光标设置在 wrapper 的第二个字符位置之后
+            // 更稳健的方法是创建一个空的 textNode 放在中间，但为了简单，我们直接操作 offset
+            
+            // 重新构建结构以便精准控制光标：<!* [cursor] *->
+            wrapper.innerHTML = ''; 
+            var prefix = document.createTextNode('<!*');
+            var suffix = document.createTextNode(' *->');
+            // 不间断空格作为初始占位
+            var space = document.createTextNode('\u00A0'); 
+
+            wrapper.appendChild(prefix);
+            wrapper.appendChild(space);
+            wrapper.appendChild(suffix);
+
+            newRange.setStart(space, 1); // 光标设在空格后面
+            newRange.setEnd(space, 1);
+            
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+        }
+
+        function insertCodeBlock() {
+            var code = prompt("请输入代码内容：", "");
+            if (!code) return;
+
+            var pre = document.createElement('pre');
+            var codeEl = document.createElement('code');
+            codeEl.textContent = code;
+            pre.appendChild(codeEl);
+            insertNodeAtCursor(pre);
+        }
+
+        // 【核心修改】链接插入逻辑修复
+        function insertStyledLink() {
+            var url = prompt('请输入链接地址:', '');
+            if (!url) return;
+            
+            var text = prompt('请输入显示文本:', url);
+            if (!text) text = url;
+
+            var a = document.createElement('a');
+            a.href = url;
+            a.textContent = text;
+            a.target = '_blank';
+            a.style.textDecoration = 'none';
+            a.style.color = '#4b6cb7';
+
+            insertNodeAtCursor(a);
+        }
+
+        // 【核心修改】字距调整
+        function adjustLetterSpacing() {
+            var spacing = prompt("请输入字间距 (单位: px ):", "1.6");
+            if (!spacing) return;
+            
+            var selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            var node = selection.anchorNode;
+            while (node && node.nodeType !== Node.ELEMENT_NODE) {
+                node = node.parentNode;
+            }
+            if (node && node.nodeType === Node.ELEMENT_NODE) {
+                node.style.letterSpacing = spacing + 'px';
+            }
+        }
+
+        // 【核心修改】行距调整
+        function adjustLineHeight() {
+            var lineHeight = prompt("请输入行高倍数:", "1.8");
+            if (!lineHeight) return;
+            
+            var selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            var node = selection.anchorNode;
+            while (node && node.nodeType !== Node.ELEMENT_NODE) {
+                node = node.parentNode;
+            }
+            if (node && node.nodeType === Node.ELEMENT_NODE) {
+                node.style.lineHeight = lineHeight;
+            }
+        }
+
+        function indentCurrentParagraphOnly() {
+    var content = document.getElementById('noteContent');
+    content.focus();
+    var selection = window.getSelection();
+    
+    if (!selection.rangeCount) return;
+
+    var range = selection.getRangeAt(0);
+    var node = range.startContainer;
+    
+    // 向上查找直到找到块级元素
+    while (node && node.nodeType !== Node.ELEMENT_NODE) {
+        node = node.parentNode;
+    }
+    
+    // 如果不是段落或分块，强制转为 P 标签
+    if (!node || (node.tagName !== 'P' && node.tagName !== 'DIV' && node.tagName !== 'BLOCKQUOTE' && node.tagName !== 'LI' && !['H1','H2','H3','H4','H5','H6'].includes(node.tagName))) {
+        execCmd('formatBlock', 'p');
+        selection = window.getSelection();
+        if(selection.rangeCount) {
+            node = selection.anchorNode;
+            while (node && node.nodeType !== Node.ELEMENT_NODE) node = node.parentNode;
+        }
+    }
+
+    if (node) {
+        // 【新逻辑】直接切换 CSS text-indent 属性
+        var style = node.style;
+        var computedStyle = window.getComputedStyle(node);
+        var currentIndent = computedStyle.textIndent;
+        
+        // 如果当前没有缩进（或为0），则设置为 2em；否则清空（取消缩进）
+        if (!currentIndent || currentIndent === '0px') {
+            style.textIndent = '2em';
+        } else {
+            style.textIndent = '';
+        }
+    }
+}
+
+        function handleFileSelect(e) {
+            var file = e.target.files[0];
+            var type = e.target.id.replace('Input', '');
+            
+            if (!file) return;
+            
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('文件过大，限制为 10MB', 'error');
+                e.target.value = '';
+                return;
+            }
+
+            if (type === 'file') {
+                insertFileByObjectURL(file);
+            } else {
+                var reader = new FileReader();
+                reader.onload = function(event) {
+                    var base64 = event.target.result;
+                    insertMediaByBase64(type, base64, file.name);
+                    e.target.value = '';
+                };
+                reader.onerror = function() {
+                    showToast('文件读取失败', 'error');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function insertFileByObjectURL(file) {
+            var objectUrl = URL.createObjectURL(file);
+            var displayName = file.name || '本地文件';
+            
+            var card = document.createElement('div');
+            card.className = 'file-card';
+            card.contentEditable = "false";
+            card.setAttribute('data-file-url', objectUrl);
+            card.setAttribute('data-file-name', displayName);
+            card.setAttribute('data-file-remark', '');
+            
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                openFileEditModal(this);
+            });
+
+            var innerHTML = 
+                '<div class="file-card-inner">' +
+                    '<span class="file-icon">📎</span>' +
+                    '<div class="file-info">' +
+                        '<div class="file-name">' + escapeHtml(displayName) + '</div>' +
+                        '<div class="file-remark"></div>' +
+                        '<div class="file-hint">点击修改名称或备注 · 右键/长按下载</div>' +
+                    '</div>' +
+                '</div>' +
+                '<a href="' + objectUrl + '" download="' + escapeHtml(displayName) + '" style="display:none;" class="file-download-link"></a>';
+            
+            card.innerHTML = innerHTML;
+            
+            insertNodeAtCursor(card);
+            
+            setTimeout(function() {
+                var br = document.createElement('br');
+                var p = document.createElement('p');
+                p.innerHTML = '<br>';
+                insertNodeAfter(card, p);
+                moveCursorToEnd(p);
+            }, 10);
+        }
+
+        function insertNodeAfter(referenceNode, newNode) {
+            referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+        }
+
+        function moveCursorToEnd(element) {
+            var range = document.createRange();
+            var sel = window.getSelection();
+            range.selectNodeContents(element);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            element.focus();
+        }
+
+        function openFileEditModal(card) {
+            appState.editingFileCard = card;
+            var name = card.getAttribute('data-file-name') || '';
+            var remark = card.getAttribute('data-file-remark') || '';
+            
+            document.getElementById('fileEditName').value = name;
+            document.getElementById('fileEditRemark').value = remark;
+            
+            showModal('fileEdit');
+            document.getElementById('fileEditName').focus();
+        }
+
+        function openCurrentFile() {
+            if (!appState.editingFileCard) return;
+            
+            var url = appState.editingFileCard.getAttribute('data-file-url');
+            var name = appState.editingFileCard.getAttribute('data-file-name') || 'file';
+            
+            if (!url) {
+                showToast('文件链接已失效（可能已刷新页面）', 'error');
+                return;
+            }
+            
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = name;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast('正在打开/下载文件...', 'info');
+        }
+
+        function saveFileEdit() {
+            if (!appState.editingFileCard) return;
+            
+            var newName = document.getElementById('fileEditName').value.trim();
+            var newRemark = document.getElementById('fileEditRemark').value.trim();
+            
+            if (!newName) {
+                showToast('文件名不能为空', 'error');
+                return;
+            }
+            
+            var card = appState.editingFileCard;
+            card.setAttribute('data-file-name', newName);
+            card.setAttribute('data-file-remark', newRemark);
+            
+            var nameEl = card.querySelector('.file-name');
+            var remarkEl = card.querySelector('.file-remark');
+            var linkEl = card.querySelector('.file-download-link');
+            
+            nameEl.textContent = newName;
+            remarkEl.textContent = newRemark;
+            
+            if (linkEl) {
+                linkEl.setAttribute('download', newName);
+            }
+            
+            hideModal('fileEdit');
+            showToast('修改成功', 'success');
+            appState.editingFileCard = null;
+        }
+
+        function insertMediaByBase64(type, base64, fileName) {
+            if (type === 'image') {
+                var img = document.createElement('img');
+                img.src = base64;
+                img.style.maxWidth = '100%';
+                insertNodeAtCursor(img);
+            } else if (type === 'video') {
+                var video = document.createElement('video');
+                video.src = base64;
+                video.controls = true;
+                video.style.maxWidth = '100%';
+                insertNodeAtCursor(video);
+            } else if (type === 'audio') {
+                var audio = document.createElement('audio');
+                audio.src = base64;
+                audio.controls = true;
+                audio.style.maxWidth = '100%';
+                insertNodeAtCursor(audio);
+            }
         }
 
         function execCmd(command, value) {
@@ -1392,30 +1963,130 @@
             document.getElementById('noteContent').focus();
         }
 
-        function insertImage(input) {
-            var file = input.files[0];
-            if (!file) return;
-            if (file.size > 2 * 1024 * 1024) {
-                showToast('图片过大，请上传小于 2MB 的图片', 'error');
-                input.value = '';
+        function insertNodeAtCursor(node) {
+    var content = document.getElementById('noteContent');
+    content.focus();
+    var selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+        var range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(node);
+        
+        // --- 👇 新增代码：移动光标到插入节点之后，取消选中状态 ---
+        range.setStartAfter(node);
+        range.setEndAfter(node);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        // --- 👆 新增结束 ---
+        
+    } else {
+        content.appendChild(node);
+    }
+}
+
+        function togglePanel(button, type, items, isText, isObject) {
+            var existing = document.querySelector('.' + type + '-panel');
+            
+            if (existing) { 
+                document.body.removeChild(existing); 
+                return; 
+            }
+
+            var panel = document.createElement('div');
+            panel.className = 'popup-panel ' + type + '-panel';
+            
+            items.forEach(function(item) {
+                var btn = document.createElement('button');
+                btn.className = isText ? 'panel-btn kaomoji-btn' : 'panel-btn';
+                
+                var displayVal = isObject ? item.s : item;
+                var insertVal = isObject ? item.s : item;
+                
+                btn.textContent = displayVal;
+                if (!isText && isObject) btn.title = item.d;
+
+                btn.addEventListener('click', function() {
+                    if (isText) {
+                        insertNodeAtCursor(document.createTextNode(insertVal));
+                    } else {
+                        insertNodeAtCursor(document.createTextNode(insertVal));
+                    }
+                    if(document.body.contains(panel)) document.body.removeChild(panel);
+                });
+                panel.appendChild(btn);
+            });
+
+            document.body.appendChild(panel);
+            
+            var rect = button.getBoundingClientRect();
+            var top = rect.bottom + 5;
+            var left = rect.left;
+            
+            if (left + panel.offsetWidth > window.innerWidth) {
+                left = window.innerWidth - panel.offsetWidth - 10;
+            }
+            
+            panel.style.top = top + 'px';
+            panel.style.left = left + 'px';
+
+            setTimeout(function() {
+                document.addEventListener('click', function close(e) {
+                    if (!panel.contains(e.target) && e.target !== button) {
+                        if(document.body.contains(panel)) document.body.removeChild(panel);
+                        document.removeEventListener('click', close);
+                    }
+                });
+            }, 10);
+        }
+
+        // 【核心修改】PDF 导出优化 - 移除标题上方空白
+        function shareNoteAsPDF() {
+            var titleText = document.getElementById('noteTitle').value.trim() || '无标题';
+            var contentDiv = document.getElementById('noteContent');
+            
+            if (!contentDiv.innerText.trim()) {
+                showToast('笔记内容为空，无法生成 PDF', 'error');
                 return;
             }
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.maxWidth = '100%';
-                var content = document.getElementById('noteContent');
-                content.focus();
-                var selection = window.getSelection();
-                if (selection.rangeCount > 0) {
-                    selection.getRangeAt(0).insertNode(img);
-                } else {
-                    content.appendChild(img);
-                }
+
+            showToast('正在生成 PDF，请稍候...', 'loading');
+
+            var cloneContainer = document.createElement('div');
+            cloneContainer.style.padding = '0'; // 移除外部 padding
+            cloneContainer.style.fontFamily = '"STKaiti", "KaiTi", serif';
+            
+            var titleEl = document.createElement('h1');
+            titleEl.textContent = titleText;
+            titleEl.style.fontSize = '24px';
+            titleEl.style.color = '#8B4513';
+            titleEl.style.margin = '0 0 20px 0'; // 只保留底部 margin
+            titleEl.style.textAlign = 'center';
+            titleEl.style.borderBottom = '2px solid #d2b48c';
+            titleEl.style.paddingBottom = '10px';
+            cloneContainer.appendChild(titleEl);
+
+            var contentClone = contentDiv.cloneNode(true);
+            contentClone.style.border = 'none';
+            contentClone.style.padding = '0';
+            contentClone.style.background = 'transparent';
+            contentClone.style.marginTop = '0'; // 移除顶部 margin
+            
+            cloneContainer.appendChild(contentClone);
+
+            var opt = {
+                margin:       [15, 15, 15, 15],
+                filename:     titleText.replace(/[\\/:*?"<>|]/g, '') + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            reader.readAsDataURL(file);
-            input.value = '';
+
+            html2pdf().set(opt).from(cloneContainer).save().then(function() {
+                showToast('PDF 下载成功！', 'success');
+            }).catch(function(err) {
+                console.error(err);
+                showToast('生成 PDF 失败', 'error');
+            });
         }
 
         function saveNote() {
@@ -1460,12 +2131,12 @@
                 showToast('保存失败：' + getFriendlyError(err.message), 'error');
             }).finally(function() {
                 btn.disabled = false;
-                btn.textContent = '保存';
+                btn.textContent = '保存墨宝';
             });
         }
 
         function deleteNote(noteId) {
-            if (!confirm('确定删除此笔记？')) return;
+            if (!confirm('确定删除此笔记？此操作不可恢复。')) return;
             if (!appState.supabase) return;
             appState.supabase
                 .from('notes')
@@ -1484,6 +2155,16 @@
         function editNotebook(notebookId, oldName) {
             var newName = prompt('修改笔记集名称:', oldName);
             if (!newName || newName === oldName) return;
+            
+            var notebooks = document.querySelectorAll('.notebook-item');
+            for(var i = 0; i < notebooks.length; i++) {
+                var existingName = notebooks[i].querySelector('.notebook-name').textContent;
+                if(existingName === newName && notebooks[i].getAttribute('data-id') !== notebookId.toString()) {
+                    showToast('笔记集名称已存在，请选择其他名称', 'error');
+                    return;
+                }
+            }
+            
             appState.supabase
                 .from('notebooks')
                 .update({ name: newName, updated_at: new Date().toISOString() })
@@ -1533,7 +2214,6 @@
                 '</div>';
         }
 
-        // ========== 事件绑定 ==========
         function bindEvents() {
             document.getElementById('loginBtn').addEventListener('click', function() { showModal('login'); });
             document.getElementById('registerBtn').addEventListener('click', function() { showModal('register'); });
@@ -1565,22 +2245,17 @@
             });
         }
 
-        // ========== 初始化 ==========
         function init() {
             debug('=== 应用初始化开始 ===');
-            
             if (typeof window.supabase === 'undefined') {
                 debug('Supabase SDK 未加载');
                 showToast('系统加载失败，请刷新页面', 'error');
                 return;
             }
-            
             appState.supabase = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
             debug('Supabase 客户端初始化成功');
-            
             bindEvents();
             checkAuth();
-            
             debug('=== 应用初始化完成 ===');
         }
 
