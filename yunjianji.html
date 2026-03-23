@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>云笺记 - 细节优化版</title>
+    <title>云笺记 - 云上一张纸</title>
     <!-- 引入 html2pdf -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -678,7 +678,7 @@
             z-index: 10000;
             display: grid;
             gap: 5px;
-            max-width: 320px;
+            max-width: 420px;
             animation: fadeIn 0.2s ease-out;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
@@ -1404,11 +1404,11 @@
                                 '<button class="toolbar-btn" id="btnImage" title="图片">🖼️</button>' +
                                 '<button class="toolbar-btn" id="btnVideo" title="视频">🎬</button>' +
                                 '<button class="toolbar-btn" id="btnAudio" title="语音">🎙️</button>' +
-                                '<button class="toolbar-btn" id="btnFile" title="文件">📎</button>' +
+                                '<button class="toolbar-btn" id="btnFile" title="文件">📌</button>' +
                             '</div>' +
                             '<div class="toolbar-group">' +
                                 '<button class="toolbar-btn" id="btnEmoji" title="表情符号">😊</button>' +
-                                '<button class="toolbar-btn" id="btnKaomoji" title="颜文字">°▽°</button>' +
+                                '<button class="toolbar-btn" id="btnKaomoji" title="颜文字">^ω^</button>' +
                                 '<button class="toolbar-btn" id="btnShape" title="插入形状">⬜</button>' +
                             '</div>' +
                         '</div>' +
@@ -1543,27 +1543,30 @@
                 togglePanel(this, 'emoji', [
                     '😀', '😂', '😍', '🥰', '😎', '🤩', '🥳', '😭', 
                     '😡', '🤯', '🥶', '😱', '🤠', '🥴', '😅', '🤮',
-                    '❤️', '💖', '✨', '⭐', '🌟', '💫', '🎉', '🎁',
-                    '🔥', '💥', '💯', '💢', '💤', '💦', '💨', '🕳️',
-                    '💣', '💬', '👁️', '👂', '👃', '👅', '👄', '🦷'
+                    '💫', '💖', '✨', '⭐', '🎉', '🔥', '💥', '🎁',
+                    '💦', '💣', '💯', '💢', '💤', '🔍', '🖊️', '🕳️',
+                    '📂', '📢', '🚀', '💡', '💻', '📖', '⚠️', '🔔'
                 ]);
             });
 
             document.getElementById('btnKaomoji').addEventListener('click', function() {
                 togglePanel(this, 'kaomoji', [
-                    '(≧∇≦)', '(^_^)', '(T_T)', '(>_<)', '(¬_¬)', '(O_O)', 
-                    '(^o^)', '(+_+)', '(-_-)', '(*^ω^*)', '(´▽`ʃ♡ƪ)', 
-                    '(╯°□°）╯', '┗|｀O′|┛', '(* /ω＼*)', '(｡•̀ᴗ-)✧', 
-                    'o(￣▽￣)d', '(✿◡‿◡)', '₍ᐢ..ᐢ₎', 'ʕ •ᴥ•ʔ', '(づ｡◕‿‿◕｡) づ'
+                    '(≧∇≦)', '(^_^)', '(T_T)', '(>_<)', 'ꉂ೭(˵¯̴͒ꇴ¯̴͒˵)౨”', '(O_O)', 
+                    '(⑉･̆-･̆⑉)', 'o(´^｀)o', '(•̤̀ᵕ•̤́๑)ᵒᵏᵎᵎᵎ', '(*^ω^*)', '(´▽`ʃ♡ƪ)', 
+                    '(╯°□°）╯', '(•̀⌓• )', '⁽⁽ଘ( ˊᵕˋ )ଓ⁾⁾', '(｡•̀ᴗ-)✧', 
+                    '(੭ˊᵕˋ)੭', 'Ծ‸Ծ', '₍ᐢ..ᐢ₎', 'ʕ •ᴥ•ʔ', '(づ｡◕‿‿◕｡) づ'
                 ], true);
             });
 
             document.getElementById('btnShape').addEventListener('click', function() {
                 togglePanel(this, 'shape', [
-                    { s: '▭', d: '矩形' }, { s: '○', d: '圆形' }, 
+                    { s: '✧', d: '特殊' }, { s: '○', d: '圆形' }, 
                     { s: '△', d: '三角' }, { s: '◇', d: '菱形' },
                     { s: '◆', d: '实菱' }, { s: '●', d: '实圆' },
-                    { s: '■', d: '实方' }, { s: '□', d: '空方' }
+                    { s: '■', d: '实方' }, { s: '□', d: '空方' },
+                    { s: '★', d: '五星' }, { s: '❤', d: '爱心' },
+                    { s: '✔', d: '对勾' }, { s: '✖', d: '叉叉' },
+                    { s: '↘', d: '箭头' }, { s: '↗', d: '箭头' }
                 ], false, true);
             });
 
@@ -1836,11 +1839,11 @@
 
             var innerHTML = 
                 '<div class="file-card-inner">' +
-                    '<span class="file-icon">📎</span>' +
+                    '<span class="file-icon">📌</span>' +
                     '<div class="file-info">' +
                         '<div class="file-name">' + escapeHtml(displayName) + '</div>' +
                         '<div class="file-remark"></div>' +
-                        '<div class="file-hint">点击修改名称或备注 · 右键/长按下载</div>' +
+                        '<div class="file-hint">点击修改名称或备注</div>' +
                     '</div>' +
                 '</div>' +
                 '<a href="' + objectUrl + '" download="' + escapeHtml(displayName) + '" style="display:none;" class="file-download-link"></a>';
