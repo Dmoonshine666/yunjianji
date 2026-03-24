@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>云笺记 - 云上一张纸</title>
+    <link rel="icon" href="https://s41.ax1x.com/2026/03/24/peMVC4O.png" type="image/png">
     <!-- 引入 html2pdf -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -245,12 +246,9 @@
         }
         .notebook-actions { display: flex; gap: 8px; opacity: 1; flex-shrink: 0; }
 
-        button#saveNoteBtn{
-            margin: 10px;
-        }
-        button#shareNoteBtn{
-            margin-left: 10px;
-        }
+        button#saveNoteBtn{ margin: 10px; }
+        button#shareNoteBtn{ margin-left: 10px; }
+        
         .content {
             flex: 1;
             background: #fffdf5;
@@ -268,6 +266,8 @@
             margin-bottom: 10px;
             padding-bottom: 15px;
             border-bottom: 2px dashed #d2b48c;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .note-header h3 { font-family: "STKaiti", "KaiTi", serif; color: #8B4513; font-size: 1.5rem; }
         .note-list {
@@ -339,30 +339,25 @@
         .note-time { font-size: 0.85rem; color: #999; font-style: italic; }
         .note-actions { display: flex; gap: 8px; opacity: 1; }
 
-        /* ========== 编辑器样式 (核心修改区) ========== */
+        /* ========== 编辑器样式 ========== */
         
-        .editor-wrapper {
-            position: relative;
-        }
+        .editor-wrapper { position: relative; }
 
-        /* 【核心修改】Sticky 容器优化 */
         .editor-sticky-container {
             position: sticky;
-            top: -5px; /* 距离顶部更近，减少空白 */
+            top: -5px;
             z-index: 100;
             background: #fffdf5;
-            padding: 15px; /* 增加内边距，让内容不贴边 */
-             /* 始终显示边框 */
-            /* border: 2px solid #d2b48c; */
-            /* border-radius: 8px; */
+            padding: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
+            border-radius: 8px;
+            border: 1px solid transparent;
         }
         
-        /* 当固定时，增强阴影，提升层次感 */
         .editor-sticky-container.is-sticky {
             box-shadow: 0 8px 20px rgba(139, 69, 19, 0.15);
-            border-color: #c85a5a;
+            border-color: #d2b48c;
         }
 
         .editor-title {
@@ -389,11 +384,12 @@
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
             justify-content: center;
             align-content: center;
+            user-select: none;
         }
         
         .toolbar-group {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             padding-right: 8px;
             margin-right: 8px;
             border-right: 1px solid #e0d0b0;
@@ -420,22 +416,14 @@
             flex-shrink: 0;
         }
         .toolbar-btn:hover { 
-            /* background: linear-gradient(135deg, #f5e8d5 0%, #f9f3e6 100%);
-            border-color: #edb175c5;
-            transform: translateY(-1px); */
             background: linear-gradient(135deg, #f5e8d5 0%, #f9f3e6 100%);
             border-color: #edb175c5;
             transform: translateY(-1px);
             box-shadow: 0 2px 3px rgba(0,0,0,0.05);
         }
-        /* .toolbar-btn.active { 
-            background: #8B4513; 
-            color: #fff; 
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        } */
         
         .toolbar-select {
-            height: 38px;
+            height: 36px;
             border: 1px solid #d2b48c;
             border-radius: 6px;
             background: #fff;
@@ -451,7 +439,7 @@
 
         .color-picker-wrapper {
             position: relative;
-            width: 38px; height: 38px;
+            width: 36px; height: 36px;
             overflow: hidden;
             border-radius: 6px;
             border: 1px solid #d2b48c;
@@ -493,20 +481,17 @@
             font-style: italic;
             font-family: "KaiTi", serif;
         }
-                /* 新增：注释框样式 */
         .editor-content .comment-box {
-            color: #14a51b; /* 绿色文字 */
+            color: #14a51b;
             font-weight: bold;
-            /* background-color: rgba(46, 125, 50, 0.08);  */
             padding: 2px 6px;
-            /* border-radius: 4px; */
-            /* border: 1px dashed #2e7d32; */
             display: inline-block;
             font-family: monospace;
             margin: 0 4px;
+            background: rgba(20, 165, 27, 0.05);
+            border-radius: 4px;
         }
 
-        /* 【核心修改】代码块样式优化 - 确保自动换行 */
         .editor-content pre {
             background: #282c34;
             color: #abb2bf;
@@ -514,16 +499,10 @@
             border-radius: 6px;
             margin: 15px 0;
             border: 1px solid #ddd;
-            
-            /* 关键：强制换行，防止撑大页面 */
-            white-space: pre-wrap;       /* CSS3 */
-            white-space: -moz-pre-wrap;  /* Mozilla */
-            white-space: -pre-wrap;      /* Opera 4-6 */
-            white-space: -o-pre-wrap;    /* Opera 7 */
-            word-wrap: break-word;       /* IE */
-            overflow-x: hidden;          /* 隐藏横向滚动 */
-            max-width: 100%;             /* 限制最大宽度 */
-            
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: hidden;
+            max-width: 100%;
             font-family: Consolas, Monaco, "Courier New", monospace;
             font-size: 0.9rem;
             line-height: 1.5;
@@ -1349,7 +1328,11 @@
                         
                         '<div class="editor-toolbar">' +
                             '<div class="toolbar-group">' +
-                                '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 110px;">' +
+                                '<button class="toolbar-btn" id="btnUndo" title="撤销">↩️</button>' +
+                                '<button class="toolbar-btn" id="btnRedo" title="重做">↪️</button>' +
+                            '</div>' +
+                            '<div class="toolbar-group">' +
+                                '<select class="toolbar-select" id="fontFamily" title="字体" style="width: 100px;">' +
                                     '<option value="SimSun">宋体</option>' +
                                     '<option value="KaiTi">楷体</option>' +
                                     '<option value="STKaiti">华文楷体</option>' +
@@ -1357,9 +1340,8 @@
                                     '<option value="SimHei">黑体</option>' +
                                     '<option value="FangSong">仿宋</option>' +
                                     '<option value="Arial">Arial</option>' +
-                            // '<option value="Times New Roman">Times New Roman</option>' +
                                 '</select>' +
-                                '<select class="toolbar-select" id="fontSize" title="字号" style="width: 70px;">' +
+                                '<select class="toolbar-select" id="fontSize" title="字号" style="width: 80px;">' +
                                     '<option value="1">八号</option>' +
                                     '<option value="2">九号</option>' +
                                     '<option value="3">小四</option>' +
@@ -1373,7 +1355,7 @@
                                 '<button class="toolbar-btn" id="btnBold" title="加粗"><b>B</b></button>' +
                                 '<button class="toolbar-btn" id="btnItalic" title="斜体"><i>I</i></button>' +
                                 '<button class="toolbar-btn" id="btnUnderline" title="下划线"><u>U</u></button>' +
-                                '<button class="toolbar-btn" id="btnStrike" title="删除线"><s>S</s></button>' +
+                                /* 删除线按钮已移除 */
                             '</div>' +
                             '<div class="toolbar-group">' +
                                 '<button class="toolbar-btn" id="btnLeft" title="左对齐">L</button>' +
@@ -1393,7 +1375,7 @@
                             '<div class="toolbar-group">' +
                                 '<button class="toolbar-btn" id="btnLetterSpacing" title="字距">↔</button>' +
                                 '<button class="toolbar-btn" id="btnLineHeight" title="行距">↕</button>' +
-                                '<button class="toolbar-btn" id="btnIndent" title="首行缩进">🡆</button>' +
+                                /* 首行缩进按钮已移除 */
                                 '<button class="toolbar-btn" id="btnQuote" title="引用">❝</button>' +
                                 '<button class="toolbar-btn" id="btnComment" title="注释">💬</button>' +
                                 '<button class="toolbar-btn" id="btnCode" title="代码">&lt;/&gt;</button>' +
@@ -1459,20 +1441,35 @@
             });
             document.getElementById('shareNoteBtn').addEventListener('click', shareNoteAsPDF);
 
+            // 【保留】撤销重做
+            document.getElementById('btnUndo').addEventListener('click', function() { execCmd('undo'); });
+            document.getElementById('btnRedo').addEventListener('click', function() { execCmd('redo'); });
+
+            // 【保留并优化】字体处理：确保聚焦并处理空选区
             document.getElementById('fontFamily').addEventListener('change', function() {
-                execCmd('fontName', this.value);
+                var editor = document.getElementById('noteContent');
+                editor.focus();
+                var selectedText = window.getSelection().toString();
+                if (!selectedText) {
+                    // 如果没有选中文本，尝试获取当前段落或插入点
+                    execCmd('fontName', this.value);
+                } else {
+                    execCmd('fontName', this.value);
+                }
+                editor.focus();
             });
             
-            // 2. 字号选择
-        document.getElementById('fontSize').addEventListener('change', (e) => {
-            noteContent.focus();
-            document.execCommand('fontSize', false, e.target.value);
-        });
+            document.getElementById('fontSize').addEventListener('change', function(e) {
+                var editor = document.getElementById('noteContent');
+                editor.focus();
+                document.execCommand('fontSize', false, e.target.value);
+                editor.focus();
+            });
 
             document.getElementById('btnBold').addEventListener('click', function() { execCmd('bold'); });
             document.getElementById('btnItalic').addEventListener('click', function() { execCmd('italic'); });
             document.getElementById('btnUnderline').addEventListener('click', function() { execCmd('underline'); });
-            document.getElementById('btnStrike').addEventListener('click', function() { execCmd('strikeThrough'); });
+            /* 删除线事件已移除 */
             
             document.getElementById('btnLeft').addEventListener('click', function() { execCmd('justifyLeft'); });
             document.getElementById('btnCenter').addEventListener('click', function() { execCmd('justifyCenter'); });
@@ -1521,7 +1518,6 @@
                 execCmd('removeFormat');
             });
 
-            // 【核心修改】链接插入逻辑修复
             document.getElementById('btnLink').addEventListener('click', function() {
                 insertStyledLink();
             });
@@ -1570,7 +1566,6 @@
                 ], false, true);
             });
 
-            // 【核心修改】字距和行距功能
             document.getElementById('btnLetterSpacing').addEventListener('click', function() {
                 adjustLetterSpacing();
             });
@@ -1578,9 +1573,7 @@
                 adjustLineHeight();
             });
 
-            document.getElementById('btnIndent').addEventListener('click', function() {
-                indentCurrentParagraphOnly();
-            });
+            /* 首行缩进事件已移除 */
 
             var editor = document.getElementById('noteContent');
             editor.addEventListener('click', function(e) {
@@ -1602,6 +1595,15 @@
                         e.preventDefault();
                         selectedMedia.remove();
                         selectedMedia.classList.remove('selected');
+                    }
+                }
+                // 支持 Ctrl+Z / Ctrl+Y
+                if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        execCmd('redo');
+                    } else {
+                        execCmd('undo');
                     }
                 }
             });
@@ -1630,16 +1632,13 @@
 
             if (isInBlockquote) {
                 document.execCommand('formatBlock', false, 'p');
-                btn.classList.remove('active');
             } else {
                 document.execCommand('formatBlock', false, 'blockquote');
-                btn.classList.add('active');
             }
             
             document.getElementById('noteContent').focus();
         }
 
-                // 新增：插入注释框函数
         function insertCommentBox() {
             var content = document.getElementById('noteContent');
             content.focus();
@@ -1648,41 +1647,25 @@
             if (!selection.rangeCount) return;
 
             var range = selection.getRangeAt(0);
-            range.deleteContents(); // 删除选中的内容（如果有）
+            range.deleteContents();
 
-            // 创建包裹 span
             var wrapper = document.createElement('span');
             wrapper.className = 'comment-box';
-            wrapper.contentEditable = "true"; // 确保内部可编辑
+            wrapper.contentEditable = "true";
             
-            // 设置内部 HTML，包含标记和空格供光标停留
-            // 使用零宽空格 &#8203; 或者普通空格让光标有地方停
-            wrapper.innerHTML = '&lt;!*&nbsp;&nbsp;*-&gt;'; 
-
-            // 插入节点
-            range.insertNode(wrapper);
-
-            // 移动光标到 <!* 和 *-> 之间
-            var newRange = document.createRange();
-            var textNode = wrapper.firstChild;
-            
-            // 计算 <!* 的长度 (3个字符)，将光标定位在其后
-            // 注意：innerHTML 解析后，&lt;!* 是文本节点的一部分
-            // 这里我们简单地将光标设置在 wrapper 的第二个字符位置之后
-            // 更稳健的方法是创建一个空的 textNode 放在中间，但为了简单，我们直接操作 offset
-            
-            // 重新构建结构以便精准控制光标：<!* [cursor] *->
             wrapper.innerHTML = ''; 
             var prefix = document.createTextNode('<!*');
             var suffix = document.createTextNode(' *->');
-            // 不间断空格作为初始占位
             var space = document.createTextNode('\u00A0'); 
 
             wrapper.appendChild(prefix);
             wrapper.appendChild(space);
             wrapper.appendChild(suffix);
 
-            newRange.setStart(space, 1); // 光标设在空格后面
+            range.insertNode(wrapper);
+
+            var newRange = document.createRange();
+            newRange.setStart(space, 1);
             newRange.setEnd(space, 1);
             
             selection.removeAllRanges();
@@ -1700,7 +1683,6 @@
             insertNodeAtCursor(pre);
         }
 
-        // 【核心修改】链接插入逻辑修复
         function insertStyledLink() {
             var url = prompt('请输入链接地址:', '');
             if (!url) return;
@@ -1718,7 +1700,6 @@
             insertNodeAtCursor(a);
         }
 
-        // 【核心修改】字距调整
         function adjustLetterSpacing() {
             var spacing = prompt("请输入字间距 (单位: px ):", "1.6");
             if (!spacing) return;
@@ -1735,7 +1716,6 @@
             }
         }
 
-        // 【核心修改】行距调整
         function adjustLineHeight() {
             var lineHeight = prompt("请输入行高倍数:", "1.8");
             if (!lineHeight) return;
@@ -1751,46 +1731,6 @@
                 node.style.lineHeight = lineHeight;
             }
         }
-
-        function indentCurrentParagraphOnly() {
-    var content = document.getElementById('noteContent');
-    content.focus();
-    var selection = window.getSelection();
-    
-    if (!selection.rangeCount) return;
-
-    var range = selection.getRangeAt(0);
-    var node = range.startContainer;
-    
-    // 向上查找直到找到块级元素
-    while (node && node.nodeType !== Node.ELEMENT_NODE) {
-        node = node.parentNode;
-    }
-    
-    // 如果不是段落或分块，强制转为 P 标签
-    if (!node || (node.tagName !== 'P' && node.tagName !== 'DIV' && node.tagName !== 'BLOCKQUOTE' && node.tagName !== 'LI' && !['H1','H2','H3','H4','H5','H6'].includes(node.tagName))) {
-        execCmd('formatBlock', 'p');
-        selection = window.getSelection();
-        if(selection.rangeCount) {
-            node = selection.anchorNode;
-            while (node && node.nodeType !== Node.ELEMENT_NODE) node = node.parentNode;
-        }
-    }
-
-    if (node) {
-        // 【新逻辑】直接切换 CSS text-indent 属性
-        var style = node.style;
-        var computedStyle = window.getComputedStyle(node);
-        var currentIndent = computedStyle.textIndent;
-        
-        // 如果当前没有缩进（或为0），则设置为 2em；否则清空（取消缩进）
-        if (!currentIndent || currentIndent === '0px') {
-            style.textIndent = '2em';
-        } else {
-            style.textIndent = '';
-        }
-    }
-}
 
         function handleFileSelect(e) {
             var file = e.target.files[0];
@@ -1851,28 +1791,6 @@
             card.innerHTML = innerHTML;
             
             insertNodeAtCursor(card);
-            
-            setTimeout(function() {
-                var br = document.createElement('br');
-                var p = document.createElement('p');
-                p.innerHTML = '<br>';
-                insertNodeAfter(card, p);
-                moveCursorToEnd(p);
-            }, 10);
-        }
-
-        function insertNodeAfter(referenceNode, newNode) {
-            referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
-        }
-
-        function moveCursorToEnd(element) {
-            var range = document.createRange();
-            var sel = window.getSelection();
-            range.selectNodeContents(element);
-            range.collapse(false);
-            sel.removeAllRanges();
-            sel.addRange(range);
-            element.focus();
         }
 
         function openFileEditModal(card) {
@@ -1967,25 +1885,22 @@
         }
 
         function insertNodeAtCursor(node) {
-    var content = document.getElementById('noteContent');
-    content.focus();
-    var selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-        var range = selection.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(node);
-        
-        // --- 👇 新增代码：移动光标到插入节点之后，取消选中状态 ---
-        range.setStartAfter(node);
-        range.setEndAfter(node);
-        selection.removeAllRanges();
-        selection.addRange(range);
-        // --- 👆 新增结束 ---
-        
-    } else {
-        content.appendChild(node);
-    }
-}
+            var content = document.getElementById('noteContent');
+            content.focus();
+            var selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                var range = selection.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(node);
+                
+                range.setStartAfter(node);
+                range.setEndAfter(node);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            } else {
+                content.appendChild(node);
+            }
+        }
 
         function togglePanel(button, type, items, isText, isObject) {
             var existing = document.querySelector('.' + type + '-panel');
@@ -2042,7 +1957,6 @@
             }, 10);
         }
 
-        // 【核心修改】PDF 导出优化 - 移除标题上方空白
         function shareNoteAsPDF() {
             var titleText = document.getElementById('noteTitle').value.trim() || '无标题';
             var contentDiv = document.getElementById('noteContent');
@@ -2055,14 +1969,14 @@
             showToast('正在生成 PDF，请稍候...', 'loading');
 
             var cloneContainer = document.createElement('div');
-            cloneContainer.style.padding = '0'; // 移除外部 padding
+            cloneContainer.style.padding = '0';
             cloneContainer.style.fontFamily = '"STKaiti", "KaiTi", serif';
             
             var titleEl = document.createElement('h1');
             titleEl.textContent = titleText;
             titleEl.style.fontSize = '24px';
             titleEl.style.color = '#8B4513';
-            titleEl.style.margin = '0 0 20px 0'; // 只保留底部 margin
+            titleEl.style.margin = '0 0 20px 0';
             titleEl.style.textAlign = 'center';
             titleEl.style.borderBottom = '2px solid #d2b48c';
             titleEl.style.paddingBottom = '10px';
@@ -2072,7 +1986,7 @@
             contentClone.style.border = 'none';
             contentClone.style.padding = '0';
             contentClone.style.background = 'transparent';
-            contentClone.style.marginTop = '0'; // 移除顶部 margin
+            contentClone.style.marginTop = '0';
             
             cloneContainer.appendChild(contentClone);
 
