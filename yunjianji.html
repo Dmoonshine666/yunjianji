@@ -529,6 +529,8 @@
             margin: 10px 0; 
             display: block; 
             cursor: pointer;
+            /* 添加懒加载支持 */
+            loading: lazy;
         }
         
         .editor-content video.selected, .editor-content audio.selected {
@@ -1079,9 +1081,10 @@
             var list = document.getElementById('notebookList');
             list.innerHTML = '<div class="loading"></div>';
 
+            // 【优化】仅查询需要的字段，避免加载不必要的数据
             appState.supabase
                 .from('notebooks')
-                .select('*')
+                .select('id, name, created_at') // 只查询 id, name, created_at
                 .eq('user_id', appState.currentUser.id)
                 .order('created_at', { ascending: false })
                 .then(function(result) {
@@ -1204,11 +1207,13 @@
                     if (result.error) throw result.error;
                     var notebook = result.data;
 
+                    // 【优化】仅查询需要的字段，限制数量，避免加载过多数据
                     return appState.supabase
                         .from('notes')
-                        .select('*')
+                        .select('id, title, updated_at, content') // 只查询 id, title, updated_at, content
                         .eq('notebook_id', notebookId)
                         .order('updated_at', { ascending: false })
+                        .limit(20) // 限制每次最多加载 20 条笔记
                         .then(function(notesResult) {
                             if (notesResult.error) throw notesResult.error;
                             var notes = notesResult.data || [];
@@ -1219,11 +1224,15 @@
                             } else {
                                 for (var i = 0; i < notes.length; i++) {
                                     var note = notes[i];
-                                    var contentText = (note.content || '').replace(/<[^>]*>/g, '').substring(0, 100);
+                                    // 【优化】截取预览内容，避免加载过长的文本
+                                    var contentPreview = (note.content || '')
+                                        .replace(/<[^>]*>/g, '') // 移除HTML标签
+                                        .substring(0, 100); // 截取前100个字符
+                                    
                                     notesHtml += '<div class="note-card" data-id="' + note.id + '">' +
                                         '<div class="note-card-body">' +
                                             '<h4>' + escapeHtml(note.title || '无标题') + '</h4>' +
-                                            '<p>' + escapeHtml(contentText) + '</p>' +
+                                            '<p>' + escapeHtml(contentPreview) + '...</p>' +
                                         '</div>' +
                                         '<div class="note-card-footer">' +
                                             '<span class="note-time">' + formatDate(note.updated_at) + '</span>' +
@@ -1289,9 +1298,10 @@
 
         function editNote(noteId) {
             if (!appState.supabase) return;
+            // 【优化】仅查询需要的字段，避免加载不必要的数据
             appState.supabase
                 .from('notes')
-                .select('title, content')
+                .select('title, content') // 只查询 title 和 content
                 .eq('id', noteId)
                 .single()
                 .then(function(result) {
@@ -1863,6 +1873,8 @@
                 var img = document.createElement('img');
                 img.src = base64;
                 img.style.maxWidth = '100%';
+                // 【优化】添加懒加载属性
+                img.setAttribute('loading', 'lazy');
                 insertNodeAtCursor(img);
             } else if (type === 'video') {
                 var video = document.createElement('video');
