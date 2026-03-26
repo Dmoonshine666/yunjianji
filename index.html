@@ -17,6 +17,7 @@
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,100 M100,0 L0,100" stroke="%23e6d8c7" stroke-width="0.5" fill="none"/></svg>');
             background-size: 100px;
             min-height: 100vh;
+             cursor: url('https://s41.ax1x.com/2026/03/26/peQLtqH.png') 0 0, auto;
         }
         .container { max-width: 1280px; margin: 0 auto; padding: 20px; }
 
@@ -687,6 +688,11 @@
             .form-actions { flex-direction: column; }
             .form-actions-left, .form-actions-right { width: 100%; }
         }
+    /* 强制所有可交互元素使用自定义鼠标 */
+a, button, input, textarea, select, .btn, .notebook-item, .note-card, .toolbar-btn, [contenteditable], .file-card, .modal-content {
+    /* === 修改这里：使用同样的链接 === */
+    cursor: url('https://s41.ax1x.com/2026/03/26/peQLtqH.png') 0 0, auto !important;
+}
     </style>
 </head>
 <body>
